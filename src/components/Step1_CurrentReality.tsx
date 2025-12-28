@@ -1,0 +1,420 @@
+import { useStore } from '@nanostores/react';
+import { inputs, results } from '../stores/financialPlan';
+import { ShinyCard } from './ui/ShinyCard';
+import { MetricCard } from './ui/MetricCard';
+import { MoneyInput } from './ui/MoneyInput';
+
+// Budget Ribbon Component - Matching R lines 1279-1306
+function BudgetRibbon() {
+  const i = useStore(inputs);
+  const res = useStore(results);
+
+  const takeHome = i.takeHomePay;
+  const totalAllocated = res.totalAllocated;
+  const remaining = takeHome - totalAllocated;
+  const remainingPercent = takeHome > 0 ? (remaining / takeHome) * 100 : 0;
+
+  // Determine ribbon styling - matching R logic
+  let ribbonClass = 'bg-shiny-primary';
+  let ribbonText = 'Balanced Budget';
+  
+  if (totalAllocated > takeHome) {
+    ribbonClass = 'bg-shiny-warning';
+    ribbonText = 'OVERSPENDING';
+  } else if (remainingPercent > 10) {
+    ribbonClass = 'bg-shiny-success';
+    ribbonText = 'Great! Saving Aggressively';
+  }
+
+  // Format currency
+  const formatCurrency = (value: number): string => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(value);
+  };
+
+  return (
+    <div className={`sticky top-0 z-50 ${ribbonClass} text-white shadow-shiny-card`}>
+      <div className="container mx-auto px-4 py-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold">{ribbonText}</h2>
+            <p className="text-sm opacity-90 mt-1">
+              {totalAllocated > takeHome 
+                ? `Overspending by ${formatCurrency(totalAllocated - takeHome)}`
+                : remainingPercent > 10
+                ? `Saving ${remainingPercent.toFixed(1)}% of take-home pay`
+                : `Spending ${((totalAllocated / takeHome) * 100).toFixed(1)}% of take-home pay`}
+            </p>
+          </div>
+          <div className="text-right">
+            <div className="text-3xl font-bold">
+              {formatCurrency(totalAllocated)}
+            </div>
+            <div className="text-sm opacity-90">
+              of {formatCurrency(takeHome)}
+            </div>
+            <div className="text-xs opacity-75 mt-1">
+              Take Home: {formatCurrency(takeHome)} | Allocated: {formatCurrency(totalAllocated)}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function Step1_CurrentReality() {
+  const i = useStore(inputs);
+  const res = useStore(results);
+
+  // Format currency helper
+  const formatCurrency = (value: number): string => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(value);
+  };
+
+  // Calculate category totals
+  const housingTotal = i.rent + i.propTax + i.utilities + i.internet;
+  const transportTotal = i.carPayment + i.carIns + i.gas + i.carMaint;
+  const otherFixedTotal = i.groceries + i.healthIns + i.otherIns + i.debtMin + i.childcare + i.banking;
+
+  // Calculate percentages
+  const takeHome = i.takeHomePay;
+  const fixedPercent = takeHome > 0 ? (res.currentFixed / takeHome) * 100 : 0;
+  const investPercent = takeHome > 0 ? (res.currentInvest / takeHome) * 100 : 0;
+  const guiltFreePercent = takeHome > 0 ? (res.currentGuiltFree / takeHome) * 100 : 0;
+
+  return (
+    <div className="space-y-8">
+      {/* Sticky Budget Ribbon */}
+      <BudgetRibbon />
+
+      {/* Percentage Breakdown */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <MetricCard variant="info">
+          <div className="text-sm text-shiny-muted mb-2">Fixed Costs</div>
+          <div className="text-3xl font-bold text-shiny-text mb-1">
+            {fixedPercent.toFixed(1)}%
+          </div>
+          <div className="text-xs text-shiny-muted">
+            {formatCurrency(res.currentFixed)} of {formatCurrency(takeHome)}
+          </div>
+        </MetricCard>
+        <MetricCard variant="success">
+          <div className="text-sm text-shiny-muted mb-2">Saving/Investing</div>
+          <div className="text-3xl font-bold text-shiny-text mb-1">
+            {investPercent.toFixed(1)}%
+          </div>
+          <div className="text-xs text-shiny-muted">
+            {formatCurrency(res.currentInvest)} of {formatCurrency(takeHome)}
+          </div>
+        </MetricCard>
+        <MetricCard variant="primary">
+          <div className="text-sm text-shiny-muted mb-2">Guilt-Free Spending</div>
+          <div className="text-3xl font-bold text-shiny-text mb-1">
+            {guiltFreePercent.toFixed(1)}%
+          </div>
+          <div className="text-xs text-shiny-muted">
+            {formatCurrency(res.currentGuiltFree)} of {formatCurrency(takeHome)}
+          </div>
+        </MetricCard>
+      </div>
+
+      {/* Monthly Take-Home Input */}
+      <ShinyCard variant="info">
+        <h3 className="text-lg font-semibold text-shiny-text mb-4">Monthly Take-Home Pay</h3>
+        <MoneyInput
+          label="Monthly Take-Home Income"
+          helperText="Your after-tax monthly income"
+          value={i.takeHomePay}
+          onChange={(value) => inputs.setKey('takeHomePay', value)}
+        />
+      </ShinyCard>
+
+      {/* Three Column Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Fixed Costs Column - Collapsible */}
+        <ShinyCard variant="info">
+          <details className="group">
+            <summary className="cursor-pointer">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-shiny-text">Fixed Costs</h3>
+                  <p className="text-sm text-shiny-muted">
+                    Essential expenses that stay relatively constant
+                  </p>
+                </div>
+                <div className="text-right">
+                  <div className="text-2xl font-bold text-shiny-text">
+                    {formatCurrency(res.currentFixed)}
+                  </div>
+                  <div className="text-xs text-shiny-muted">Total</div>
+                </div>
+              </div>
+            </summary>
+            <div className="space-y-4">
+              {/* Housing - Collapsible */}
+              <details className="group">
+                <summary className="cursor-pointer flex items-center justify-between py-2 px-3 rounded-md hover:bg-shiny-surface transition-colors">
+                  <span className="font-medium text-shiny-text">Housing</span>
+                  <span className="text-sm text-shiny-muted font-semibold">
+                    {formatCurrency(housingTotal)}
+                  </span>
+                </summary>
+                <div className="mt-3 space-y-3 pl-4 border-l-2 border-shiny-border">
+                  <MoneyInput
+                    label="Rent/Mortgage"
+                    value={i.rent}
+                    onChange={(value) => inputs.setKey('rent', value)}
+                  />
+                  <MoneyInput
+                    label="Property Tax"
+                    value={i.propTax}
+                    onChange={(value) => inputs.setKey('propTax', value)}
+                  />
+                  <MoneyInput
+                    label="Utilities"
+                    value={i.utilities}
+                    onChange={(value) => inputs.setKey('utilities', value)}
+                  />
+                  <MoneyInput
+                    label="Internet"
+                    value={i.internet}
+                    onChange={(value) => inputs.setKey('internet', value)}
+                  />
+                </div>
+              </details>
+
+              {/* Transport - Collapsible */}
+              <details className="group">
+                <summary className="cursor-pointer flex items-center justify-between py-2 px-3 rounded-md hover:bg-shiny-surface transition-colors">
+                  <span className="font-medium text-shiny-text">Transport</span>
+                  <span className="text-sm text-shiny-muted font-semibold">
+                    {formatCurrency(transportTotal)}
+                  </span>
+                </summary>
+                <div className="mt-3 space-y-3 pl-4 border-l-2 border-shiny-border">
+                  <MoneyInput
+                    label="Car Payment"
+                    value={i.carPayment}
+                    onChange={(value) => inputs.setKey('carPayment', value)}
+                  />
+                  <MoneyInput
+                    label="Car Insurance"
+                    value={i.carIns}
+                    onChange={(value) => inputs.setKey('carIns', value)}
+                  />
+                  <MoneyInput
+                    label="Gas"
+                    value={i.gas}
+                    onChange={(value) => inputs.setKey('gas', value)}
+                  />
+                  <MoneyInput
+                    label="Car Maintenance"
+                    value={i.carMaint}
+                    onChange={(value) => inputs.setKey('carMaint', value)}
+                  />
+                </div>
+              </details>
+
+              {/* Other Fixed Costs - Collapsible */}
+              <details className="group">
+                <summary className="cursor-pointer flex items-center justify-between py-2 px-3 rounded-md hover:bg-shiny-surface transition-colors">
+                  <span className="font-medium text-shiny-text">Other</span>
+                  <span className="text-sm text-shiny-muted font-semibold">
+                    {formatCurrency(otherFixedTotal)}
+                  </span>
+                </summary>
+                <div className="mt-3 space-y-3 pl-4 border-l-2 border-shiny-border">
+                  <MoneyInput
+                    label="Groceries"
+                    value={i.groceries}
+                    onChange={(value) => inputs.setKey('groceries', value)}
+                  />
+                  <MoneyInput
+                    label="Health Insurance"
+                    value={i.healthIns}
+                    onChange={(value) => inputs.setKey('healthIns', value)}
+                  />
+                  <MoneyInput
+                    label="Other Insurance"
+                    value={i.otherIns}
+                    onChange={(value) => inputs.setKey('otherIns', value)}
+                  />
+                  <MoneyInput
+                    label="Debt Minimums"
+                    value={i.debtMin}
+                    onChange={(value) => inputs.setKey('debtMin', value)}
+                  />
+                  <MoneyInput
+                    label="Childcare"
+                    value={i.childcare}
+                    onChange={(value) => inputs.setKey('childcare', value)}
+                  />
+                  <MoneyInput
+                    label="Banking Fees"
+                    value={i.banking}
+                    onChange={(value) => inputs.setKey('banking', value)}
+                  />
+                </div>
+              </details>
+            </div>
+          </details>
+        </ShinyCard>
+
+        {/* Investments Column - Collapsible */}
+        <ShinyCard variant="success">
+          <details className="group">
+            <summary className="cursor-pointer">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-shiny-text">Investments</h3>
+                  <p className="text-sm text-shiny-muted">
+                    Money you're setting aside for the future (including employer match - not part of take-home pay)
+                  </p>
+                </div>
+                <div className="text-right">
+                  <div className="text-2xl font-bold text-shiny-text">
+                    {formatCurrency(res.currentInvest)}
+                  </div>
+                  <div className="text-xs text-shiny-muted">Total</div>
+                </div>
+              </div>
+            </summary>
+            <div className="space-y-3">
+              <MoneyInput
+                label="401(k) Contribution"
+                helperText="Your monthly 401(k) contribution (from your paycheck)"
+                value={i.k401}
+                onChange={(value) => inputs.setKey('k401', value)}
+              />
+              <MoneyInput
+                label="Employer 401(k) Match"
+                helperText="Your employer's monthly match (NOT part of take-home pay, but IS part of investments)"
+                value={i.employerMatch}
+                onChange={(value) => inputs.setKey('employerMatch', value)}
+              />
+              <MoneyInput
+                label="IRA"
+                value={i.ira}
+                onChange={(value) => inputs.setKey('ira', value)}
+              />
+              <MoneyInput
+                label="HSA"
+                value={i.hsa}
+                onChange={(value) => inputs.setKey('hsa', value)}
+              />
+              <MoneyInput
+                label="Taxable Brokerage"
+                value={i.taxable}
+                onChange={(value) => inputs.setKey('taxable', value)}
+              />
+              <MoneyInput
+                label="Emergency Fund"
+                value={i.emergency}
+                onChange={(value) => inputs.setKey('emergency', value)}
+              />
+              <MoneyInput
+                label="529 Education"
+                value={i.edu529}
+                onChange={(value) => inputs.setKey('edu529', value)}
+              />
+              <MoneyInput
+                label="Life Insurance"
+                value={i.lifeIns}
+                onChange={(value) => inputs.setKey('lifeIns', value)}
+              />
+            </div>
+          </details>
+        </ShinyCard>
+
+        {/* Guilt-Free Spending Column - Collapsible */}
+        <ShinyCard variant="primary">
+          <details className="group">
+            <summary className="cursor-pointer">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-shiny-text">Guilt-Free Spending</h3>
+                  <p className="text-sm text-shiny-muted">
+                    Money for fun, experiences, and things you love
+                  </p>
+                </div>
+                <div className="text-right">
+                  <div className="text-2xl font-bold text-shiny-text">
+                    {formatCurrency(res.currentGuiltFree)}
+                  </div>
+                  <div className="text-xs text-shiny-muted">Total</div>
+                </div>
+              </div>
+            </summary>
+            <div className="space-y-3">
+              <MoneyInput
+                label="Dining Out"
+                value={i.dining}
+                onChange={(value) => inputs.setKey('dining', value)}
+              />
+              <MoneyInput
+                label="Entertainment"
+                value={i.ent}
+                onChange={(value) => inputs.setKey('ent', value)}
+              />
+              <MoneyInput
+                label="Travel"
+                value={i.travel}
+                onChange={(value) => inputs.setKey('travel', value)}
+              />
+              <MoneyInput
+                label="Hobbies"
+                value={i.hobbies}
+                onChange={(value) => inputs.setKey('hobbies', value)}
+              />
+              <MoneyInput
+                label="Personal Care"
+                value={i.personal}
+                onChange={(value) => inputs.setKey('personal', value)}
+              />
+              <MoneyInput
+                label="Clothes"
+                value={i.clothes}
+                onChange={(value) => inputs.setKey('clothes', value)}
+              />
+              <MoneyInput
+                label="Gifts"
+                value={i.gifts}
+                onChange={(value) => inputs.setKey('gifts', value)}
+              />
+              <MoneyInput
+                label="Personal Development"
+                value={i.dev}
+                onChange={(value) => inputs.setKey('dev', value)}
+              />
+              <MoneyInput
+                label="Tech"
+                value={i.tech}
+                onChange={(value) => inputs.setKey('tech', value)}
+              />
+              <MoneyInput
+                label="Home Improvements"
+                value={i.homeImp}
+                onChange={(value) => inputs.setKey('homeImp', value)}
+              />
+              <MoneyInput
+                label="Miscellaneous"
+                value={i.misc}
+                onChange={(value) => inputs.setKey('misc', value)}
+              />
+            </div>
+          </details>
+        </ShinyCard>
+      </div>
+    </div>
+  );
+}

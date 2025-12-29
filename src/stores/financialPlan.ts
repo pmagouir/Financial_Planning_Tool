@@ -13,7 +13,7 @@ export const inputs = map({
   // Guilt-Free
   dining: 0, ent: 0, travel: 0, hobbies: 0,
   personal: 0, clothes: 0, gifts: 0, dev: 0,
-  tech: 0, homeImp: 0, misc: 0,
+  tech: 0, homeImp: 0, subscriptions: 0, misc: 0,
 
   // Tab 2: Retirement Design (Sliders)
   retHousing: 0, retTransport: 0, retGroceries: 0, retHealth: 0, 
@@ -24,8 +24,10 @@ export const inputs = map({
   // Tab 3 & 4: Assumptions
   retYear: 2049, retDuration: 25, inflation: 3.0,
   socialSecurity: 18000, pension: 0, otherIncome: 0,
-  currentPortfolio: 50000, monthlyContrib: 1000, 
+  currentPortfolio: 0, monthlyContrib: 0, 
   contribIncrease: 3.0, annualReturn: 7.0,
+  contribStopYear: 0, // Year to stop contributions (0 = never stop, or retirement year)
+  withdrawalRate: 0, // User-defined withdrawal rate (0 = auto-calculate based on duration)
 });
 
 // 2. LOGIC: Smart Defaults (Replicating app.R lines 1238-1249)
@@ -44,7 +46,7 @@ inputs.subscribe((val) => {
   const ent = val.ent + val.travel + val.hobbies;
   const dining = val.dining;
   const personal = val.personal + val.clothes + val.gifts + val.dev;
-  const misc = val.tech + val.homeImp + val.misc;
+  const misc = val.tech + val.homeImp + val.subscriptions + val.misc;
 
   // Calculate defaults
   const defaults = {
@@ -89,12 +91,18 @@ export const results = computed(inputs, (i) => {
   const yearsToRet = Math.max(0, i.retYear - currentYear);
   const inflationMult = Math.pow(1 + (i.inflation / 100), yearsToRet);
   
-  // A. Withdrawal Rate (Trinity Logic)
+  // A. Withdrawal Rate (Trinity Logic or User-Defined)
   let withdrawalRate = 0.04;
-  if (i.retDuration >= 35) withdrawalRate = 0.035;
-  else if (i.retDuration >= 25) withdrawalRate = 0.040;
-  else if (i.retDuration >= 15) withdrawalRate = 0.045;
-  else withdrawalRate = 0.050;
+  if (i.withdrawalRate > 0) {
+    // User has set a custom withdrawal rate
+    withdrawalRate = i.withdrawalRate / 100;
+  } else {
+    // Auto-calculate based on duration (Trinity Study)
+    if (i.retDuration >= 35) withdrawalRate = 0.035;
+    else if (i.retDuration >= 25) withdrawalRate = 0.040;
+    else if (i.retDuration >= 15) withdrawalRate = 0.045;
+    else withdrawalRate = 0.050;
+  }
 
   // B. The Number
   const annualRetSpend = (i.retHousing + i.retTransport + i.retGroceries + i.retHealth + 
@@ -114,15 +122,19 @@ export const results = computed(inputs, (i) => {
   const fvPortfolio = i.currentPortfolio * Math.pow(1 + r, yearsToRet);
   
   // FV of Contributions (Increasing Annuity Formula)
+  // Account for contribution stop year if set
+  const contribStopYear = i.contribStopYear > 0 ? i.contribStopYear : i.retYear;
+  const yearsContributing = Math.max(0, Math.min(yearsToRet, contribStopYear - currentYear));
+  
   let fvContrib = 0;
   // Approximation of the R loop for performance:
-  if (yearsToRet > 0) {
+  if (yearsContributing > 0) {
      if (Math.abs(r - g) < 0.0001) {
         // Special case: r == g
         // FV = n * C * (1+r)^(n-1) approx, but let's stick to the geometric series sum
         // For distinct monthly compounding + annual increase, the R loop is most accurate.
         // We will replicate the simple loop for exact parity:
-        for(let y = 1; y <= yearsToRet; y++) {
+        for(let y = 1; y <= yearsContributing; y++) {
             const monthly = i.monthlyContrib * Math.pow(1 + g, y - 1);
             const annual = monthly * 12;
             const yearsRemaining = yearsToRet - y;
@@ -130,7 +142,7 @@ export const results = computed(inputs, (i) => {
         }
      } else {
         // Same loop for accuracy
-        for(let y = 1; y <= yearsToRet; y++) {
+        for(let y = 1; y <= yearsContributing; y++) {
             const monthly = i.monthlyContrib * Math.pow(1 + g, y - 1);
             const annual = monthly * 12;
             const yearsRemaining = yearsToRet - y;
@@ -142,23 +154,138 @@ export const results = computed(inputs, (i) => {
   const projectedPortfolio = fvPortfolio + fvContrib;
   const gap = projectedPortfolio - requiredPortfolio;
 
-  // D. Gap Solver (Replicating app.R lines 1459-1475)
+  // D. Gap Solver - Calculate additional monthly contribution needed
+  // This solves for the additional monthly amount needed to close the gap
+  // Uses monthly compounding to match the contribution calculation
   let monthlyShortfall = 0;
-  if (gap < 0 && yearsToRet > 0) {
+  if (gap < 0 && yearsContributing > 0) {
       const shortfall = Math.abs(gap);
-      let pvFactor = 0;
-      if (Math.abs(g - r) < 0.0001) {
-          pvFactor = yearsToRet / (1 + r);
-      } else {
-          pvFactor = (1 - Math.pow((1 + g)/(1 + r), yearsToRet)) / (r - g);
+      const rMonthly = r / 12;
+      const gMonthly = g / 12; // Monthly equivalent of annual increase
+      
+      // Calculate FV factor sum for monthly contributions with monthly compounding
+      // Each month's contribution compounds for the remaining months until retirement
+      let fvFactorSum = 0;
+      const totalMonths = yearsContributing * 12;
+      
+      for (let month = 0; month < totalMonths; month++) {
+          // Contribution amount for this month (increases annually, so use year-based increase)
+          const yearIndex = Math.floor(month / 12);
+          const monthlyContribAmount = Math.pow(1 + g, yearIndex);
+          
+          // Months remaining until retirement
+          const monthsRemaining = (yearsToRet * 12) - month;
+          
+          // FV factor: contribution amount * (1 + rMonthly)^monthsRemaining
+          const fvFactor = monthlyContribAmount * Math.pow(1 + rMonthly, monthsRemaining);
+          fvFactorSum += fvFactor;
       }
-      const annualPvFactor = pvFactor * 12; // Adjusted for monthly
-      // This solves for the *First Year* additional monthly amount needed
-      monthlyShortfall = shortfall / (annualPvFactor * Math.pow(1+r, yearsToRet)); 
-      // Note: The R code formula was slightly approximated in the logic block 
-      // "additional_annual_first_year <- shortfall / annual_pv_factor" 
-      // We will match the R logic exactly:
-      monthlyShortfall = (shortfall / annualPvFactor) / 12; 
+      
+      // Solve for additional monthly contribution needed (first year amount)
+      if (fvFactorSum > 0) {
+          monthlyShortfall = shortfall / fvFactorSum;
+      }
+  }
+  
+  // Calculate net worth projection data for summary chart
+  // This must correctly handle:
+  // 1. Portfolio growth from investment returns (every year until retirement)
+  // 2. Monthly contributions (with annual increases) until stop year
+  // 3. Continued growth (without contributions) after stop year until retirement
+  // 4. Retirement withdrawals and growth during retirement
+  
+  const netWorthData = [];
+  const rMonthly = r / 12;
+  const contribGrowthRate = i.contribIncrease / 100;
+  
+  // Start with current portfolio
+  let netWorth = i.currentPortfolio;
+  
+  // Record starting value
+  netWorthData.push({
+    year: currentYear,
+    netWorth,
+    phase: 'Pre-Retirement'
+  });
+  
+  // Pre-retirement phase - calculate year by year
+  // Key insight: Portfolio grows EVERY year from investment returns
+  // Contributions are added only until stop year, but portfolio continues growing after
+  
+  for (let yearOffset = 1; yearOffset <= yearsToRet; yearOffset++) {
+    const year = currentYear + yearOffset;
+    
+    // Step 1: ALWAYS grow the portfolio from last year's END value (investment returns)
+    // This happens EVERY year, regardless of whether contributions continue
+    netWorth = netWorth * (1 + r);
+    
+    // Step 2: Add contributions for this year (ONLY if still contributing)
+    if (yearOffset <= yearsContributing) {
+      // Calculate the monthly contribution amount for this year
+      // Year 1: base monthlyContrib
+      // Year 2: monthlyContrib * (1 + contribGrowthRate)
+      // Year 3: monthlyContrib * (1 + contribGrowthRate)^2
+      const yearContribMultiplier = Math.pow(1 + contribGrowthRate, yearOffset - 1);
+      const monthlyContribThisYear = i.monthlyContrib * yearContribMultiplier;
+      
+      // Add 12 monthly contributions made throughout this year
+      // Each contribution is made at the start of a month and compounds until the END of this year
+      // Then the total contributions for the year are added to the portfolio
+      let totalContributionsThisYear = 0;
+      
+      for (let month = 0; month < 12; month++) {
+        // Contribution made at month 'month' of this year
+        // It compounds for the remaining months in this year
+        const monthsRemainingInYear = 12 - month;
+        const contributionAtYearEnd = monthlyContribThisYear * Math.pow(1 + rMonthly, monthsRemainingInYear);
+        totalContributionsThisYear += contributionAtYearEnd;
+      }
+      
+      // Add total contributions for this year to the portfolio
+      netWorth += totalContributionsThisYear;
+    }
+    // If contributions have stopped (yearOffset > yearsContributing), 
+    // portfolio just continues growing from investment returns (Step 1 already handled this)
+    // NO contributions are added, but portfolio still grows!
+    
+    netWorthData.push({
+      year,
+      netWorth,
+      phase: 'Pre-Retirement'
+    });
+  }
+  
+  // Post-retirement phase
+  // During retirement, asset allocation shifts to more conservative (bonds/cash)
+  // Use a lower return rate (e.g., 4-5% instead of 7%)
+  const retirementReturnRate = Math.max(0.04, r * 0.6); // 60% of pre-retirement rate, minimum 4%
+  const annualWithdrawal = futureAnnualNeed;
+  let portfolioAtRetirement = netWorthData[netWorthData.length - 1]?.netWorth || 0;
+  
+  for (let yearOffset = 1; yearOffset <= i.retDuration; yearOffset++) {
+    const year = i.retYear + yearOffset;
+    
+    // Start with portfolio from previous year (or retirement start)
+    let netWorth: number = portfolioAtRetirement;
+    
+    // Apply growth for this year (conservative rate during retirement)
+    netWorth = netWorth * (1 + retirementReturnRate);
+    
+    // Subtract this year's withdrawal (adjusted for inflation since retirement start)
+    const annualWithdrawalInflated = annualWithdrawal * Math.pow(1 + (i.inflation / 100), yearOffset - 1);
+    netWorth = netWorth - annualWithdrawalInflated;
+    
+    // Ensure non-negative
+    netWorth = Math.max(0, netWorth);
+    
+    netWorthData.push({
+      year,
+      netWorth,
+      phase: 'Retirement'
+    });
+    
+    // Update for next iteration
+    portfolioAtRetirement = netWorth;
   }
 
   // E. Spending Breakdown for Ribbon
@@ -167,7 +294,7 @@ export const results = computed(inputs, (i) => {
   const currentInvest = i.k401 + i.employerMatch + i.ira + i.hsa + i.taxable + i.emergency + i.edu529 + i.lifeIns;
   // Investments for budget calculation (excludes employer match - not part of take-home pay)
   const currentInvestForBudget = i.k401 + i.ira + i.hsa + i.taxable + i.emergency + i.edu529 + i.lifeIns;
-  const currentGuiltFree = i.dining + i.ent + i.travel + i.hobbies + i.personal + i.clothes + i.gifts + i.dev + i.tech + i.homeImp + i.misc;
+  const currentGuiltFree = i.dining + i.ent + i.travel + i.hobbies + i.personal + i.clothes + i.gifts + i.dev + i.tech + i.homeImp + i.subscriptions + i.misc;
   // totalAllocated excludes employer match (not part of take-home pay)
   const totalAllocated = currentFixed + currentInvestForBudget + currentGuiltFree;
 
@@ -176,6 +303,7 @@ export const results = computed(inputs, (i) => {
     annualRetSpend, futureAnnualNeed,
     requiredPortfolio, projectedPortfolio, gap,
     monthlyShortfall,
-    currentFixed, currentInvest, currentGuiltFree, totalAllocated
+    currentFixed, currentInvest, currentGuiltFree, totalAllocated,
+    netWorthData, yearsContributing
   };
 });

@@ -10,7 +10,7 @@ import { CompoundCalculator } from './bonus/CompoundCalculator';
 import { Resources } from './bonus/Resources';
 import { Welcome } from './Welcome';
 
-type TabId = 'welcome' | 'step1' | 'step2' | 'step3' | 'step4' | 'summary' | 'compound' | 'resources';
+type TabId = 'welcome' | 'step1' | 'step2' | 'step3' | 'step4' | 'summary' | 'compound' | 'resources' | 'divider';
 
 interface Tab {
   id: TabId;
@@ -31,6 +31,13 @@ const tabs: Tab[] = [
   { id: 'compound', label: 'Bonus: Compound Calc', icon: '🧮', isBonus: true },
   { id: 'resources', label: 'Bonus: Resources', icon: '📚', isBonus: true },
 ];
+
+// Get page title for header
+const getPageTitle = (tabId: TabId): string => {
+  const tab = tabs.find(t => t.id === tabId);
+  if (!tab || tab.isDivider) return 'Retirement Planning Navigator';
+  return tab.label;
+};
 
 export function NavigationTabs() {
   const [activeTab, setActiveTab] = useState<TabId>('welcome');
@@ -59,36 +66,50 @@ export function NavigationTabs() {
   };
 
   return (
-    <div className="flex w-full gap-8">
-      {/* Sidebar Navigation */}
-      <aside className="w-64 flex-shrink-0 print:hidden">
-        <nav className="sticky top-8 space-y-1">
+    <div className="flex min-h-screen">
+      {/* Left Sidebar Navigation */}
+      <aside className="w-64 flex-shrink-0 border-r border-white/5 bg-background-paper/30 backdrop-blur-md print:hidden">
+        <nav className="sticky top-0 h-screen overflow-y-auto p-6 space-y-1">
+          {/* Logo/Brand */}
+          <div className="mb-8 pb-6 border-b border-white/5">
+            <h2 className="text-lg font-semibold text-text-primary tracking-tight">
+              Retirement Navigator
+            </h2>
+          </div>
+
           {tabs.map((tab) => {
             if (tab.isDivider) {
               return (
-                <div key="divider" className="my-4 border-t border-slate-200" />
+                <div key="divider" className="my-4 border-t border-white/5" />
               );
             }
+            
+            const isActive = activeTab === tab.id;
             
             return (
               <button
                 key={tab.id}
                 onClick={() => {
-                  if (tab.id !== 'divider') {
+                  if (tab.id !== 'divider' && !tab.isDivider) {
                     setActiveTab(tab.id as TabId);
                   }
                 }}
                 className={clsx(
-                  'w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-all',
-                  activeTab === tab.id
-                    ? 'bg-gradient-primary text-white shadow-shiny-card'
-                    : tab.isBonus
-                    ? 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
-                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                  'w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 relative group',
+                  isActive
+                    ? 'bg-accent-primary/20 text-accent-primary'
+                    : 'text-text-secondary hover:text-accent-primary'
                 )}
               >
                 <span className="text-lg flex-shrink-0">{tab.icon}</span>
-                <span className="text-left">{tab.label}</span>
+                <span className="text-left flex-1">{tab.label}</span>
+                {/* Glow effect on hover */}
+                {!isActive && (
+                  <span className="absolute inset-0 rounded-lg bg-accent-primary/0 group-hover:bg-accent-primary/5 transition-all duration-200" />
+                )}
+                {isActive && (
+                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-accent-primary rounded-r-full" />
+                )}
               </button>
             );
           })}
@@ -97,7 +118,17 @@ export function NavigationTabs() {
 
       {/* Main Content Area */}
       <main className="flex-1 min-w-0">
-        <div className="relative min-h-[400px]">
+        {/* Top Header with Page Title */}
+        <header className="sticky top-0 z-10 border-b border-white/5 bg-background/50 backdrop-blur-sm print:hidden">
+          <div className="px-8 py-6">
+            <h1 className="text-3xl font-light text-white tracking-tight">
+              {getPageTitle(activeTab)}
+            </h1>
+          </div>
+        </header>
+
+        {/* Content Area */}
+        <div className="relative min-h-[calc(100vh-120px)] p-8">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}
@@ -114,4 +145,3 @@ export function NavigationTabs() {
     </div>
   );
 }
-

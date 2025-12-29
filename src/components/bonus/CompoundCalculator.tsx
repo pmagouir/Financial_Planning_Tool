@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { ShinyCard } from '../ui/ShinyCard';
+import { FintechCard } from '../ui/FintechCard';
 import { MoneyInput } from '../ui/MoneyInput';
 import { RangeSlider } from '../ui/RangeSlider';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
@@ -83,7 +83,7 @@ export function CompoundCalculator() {
   return (
     <div className="space-y-8">
       {/* Quick Scenario Buttons */}
-      <ShinyCard variant="primary">
+      <FintechCard variant="primary">
         <h3 className="text-lg font-semibold text-shiny-text mb-4">Quick Scenarios</h3>
         <div className="flex flex-wrap gap-4">
           <button
@@ -117,11 +117,11 @@ export function CompoundCalculator() {
             Aggressive (9%)
           </button>
         </div>
-      </ShinyCard>
+      </FintechCard>
 
       {/* Inputs */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <ShinyCard variant="info">
+        <FintechCard variant="info">
           <h3 className="text-lg font-semibold text-shiny-text mb-4">Investment Inputs</h3>
           <div className="space-y-4">
             <MoneyInput
@@ -137,9 +137,9 @@ export function CompoundCalculator() {
               onChange={setMonthly}
             />
           </div>
-        </ShinyCard>
+        </FintechCard>
 
-        <ShinyCard variant="primary">
+        <FintechCard variant="primary">
           <h3 className="text-lg font-semibold text-shiny-text mb-4">Growth Parameters</h3>
           <div className="space-y-4">
             <RangeSlider
@@ -163,33 +163,33 @@ export function CompoundCalculator() {
               helperText={`Investment period: ${years} years`}
             />
           </div>
-        </ShinyCard>
+        </FintechCard>
       </div>
 
       {/* Results Summary */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <ShinyCard variant="info">
+        <FintechCard variant="info">
           <div className="text-sm text-shiny-muted mb-2">Total Principal</div>
           <div className="text-2xl font-bold text-shiny-text">
             {formatCurrency(finalPrincipal)}
           </div>
-        </ShinyCard>
-        <ShinyCard variant="success">
+        </FintechCard>
+        <FintechCard variant="success">
           <div className="text-sm text-shiny-muted mb-2">Interest Earned</div>
           <div className="text-2xl font-bold text-shiny-text">
             {formatCurrency(finalInterest)}
           </div>
-        </ShinyCard>
-        <ShinyCard variant="primary">
+        </FintechCard>
+        <FintechCard variant="primary">
           <div className="text-sm text-shiny-muted mb-2">Final Value</div>
           <div className="text-2xl font-bold text-shiny-text">
             {formatCurrency(finalTotal)}
           </div>
-        </ShinyCard>
+        </FintechCard>
       </div>
 
       {/* Stacked Area Chart */}
-      <ShinyCard variant="primary">
+      <FintechCard variant="primary">
         <h3 className="text-lg font-semibold text-shiny-text mb-4">Growth Over Time</h3>
         <p className="text-sm text-shiny-muted mb-6">
           Visual breakdown of principal contributions vs. interest earned
@@ -199,41 +199,43 @@ export function CompoundCalculator() {
             <AreaChart data={projectionData}>
               <defs>
                 <linearGradient id="colorPrincipal" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#4facfe" stopOpacity={0.8} />
-                  <stop offset="95%" stopColor="#4facfe" stopOpacity={0.3} />
+                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8} />
+                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
                 </linearGradient>
                 <linearGradient id="colorInterest" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#38ef7d" stopOpacity={0.8} />
-                  <stop offset="95%" stopColor="#38ef7d" stopOpacity={0.3} />
+                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.8} />
+                  <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e8ecef" />
+              <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
               <XAxis
                 dataKey="year"
-                tick={{ fill: '#7f8c8d' }}
-                tickLine={{ stroke: '#e8ecef' }}
-                label={{ value: 'Years', position: 'insideBottom', offset: -5, fill: '#7f8c8d' }}
+                tick={{ fill: '#94a3b8' }}
+                tickLine={{ stroke: '#334155' }}
+                label={{ value: 'Years', position: 'insideBottom', offset: -5, fill: '#94a3b8' }}
               />
               <YAxis
-                tick={{ fill: '#7f8c8d' }}
-                tickLine={{ stroke: '#e8ecef' }}
+                tick={{ fill: '#94a3b8' }}
+                tickLine={{ stroke: '#334155' }}
                 tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
-                label={{ value: 'Value ($)', angle: -90, position: 'insideLeft', fill: '#7f8c8d' }}
+                label={{ value: 'Value ($)', angle: -90, position: 'insideLeft', fill: '#94a3b8' }}
               />
               <Tooltip
-                formatter={(value: number) => formatCurrency(value)}
+                formatter={(value: number | undefined) => value !== undefined ? formatCurrency(value) : ''}
                 contentStyle={{
-                  backgroundColor: 'white',
-                  border: '1px solid #e8ecef',
+                  backgroundColor: '#1e293b',
+                  border: '1px solid #334155',
                   borderRadius: '8px',
+                  color: '#f8fafc',
                 }}
+                labelStyle={{ color: '#f8fafc' }}
               />
-              <Legend />
+              <Legend wrapperStyle={{ color: '#94a3b8' }} />
               <Area
                 type="monotone"
                 dataKey="principal"
                 stackId="1"
-                stroke="#4facfe"
+                stroke="#3b82f6"
                 fillOpacity={1}
                 fill="url(#colorPrincipal)"
                 name="Total Principal"
@@ -242,7 +244,7 @@ export function CompoundCalculator() {
                 type="monotone"
                 dataKey="interest"
                 stackId="1"
-                stroke="#38ef7d"
+                stroke="#10b981"
                 fillOpacity={1}
                 fill="url(#colorInterest)"
                 name="Interest Earned"
@@ -250,10 +252,10 @@ export function CompoundCalculator() {
             </AreaChart>
           </ResponsiveContainer>
         </div>
-      </ShinyCard>
+      </FintechCard>
 
       {/* Rule of 72 */}
-      <ShinyCard variant="info">
+      <FintechCard variant="info">
         <h3 className="text-lg font-semibold text-shiny-text mb-2">Rule of 72</h3>
         <p className="text-sm text-shiny-muted">
           Your investment will approximately double every{' '}
@@ -262,7 +264,7 @@ export function CompoundCalculator() {
           </span>{' '}
           at a {formatPercent(rate)} annual return rate.
         </p>
-      </ShinyCard>
+      </FintechCard>
     </div>
   );
 }

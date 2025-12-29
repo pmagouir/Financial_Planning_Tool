@@ -1,4 +1,4 @@
-import { ShinyCard } from '../ui/ShinyCard';
+import { FintechCard } from '../ui/FintechCard';
 
 interface BookResource {
   title: string;
@@ -75,7 +75,7 @@ export function Resources() {
       {/* Books Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {books.map((book) => (
-          <ShinyCard key={book.title} variant={book.variant} className="hover:shadow-shiny-xl transition-shadow h-full flex flex-col">
+          <FintechCard key={book.title} variant={book.variant} className="hover:shadow-shiny-xl transition-shadow h-full flex flex-col">
             <div className="flex flex-col flex-grow">
               {/* Book Title and Author */}
               <div className="mb-4">
@@ -117,7 +117,7 @@ export function Resources() {
                 </svg>
               </a>
             </div>
-          </ShinyCard>
+          </FintechCard>
         ))}
       </div>
     </div>

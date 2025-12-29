@@ -1,7 +1,8 @@
 import { useStore } from '@nanostores/react';
 import { inputs, results } from '../stores/financialPlan';
-import { ShinyCard } from './ui/ShinyCard';
+import { FintechCard } from './ui/FintechCard';
 import { MetricCard } from './ui/MetricCard';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 export function Step5_Summary() {
   const i = useStore(inputs);
@@ -85,26 +86,26 @@ export function Step5_Summary() {
       {/* Key Metrics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <MetricCard variant="info">
-          <div className="text-sm text-shiny-muted mb-2">Required Portfolio</div>
-          <div className="text-2xl font-bold text-shiny-text">
+          <div className="uppercase text-xs tracking-widest text-text-muted mb-2">Required Portfolio</div>
+          <div className="text-4xl font-light tracking-tighter text-white">
             {formatCurrency(res.requiredPortfolio)}
           </div>
         </MetricCard>
         <MetricCard variant="success">
-          <div className="text-sm text-shiny-muted mb-2">Projected Portfolio</div>
-          <div className="text-2xl font-bold text-shiny-text">
+          <div className="uppercase text-xs tracking-widest text-text-muted mb-2">Projected Portfolio</div>
+          <div className="text-4xl font-light tracking-tighter text-white">
             {formatCurrency(res.projectedPortfolio)}
           </div>
         </MetricCard>
         <MetricCard variant={res.gap >= 0 ? 'success' : 'warning'}>
-          <div className="text-sm text-shiny-muted mb-2">Gap</div>
-          <div className="text-2xl font-bold text-shiny-text">
+          <div className="uppercase text-xs tracking-widest text-text-muted mb-2">Gap</div>
+          <div className="text-4xl font-light tracking-tighter text-white">
             {formatCurrency(res.gap)}
           </div>
         </MetricCard>
         <MetricCard variant="primary">
-          <div className="text-sm text-shiny-muted mb-2">Withdrawal Rate</div>
-          <div className="text-2xl font-bold text-shiny-text">
+          <div className="uppercase text-xs tracking-widest text-text-muted mb-2">Withdrawal Rate</div>
+          <div className="text-4xl font-light tracking-tighter text-white">
             {formatPercent(res.withdrawalRate * 100)}
           </div>
         </MetricCard>
@@ -132,13 +133,83 @@ export function Step5_Summary() {
               What you'll need in {i.retYear} dollars
               <br />
               (Inflation multiplier: {res.inflationMult.toFixed(2)}x)
+              <br />
+              <span className="font-semibold">Average annual inflation: {i.inflation.toFixed(1)}%</span>
             </div>
           </div>
         </div>
       </MetricCard>
 
+      {/* Net Worth Projection Chart */}
+      <FintechCard variant="info">
+        <h3 className="text-lg font-semibold text-shiny-text mb-4">Net Worth Projection</h3>
+        <p className="text-sm text-shiny-muted mb-6">
+          Your projected net worth from today through retirement, showing how your portfolio grows during accumulation and changes during withdrawal.
+        </p>
+        <div className="h-96">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={res.netWorthData}>
+              <defs>
+                <filter id="glow-blue-networth">
+                  <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                  <feMerge>
+                    <feMergeNode in="coloredBlur"/>
+                    <feMergeNode in="SourceGraphic"/>
+                  </feMerge>
+                </filter>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+              <XAxis
+                dataKey="year"
+                tick={{ fill: '#94a3b8' }}
+                tickLine={{ stroke: '#334155' }}
+                label={{ value: 'Year', position: 'insideBottom', offset: -5, fill: '#94a3b8' }}
+              />
+              <YAxis
+                tick={{ fill: '#94a3b8' }}
+                tickLine={{ stroke: '#334155' }}
+                tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+                label={{ value: 'Net Worth', angle: -90, position: 'insideLeft', fill: '#94a3b8' }}
+              />
+              <Tooltip
+                formatter={(value: number | undefined) => value !== undefined ? formatCurrency(value) : ''}
+                labelFormatter={(label) => `Year: ${label}`}
+                contentStyle={{
+                  backgroundColor: '#1e293b',
+                  border: '1px solid #334155',
+                  borderRadius: '8px',
+                  color: '#f8fafc',
+                }}
+                labelStyle={{ color: '#f8fafc' }}
+              />
+              <Legend wrapperStyle={{ color: '#94a3b8' }} />
+              <Line
+                type="monotone"
+                dataKey="netWorth"
+                stroke="#3b82f6"
+                strokeWidth={3}
+                filter="url(#glow-blue-networth)"
+                dot={{ fill: '#3b82f6', r: 4 }}
+                activeDot={{ r: 6 }}
+                name="Net Worth"
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+        <div className="mt-4 flex gap-4 text-sm">
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 bg-blue-500 rounded"></div>
+            <span className="text-shiny-muted">Pre-Retirement (Accumulation)</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 bg-purple-500 rounded"></div>
+            <span className="text-shiny-muted">Retirement (Withdrawal)</span>
+          </div>
+        </div>
+      </FintechCard>
+
       {/* Summary Table 1: Current Monthly Spending */}
-      <ShinyCard variant="info">
+      <FintechCard variant="info">
         <h3 className="text-lg font-semibold text-shiny-text mb-4">Current Monthly Spending</h3>
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -347,10 +418,10 @@ export function Step5_Summary() {
             </tbody>
           </table>
         </div>
-      </ShinyCard>
+      </FintechCard>
 
       {/* Summary Table 2: Retirement Monthly Spending */}
-      <ShinyCard variant="primary">
+      <FintechCard variant="primary">
         <h3 className="text-lg font-semibold text-shiny-text mb-4">Retirement Monthly Spending</h3>
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -454,10 +525,10 @@ export function Step5_Summary() {
             </tbody>
           </table>
         </div>
-      </ShinyCard>
+      </FintechCard>
 
       {/* Summary Table 3: Retirement Assumptions */}
-      <ShinyCard variant="success">
+      <FintechCard variant="success">
         <h3 className="text-lg font-semibold text-shiny-text mb-4">Retirement Assumptions</h3>
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -513,10 +584,10 @@ export function Step5_Summary() {
             </tbody>
           </table>
         </div>
-      </ShinyCard>
+      </FintechCard>
 
       {/* Summary Table 4: Income Sources */}
-      <ShinyCard variant="warning">
+      <FintechCard variant="warning">
         <h3 className="text-lg font-semibold text-shiny-text mb-4">Retirement Income Sources</h3>
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -567,7 +638,7 @@ export function Step5_Summary() {
             </tbody>
           </table>
         </div>
-      </ShinyCard>
+      </FintechCard>
     </div>
   );
 }

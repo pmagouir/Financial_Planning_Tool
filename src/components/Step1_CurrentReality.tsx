@@ -1,10 +1,10 @@
 import { useStore } from '@nanostores/react';
 import { inputs, results } from '../stores/financialPlan';
-import { ShinyCard } from './ui/ShinyCard';
+import { FintechCard } from './ui/FintechCard';
 import { MetricCard } from './ui/MetricCard';
 import { MoneyInput } from './ui/MoneyInput';
 
-// Budget Ribbon Component - Matching R lines 1279-1306
+// Budget Ribbon Component - HUD Style Trading Ticker
 function BudgetRibbon() {
   const i = useStore(inputs);
   const res = useStore(results);
@@ -14,19 +14,19 @@ function BudgetRibbon() {
   const remaining = takeHome - totalAllocated;
   const remainingPercent = takeHome > 0 ? (remaining / takeHome) * 100 : 0;
 
-  // Determine ribbon styling - matching R logic
-  let ribbonClass = 'bg-shiny-primary';
-  let ribbonText = 'Balanced Budget';
+  // Determine health indicator color
+  let healthColor = '#10b981'; // Green (default: saving)
+  let healthGlow = 'rgba(16, 185, 129, 0.5)';
   
   if (totalAllocated > takeHome) {
-    ribbonClass = 'bg-shiny-warning';
-    ribbonText = 'OVERSPENDING';
-  } else if (remainingPercent > 10) {
-    ribbonClass = 'bg-shiny-success';
-    ribbonText = 'Great! Saving Aggressively';
+    healthColor = '#ef4444'; // Red (overspending)
+    healthGlow = 'rgba(239, 68, 68, 0.5)';
+  } else if (remainingPercent <= 10 && remainingPercent > 0) {
+    healthColor = '#f59e0b'; // Amber (balanced)
+    healthGlow = 'rgba(245, 158, 11, 0.5)';
   }
 
-  // Format currency
+  // Format currency with monospace
   const formatCurrency = (value: number): string => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -37,28 +37,64 @@ function BudgetRibbon() {
   };
 
   return (
-    <div className={`sticky top-0 z-50 ${ribbonClass} text-white shadow-shiny-card`}>
-      <div className="container mx-auto px-4 py-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-2xl font-bold">{ribbonText}</h2>
-            <p className="text-sm opacity-90 mt-1">
-              {totalAllocated > takeHome 
-                ? `Overspending by ${formatCurrency(totalAllocated - takeHome)}`
-                : remainingPercent > 10
-                ? `Saving ${remainingPercent.toFixed(1)}% of take-home pay`
-                : `Spending ${((totalAllocated / takeHome) * 100).toFixed(1)}% of take-home pay`}
-            </p>
+    <div className="fixed top-20 right-8 z-50 print:hidden">
+      <div className="fintech-card min-w-[320px]">
+        <div className="p-4">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-3 border-b border-white/10 pb-2">
+            <span className="text-xs uppercase tracking-widest text-text-muted font-medium">Budget Status</span>
+            <div 
+              className="w-2 h-2 rounded-full"
+              style={{
+                backgroundColor: healthColor,
+                boxShadow: `0 0 8px ${healthGlow}, 0 0 12px ${healthGlow}`,
+              }}
+            />
           </div>
-          <div className="text-right">
-            <div className="text-3xl font-bold">
-              {formatCurrency(totalAllocated)}
+          
+          {/* Main Metrics */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-text-secondary uppercase tracking-wider">Take Home</span>
+              <span className="font-mono text-sm font-semibold text-text-primary">
+                {formatCurrency(takeHome)}
+              </span>
             </div>
-            <div className="text-sm opacity-90">
-              of {formatCurrency(takeHome)}
+            
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-text-secondary uppercase tracking-wider">Allocated</span>
+              <span className="font-mono text-sm font-semibold text-text-primary">
+                {formatCurrency(totalAllocated)}
+              </span>
             </div>
-            <div className="text-xs opacity-75 mt-1">
-              Take Home: {formatCurrency(takeHome)} | Allocated: {formatCurrency(totalAllocated)}
+            
+            <div className="flex items-center justify-between pt-2 border-t border-white/10">
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-text-secondary uppercase tracking-wider">Remaining</span>
+                <div 
+                  className="w-1.5 h-1.5 rounded-full"
+                  style={{
+                    backgroundColor: healthColor,
+                    boxShadow: `0 0 6px ${healthGlow}`,
+                  }}
+                />
+              </div>
+              <span 
+                className="font-mono text-base font-bold"
+                style={{ color: healthColor }}
+              >
+                {formatCurrency(remaining)}
+              </span>
+            </div>
+            
+            {/* Percentage */}
+            <div className="pt-1">
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-text-muted uppercase tracking-wider">Usage</span>
+                <span className="font-mono text-xs font-medium text-text-secondary">
+                  {takeHome > 0 ? ((totalAllocated / takeHome) * 100).toFixed(1) : '0.0'}%
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -94,42 +130,42 @@ export function Step1_CurrentReality() {
 
   return (
     <div className="space-y-8">
-      {/* Sticky Budget Ribbon */}
+      {/* Floating Budget HUD */}
       <BudgetRibbon />
 
       {/* Percentage Breakdown */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <MetricCard variant="info">
-          <div className="text-sm text-shiny-muted mb-2">Fixed Costs</div>
-          <div className="text-3xl font-bold text-shiny-text mb-1">
+          <div className="uppercase text-xs tracking-widest text-text-muted mb-2">Fixed Costs</div>
+          <div className="text-4xl font-light tracking-tighter text-white mb-1">
             {fixedPercent.toFixed(1)}%
           </div>
-          <div className="text-xs text-shiny-muted">
+          <div className="text-xs text-text-muted">
             {formatCurrency(res.currentFixed)} of {formatCurrency(takeHome)}
           </div>
         </MetricCard>
         <MetricCard variant="success">
-          <div className="text-sm text-shiny-muted mb-2">Saving/Investing</div>
-          <div className="text-3xl font-bold text-shiny-text mb-1">
+          <div className="uppercase text-xs tracking-widest text-text-muted mb-2">Saving/Investing</div>
+          <div className="text-4xl font-light tracking-tighter text-white mb-1">
             {investPercent.toFixed(1)}%
           </div>
-          <div className="text-xs text-shiny-muted">
+          <div className="text-xs text-text-muted">
             {formatCurrency(res.currentInvest)} of {formatCurrency(takeHome)}
           </div>
         </MetricCard>
         <MetricCard variant="primary">
-          <div className="text-sm text-shiny-muted mb-2">Guilt-Free Spending</div>
-          <div className="text-3xl font-bold text-shiny-text mb-1">
+          <div className="uppercase text-xs tracking-widest text-text-muted mb-2">Guilt-Free Spending</div>
+          <div className="text-4xl font-light tracking-tighter text-white mb-1">
             {guiltFreePercent.toFixed(1)}%
           </div>
-          <div className="text-xs text-shiny-muted">
+          <div className="text-xs text-text-muted">
             {formatCurrency(res.currentGuiltFree)} of {formatCurrency(takeHome)}
           </div>
         </MetricCard>
       </div>
 
       {/* Monthly Take-Home Input */}
-      <ShinyCard variant="info">
+      <FintechCard variant="info">
         <h3 className="text-lg font-semibold text-shiny-text mb-4">Monthly Take-Home Pay</h3>
         <MoneyInput
           label="Monthly Take-Home Income"
@@ -137,12 +173,12 @@ export function Step1_CurrentReality() {
           value={i.takeHomePay}
           onChange={(value) => inputs.setKey('takeHomePay', value)}
         />
-      </ShinyCard>
+      </FintechCard>
 
       {/* Three Column Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Fixed Costs Column - Collapsible */}
-        <ShinyCard variant="info">
+        <FintechCard variant="info">
           <details className="group">
             <summary className="cursor-pointer">
               <div className="flex items-center justify-between mb-4">
@@ -268,10 +304,10 @@ export function Step1_CurrentReality() {
               </details>
             </div>
           </details>
-        </ShinyCard>
+        </FintechCard>
 
         {/* Investments Column - Collapsible */}
-        <ShinyCard variant="success">
+        <FintechCard variant="success">
           <details className="group">
             <summary className="cursor-pointer">
               <div className="flex items-center justify-between mb-4">
@@ -334,10 +370,10 @@ export function Step1_CurrentReality() {
               />
             </div>
           </details>
-        </ShinyCard>
+        </FintechCard>
 
         {/* Guilt-Free Spending Column - Collapsible */}
-        <ShinyCard variant="primary">
+        <FintechCard variant="primary">
           <details className="group">
             <summary className="cursor-pointer">
               <div className="flex items-center justify-between mb-4">
@@ -407,13 +443,18 @@ export function Step1_CurrentReality() {
                 onChange={(value) => inputs.setKey('homeImp', value)}
               />
               <MoneyInput
+                label="Subscriptions"
+                value={i.subscriptions}
+                onChange={(value) => inputs.setKey('subscriptions', value)}
+              />
+              <MoneyInput
                 label="Miscellaneous"
                 value={i.misc}
                 onChange={(value) => inputs.setKey('misc', value)}
               />
             </div>
           </details>
-        </ShinyCard>
+        </FintechCard>
       </div>
     </div>
   );

@@ -47,10 +47,10 @@ export function RangeSlider({
     <div className={`w-full ${className || ''}`}>
       {label && (
         <div className="flex items-center justify-between mb-2">
-          <label className="block text-sm font-medium text-slate-700">
+          <label className="block text-sm font-medium text-text-primary">
             {label}
           </label>
-          <span className="text-sm font-semibold text-slate-900 bg-slate-100 px-2.5 py-1 rounded-md">
+          <span className="text-sm font-semibold text-text-primary bg-background-subtle/50 px-2.5 py-1 rounded-md font-mono">
             {formatDisplay(displayValue)}
           </span>
         </div>
@@ -64,11 +64,11 @@ export function RangeSlider({
           value={displayValue}
           onChange={handleChange}
           className="
-            w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer
+            w-full h-2 bg-background-subtle/30 rounded-lg appearance-none cursor-pointer
             [&::-webkit-slider-thumb]:appearance-none
             [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5
             [&::-webkit-slider-thumb]:rounded-full
-            [&::-webkit-slider-thumb]:bg-blue-500
+            [&::-webkit-slider-thumb]:bg-accent-primary
             [&::-webkit-slider-thumb]:shadow-md
             [&::-webkit-slider-thumb]:cursor-pointer
             [&::-webkit-slider-thumb]:transition-all
@@ -76,23 +76,23 @@ export function RangeSlider({
             [&::-webkit-slider-thumb]:hover:scale-110
             [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5
             [&::-moz-range-thumb]:rounded-full
-            [&::-moz-range-thumb]:bg-blue-500
+            [&::-moz-range-thumb]:bg-accent-primary
             [&::-moz-range-thumb]:border-0
             [&::-moz-range-thumb]:shadow-md
             [&::-moz-range-thumb]:cursor-pointer
             [&::-moz-range-thumb]:transition-all
             [&::-moz-range-thumb]:hover:bg-blue-600
             [&::-moz-range-thumb]:hover:scale-110
-            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+            focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-offset-2 focus:ring-offset-background
           "
           style={{
-            background: `linear-gradient(to right, rgb(59, 130, 246) 0%, rgb(59, 130, 246) ${percentage}%, rgb(226, 232, 240) ${percentage}%, rgb(226, 232, 240) 100%)`,
+            background: `linear-gradient(to right, rgb(59, 130, 246) 0%, rgb(59, 130, 246) ${percentage}%, rgba(51, 65, 85, 0.3) ${percentage}%, rgba(51, 65, 85, 0.3) 100%)`,
           }}
           {...props}
         />
       </div>
       {helperText && (
-        <p className="mt-1.5 text-sm text-slate-500">{helperText}</p>
+        <p className="mt-1.5 text-sm text-text-muted">{helperText}</p>
       )}
     </div>
   );

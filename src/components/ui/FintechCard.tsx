@@ -1,13 +1,13 @@
 import { clsx } from 'clsx';
 import type { ReactNode } from 'react';
 
-interface MetricCardProps {
+interface FintechCardProps {
   children: ReactNode;
   variant?: 'primary' | 'success' | 'warning' | 'info';
   className?: string;
 }
 
-export function MetricCard({ children, variant, className }: MetricCardProps) {
+export function FintechCard({ children, variant, className }: FintechCardProps) {
   return (
     <div
       className={clsx(
@@ -21,3 +21,4 @@ export function MetricCard({ children, variant, className }: MetricCardProps) {
     </div>
   );
 }
+

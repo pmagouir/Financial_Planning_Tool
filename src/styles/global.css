@@ -1,64 +1,70 @@
 @import "tailwindcss";
 
-/* Tailwind v4 Custom Theme Configuration */
-@theme {
-  /* Colors from app.R lines 17-27 */
-  --color-shiny-text: #2c3e50;
-  --color-shiny-muted: #7f8c8d;
-  --color-shiny-border: #e8ecef;
-  --color-shiny-surface: #f8f9fa;
-
-  /* Gradient backgrounds from app.R lines 16-20 */
-  --gradient-shiny-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  --gradient-shiny-success: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-  --gradient-shiny-warning: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-  --gradient-shiny-info: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-  --gradient-shiny-neutral: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
-
-  /* Shadows from app.R */
-  --shadow-shiny-card: 0 10px 40px rgba(0,0,0,0.12);
-  --shadow-shiny-hover: 0 20px 60px rgba(0,0,0,0.15);
-  --shadow-shiny-glass: 0 5px 20px rgba(0,0,0,0.08);
-}
-
-/* Gradient utility classes for Tailwind v4 */
-.bg-gradient-primary,
-.bg-shiny-primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-
-.bg-gradient-success,
-.bg-shiny-success {
-  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-}
-
-.bg-gradient-warning,
-.bg-shiny-warning {
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-}
-
-.bg-gradient-info,
-.bg-shiny-info {
-  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-}
-
-.bg-shiny-neutral {
-  background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
-}
-
-@keyframes fade-in {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+@layer base {
+  body {
+    background-color: #0f172a;
+    color: #f8fafc;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* Subtle mesh gradient background */
+    background-image: 
+      radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.05) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.05) 0px, transparent 50%);
   }
 }
 
-.animate-fade-in {
-  animation: fade-in 0.3s ease-in-out;
+@layer components {
+  /* The "Glass" Card Style */
+  .fintech-card {
+    background-color: rgba(30, 41, 59, 0.5);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 0.75rem;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+    transition: all 0.3s;
+  }
+  .fintech-card:hover {
+    border-color: rgba(59, 130, 246, 0.3);
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.1);
+    transform: translateY(-1px);
+  }
+
+  /* The "Terminal" Input Style */
+  .fintech-input {
+    background-color: rgba(51, 65, 85, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.5rem;
+    padding: 0.5rem 1rem;
+    color: #f8fafc;
+    transition: all 0.2s;
+    outline: none;
+  }
+  .fintech-input::placeholder {
+    color: #64748b;
+  }
+  .fintech-input:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.5);
+    background-color: rgba(51, 65, 85, 0.5);
+  }
+  
+  /* The "Neon" Button */
+  .fintech-btn {
+    background-color: #3b82f6;
+    color: white;
+    font-weight: 600;
+    border-radius: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.2);
+    transition: all 0.2s;
+  }
+  .fintech-btn:hover {
+    background-color: #2563eb;
+    box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.4);
+  }
+  .fintech-btn:active {
+    transform: scale(0.95);
+  }
 }
 
 /* Print Styles */

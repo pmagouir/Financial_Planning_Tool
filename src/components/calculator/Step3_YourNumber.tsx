@@ -1,11 +1,10 @@
 import { useStore } from '@nanostores/react';
 import { inputs, results } from '../../stores/financialPlan';
-import { ShinyCard } from '../ui/ShinyCard';
+import { FintechCard } from '../ui/FintechCard';
 import { MetricCard } from '../ui/MetricCard';
 import { MoneyInput } from '../ui/MoneyInput';
 import { RangeSlider } from '../ui/RangeSlider';
 import { useMemo } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 const CURRENT_YEAR = new Date().getFullYear();
 
@@ -27,38 +26,6 @@ export function Step3_YourNumber() {
     return monthlyNeedToday * res.inflationMult;
   }, [monthlyNeedToday, res.inflationMult]);
 
-  // Generate inflation impact data for chart
-  const inflationData = useMemo(() => {
-    const data = [];
-    const yearsToRetirement = res.yearsToRet;
-    const inflationRate = i.inflation / 100;
-    
-    for (let year = 0; year <= yearsToRetirement; year += Math.max(1, Math.floor(yearsToRetirement / 20))) {
-      const multiplier = Math.pow(1 + inflationRate, year);
-      const futureMonthly = monthlyNeedToday * multiplier;
-      data.push({
-        year: CURRENT_YEAR + year,
-        value: futureMonthly,
-        label: `Year ${year}`,
-      });
-    }
-    
-    // Always include the retirement year
-    if (yearsToRetirement > 0) {
-      const finalMultiplier = Math.pow(1 + inflationRate, yearsToRetirement);
-      const finalMonthly = monthlyNeedToday * finalMultiplier;
-      const lastPoint = data[data.length - 1];
-      if (lastPoint.year !== i.retYear) {
-        data.push({
-          year: i.retYear,
-          value: finalMonthly,
-          label: `Retirement`,
-        });
-      }
-    }
-    
-    return data;
-  }, [i.retYear, i.inflation, monthlyNeedToday, res.yearsToRet]);
 
   // Get withdrawal rate explanation
   const withdrawalRateExplanation = useMemo(() => {
@@ -95,123 +62,49 @@ export function Step3_YourNumber() {
   return (
     <div className="space-y-8">
       {!hasRetirementData && (
-        <ShinyCard variant="info">
+        <FintechCard variant="info">
           <div className="p-6">
             <p className="text-shiny-text">
               Please complete Steps 1 and 2 first to see your retirement number calculations.
             </p>
           </div>
-        </ShinyCard>
+        </FintechCard>
       )}
       
       {hasRetirementData && (
         <>
-      {/* Withdrawal Rate Card */}
-      <ShinyCard variant="info">
-        <div className="p-6">
-          <div className="flex items-start justify-between">
-            <div>
-              <h3 className="text-lg font-semibold text-shiny-text mb-2">Withdrawal Rate</h3>
-              <p className="text-sm text-shiny-muted mb-4">
-                Based on the Trinity Study, this rate determines how much you can safely withdraw annually from your portfolio.
-              </p>
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 border border-blue-200 rounded-md">
-                <span className="text-sm text-shiny-muted">Your Rate:</span>
-                <span className="text-2xl font-bold text-blue-600">{formatPercent(res.withdrawalRate)}</span>
-              </div>
-              <p className="text-xs text-shiny-muted mt-3 italic">
-                {withdrawalRateExplanation}
-              </p>
-            </div>
-            <div className="text-right">
-              <div className="text-sm text-shiny-muted mb-1">Retirement Duration</div>
-              <div className="text-2xl font-bold text-shiny-text">{i.retDuration} years</div>
-            </div>
-          </div>
-        </div>
-      </ShinyCard>
 
       {/* Monthly Need Metric Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <MetricCard variant="success">
-          <div className="text-sm text-shiny-muted mb-2">Monthly Need (Today's Dollars)</div>
-          <div className="text-4xl font-bold text-shiny-text mb-2">
+          <div className="uppercase text-xs tracking-widest text-text-muted mb-2">Monthly Need (Today's Dollars)</div>
+          <div className="text-4xl font-light tracking-tighter text-white mb-2">
             {formatCurrency(monthlyNeedToday)}
           </div>
-          <div className="text-xs text-shiny-muted">
+          <div className="text-xs text-text-muted">
             Based on your retirement spending design
           </div>
         </MetricCard>
 
         <MetricCard variant="primary">
-          <div className="text-sm text-shiny-muted mb-2">Monthly Need (Future Dollars)</div>
-          <div className="text-4xl font-bold text-shiny-text mb-2">
+          <div className="uppercase text-xs tracking-widest text-text-muted mb-2">Monthly Need (Future Dollars)</div>
+          <div className="text-4xl font-light tracking-tighter text-white mb-2">
             {formatCurrency(monthlyNeedFuture)}
           </div>
-          <div className="text-xs text-shiny-muted">
+          <div className="text-xs text-text-muted">
             Adjusted for {res.yearsToRet} years of {formatPercent(i.inflation / 100)} inflation
           </div>
         </MetricCard>
       </div>
 
-      {/* Inflation Impact Chart */}
-      <ShinyCard variant="info">
-        <div className="p-6">
-          <h3 className="text-lg font-semibold text-shiny-text mb-4">Inflation Impact Over Time</h3>
-          <p className="text-sm text-shiny-muted mb-6">
-            See how your monthly retirement need grows due to inflation from today until your retirement year.
-          </p>
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={inflationData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                <XAxis 
-                  dataKey="year" 
-                  tick={{ fill: '#64748b' }}
-                  tickLine={{ stroke: '#cbd5e1' }}
-                  label={{ value: 'Year', position: 'insideBottom', offset: -5, fill: '#64748b' }}
-                />
-                <YAxis 
-                  tick={{ fill: '#64748b' }}
-                  tickLine={{ stroke: '#cbd5e1' }}
-                  tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
-                  label={{ value: 'Monthly Need', angle: -90, position: 'insideLeft', fill: '#64748b' }}
-                />
-                <Tooltip 
-                  formatter={(value: number) => formatCurrency(value)}
-                  labelFormatter={(label) => `Year: ${label}`}
-                  contentStyle={{
-                    backgroundColor: 'white',
-                    border: '1px solid #e2e8f0',
-                    borderRadius: '6px',
-                  }}
-                />
-                <Legend />
-                <Line 
-                  type="monotone" 
-                  dataKey="value" 
-                  stroke="#8b5cf6" 
-                  strokeWidth={3}
-                  dot={{ fill: '#8b5cf6', r: 4 }}
-                  activeDot={{ r: 6 }}
-                  name="Monthly Need"
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-      </ShinyCard>
-
       {/* Inputs Section */}
-      <ShinyCard variant="info">
+      <FintechCard variant="info">
         <div className="p-6">
           <h3 className="text-lg font-semibold text-shiny-text mb-6">Retirement Parameters</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-shiny-text mb-2">
-                Retirement Year
-              </label>
               <RangeSlider
+                label="Retirement Year"
                 value={i.retYear}
                 onChange={(value) => inputs.setKey('retYear', Math.round(value))}
                 min={CURRENT_YEAR}
@@ -223,10 +116,8 @@ export function Step3_YourNumber() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-shiny-text mb-2">
-                Retirement Duration (Years)
-              </label>
               <RangeSlider
+                label="Retirement Duration (Years)"
                 value={i.retDuration}
                 onChange={(value) => inputs.setKey('retDuration', Math.round(value))}
                 min={10}
@@ -263,12 +154,49 @@ export function Step3_YourNumber() {
                 onChange={(value) => inputs.setKey('otherIncome', value)}
               />
             </div>
+
+            <div>
+              <label className="block text-sm font-medium text-text-primary mb-2">
+                Annual Inflation Rate
+              </label>
+              <RangeSlider
+                label="Annual Inflation Rate"
+                value={i.inflation}
+                onChange={(value) => inputs.setKey('inflation', value)}
+                min={0}
+                max={8}
+                step={0.1}
+                formatValue={(val) => `${val.toFixed(1)}%`}
+                helperText="Average annual inflation rate (default: 3%)"
+              />
+            </div>
+          </div>
+          
+          {/* Withdrawal Rate Slider */}
+          <div className="mt-6 pt-6 border-t border-white/10">
+            <RangeSlider
+              label="Withdrawal Rate"
+              value={i.withdrawalRate > 0 ? i.withdrawalRate : res.withdrawalRate * 100}
+              onChange={(value) => inputs.setKey('withdrawalRate', value)}
+              min={2.5}
+              max={6.0}
+              step={0.1}
+              formatValue={(val) => `${val.toFixed(1)}%`}
+              helperText={i.withdrawalRate > 0 
+                ? "Custom withdrawal rate (overrides auto-calculation)"
+                : withdrawalRateExplanation}
+            />
+            {i.withdrawalRate === 0 && (
+              <p className="mt-2 text-xs text-text-muted italic">
+                Currently using auto-calculated rate based on retirement duration. Adjust slider to set custom rate.
+              </p>
+            )}
           </div>
         </div>
-      </ShinyCard>
+      </FintechCard>
 
       {/* Required Portfolio Summary */}
-      <ShinyCard variant="success">
+      <FintechCard variant="success">
         <div className="p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -287,7 +215,7 @@ export function Step3_YourNumber() {
             </div>
           </div>
         </div>
-      </ShinyCard>
+      </FintechCard>
         </>
       )}
     </div>

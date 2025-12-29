@@ -1,6 +1,6 @@
 import { useStore } from '@nanostores/react';
 import { inputs, results } from '../stores/financialPlan';
-import { ShinyCard } from './ui/ShinyCard';
+import { FintechCard } from './ui/FintechCard';
 import { MoneyInput } from './ui/MoneyInput';
 import { RangeSlider } from './ui/RangeSlider';
 import { useMemo } from 'react';
@@ -28,8 +28,9 @@ export function Step4_InvestmentPath() {
     const yearsToRetirement = res.yearsToRet;
     const r = i.annualReturn / 100;
     const rMonthly = r / 12;
-    const months = yearsToRetirement * 12;
     const contribIncreaseRate = i.contribIncrease / 100 / 12;
+    const contribStopYear = i.contribStopYear > 0 ? i.contribStopYear : i.retYear;
+    const yearsContributing = Math.max(0, Math.min(yearsToRetirement, contribStopYear - CURRENT_YEAR));
 
     // Add current year point
     data.push({
@@ -46,15 +47,16 @@ export function Step4_InvestmentPath() {
       // Portfolio with contributions (compound principal + contributions with increase)
       let portfolio = i.currentPortfolio * Math.pow(1 + r, yearOffset);
       
-      // Add monthly contributions with increase and compounding
-      if (rMonthly > 0 && totalMonths > 0) {
-        for (let month = 0; month < totalMonths; month++) {
+      // Add monthly contributions with increase and compounding (only up to stop year)
+      const monthsContributing = Math.min(totalMonths, yearsContributing * 12);
+      if (rMonthly > 0 && monthsContributing > 0) {
+        for (let month = 0; month < monthsContributing; month++) {
           const monthlyContrib = i.monthlyContrib * Math.pow(1 + contribIncreaseRate, month);
           const monthsRemaining = totalMonths - month;
           portfolio += monthlyContrib * Math.pow(1 + rMonthly, monthsRemaining);
         }
-      } else if (totalMonths > 0) {
-        for (let month = 0; month < totalMonths; month++) {
+      } else if (monthsContributing > 0) {
+        for (let month = 0; month < monthsContributing; month++) {
           portfolio += i.monthlyContrib * Math.pow(1 + contribIncreaseRate, month);
         }
       }
@@ -72,6 +74,7 @@ export function Step4_InvestmentPath() {
     i.monthlyContrib,
     i.annualReturn,
     i.contribIncrease,
+    i.contribStopYear,
     i.retYear,
     res.requiredPortfolio,
     res.yearsToRet,
@@ -81,7 +84,7 @@ export function Step4_InvestmentPath() {
     <div className="space-y-8">
       {/* Input Section */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <ShinyCard variant="info">
+        <FintechCard variant="info">
           <h3 className="text-lg font-semibold text-shiny-text mb-4">Current Portfolio</h3>
           <MoneyInput
             label="Current Portfolio Value"
@@ -89,9 +92,9 @@ export function Step4_InvestmentPath() {
             value={i.currentPortfolio}
             onChange={(value) => inputs.setKey('currentPortfolio', value)}
           />
-        </ShinyCard>
+        </FintechCard>
 
-        <ShinyCard variant="success">
+        <FintechCard variant="success">
           <h3 className="text-lg font-semibold text-shiny-text mb-4">Monthly Contribution</h3>
           <MoneyInput
             label="Monthly Investment Contribution"
@@ -111,11 +114,11 @@ export function Step4_InvestmentPath() {
               helperText="Expected annual increase in contributions"
             />
           </div>
-        </ShinyCard>
+        </FintechCard>
       </div>
 
       {/* Annual Return Selection */}
-      <ShinyCard variant="primary">
+      <FintechCard variant="primary">
         <h3 className="text-lg font-semibold text-shiny-text mb-4">Expected Annual Return</h3>
         <RangeSlider
           label="Annual Return Rate"
@@ -159,10 +162,35 @@ export function Step4_InvestmentPath() {
             Aggressive (9%)
           </button>
         </div>
-      </ShinyCard>
+      </FintechCard>
+
+      {/* Contribution Stop Year */}
+      <FintechCard variant="info">
+        <h3 className="text-lg font-semibold text-shiny-text mb-4">Contribution Timeline</h3>
+        <RangeSlider
+          label="Stop Contributions Year"
+          value={i.contribStopYear > 0 ? i.contribStopYear : i.retYear}
+          onChange={(value) => inputs.setKey('contribStopYear', Math.round(value))}
+          min={CURRENT_YEAR}
+          max={i.retYear}
+          step={1}
+          formatValue={(val) => {
+            const year = Math.round(val);
+            if (year >= i.retYear) return 'Never stop (retirement)';
+            return year.toString();
+          }}
+          helperText="When you plan to stop making contributions (default: retirement year)"
+        />
+        <p className="mt-2 text-sm text-shiny-muted">
+          {i.contribStopYear > 0 && i.contribStopYear < i.retYear
+            ? `Contributions will stop in ${i.contribStopYear}, ${i.retYear - i.contribStopYear} years before retirement.`
+            : 'Contributions will continue until retirement.'}
+        </p>
+      </FintechCard>
 
       {/* Dynamic Gap Panel - Replicating R lines 1447-1524 */}
-      {res.gap < 0 && (
+      {/* Only show if user has entered data */}
+      {i.currentPortfolio > 0 && i.monthlyContrib > 0 && res.gap < 0 && (
         <div className="rounded-2xl shadow-shiny-card bg-shiny-warning text-white overflow-hidden">
           <div className="p-8">
             <h2 className="text-3xl font-bold mb-4">Action Required</h2>
@@ -184,7 +212,7 @@ export function Step4_InvestmentPath() {
       )}
 
       {/* On Track Panel */}
-      {res.gap >= 0 && (
+      {i.currentPortfolio > 0 && i.monthlyContrib > 0 && res.gap >= 0 && (
         <div className="rounded-2xl shadow-shiny-card bg-shiny-success text-white overflow-hidden">
           <div className="p-8">
             <h2 className="text-3xl font-bold mb-4">On Track! 🎉</h2>
@@ -197,7 +225,7 @@ export function Step4_InvestmentPath() {
       )}
 
       {/* Projection Chart - Replicating R line 1527 */}
-      <ShinyCard variant="info">
+      <FintechCard variant="info">
         <h3 className="text-lg font-semibold text-shiny-text mb-4">Portfolio Projection</h3>
         <p className="text-sm text-shiny-muted mb-6">
           Your projected portfolio growth over time vs. your retirement target
@@ -207,45 +235,55 @@ export function Step4_InvestmentPath() {
             <ComposedChart data={projectionData}>
               <defs>
                 <linearGradient id="colorPortfolio" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#764ba2" stopOpacity={0.8} />
-                  <stop offset="95%" stopColor="#764ba2" stopOpacity={0.1} />
+                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8} />
+                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
                 </linearGradient>
+                <filter id="glow-blue-portfolio">
+                  <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                  <feMerge>
+                    <feMergeNode in="coloredBlur"/>
+                    <feMergeNode in="SourceGraphic"/>
+                  </feMerge>
+                </filter>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e8ecef" />
+              <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
               <XAxis
                 dataKey="year"
-                tick={{ fill: '#7f8c8d' }}
-                tickLine={{ stroke: '#e8ecef' }}
+                tick={{ fill: '#94a3b8' }}
+                tickLine={{ stroke: '#334155' }}
               />
               <YAxis
-                tick={{ fill: '#7f8c8d' }}
-                tickLine={{ stroke: '#e8ecef' }}
+                tick={{ fill: '#94a3b8' }}
+                tickLine={{ stroke: '#334155' }}
                 tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
               />
               <Tooltip
-                formatter={(value: number) => formatCurrency(value)}
+                formatter={(value: number | undefined) => value !== undefined ? formatCurrency(value) : ''}
                 contentStyle={{
-                  backgroundColor: 'white',
-                  border: '1px solid #e8ecef',
+                  backgroundColor: '#1e293b',
+                  border: '1px solid #334155',
                   borderRadius: '8px',
+                  color: '#f8fafc',
                 }}
+                labelStyle={{ color: '#f8fafc' }}
               />
-              <Legend />
-              {/* Area/Line 1: Portfolio (Solid Purple) */}
+              <Legend wrapperStyle={{ color: '#94a3b8' }} />
+              {/* Area/Line 1: Portfolio (Electric Blue) */}
               <Area
                 type="monotone"
                 dataKey="portfolio"
-                stroke="#764ba2"
+                stroke="#3b82f6"
                 strokeWidth={3}
                 fillOpacity={0.3}
                 fill="url(#colorPortfolio)"
+                filter="url(#glow-blue-portfolio)"
                 name="Portfolio"
               />
               {/* Line 2: Target (Dashed Red) */}
               <Line
                 type="monotone"
                 dataKey="target"
-                stroke="#f5576c"
+                stroke="#ef4444"
                 strokeWidth={2}
                 strokeDasharray="10 5"
                 dot={false}
@@ -254,7 +292,7 @@ export function Step4_InvestmentPath() {
             </ComposedChart>
           </ResponsiveContainer>
         </div>
-      </ShinyCard>
+      </FintechCard>
     </div>
   );
 }

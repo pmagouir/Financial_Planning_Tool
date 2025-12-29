@@ -4,26 +4,37 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Extracted from app.R lines 17-27
-        shiny: {
-          text: '#2c3e50',      // --text-primary
-          muted: '#7f8c8d',     // --text-secondary
-          border: '#e8ecef',    // --surface-border
-          surface: '#f8f9fa',   // --surface-light
+        // The "Fintech" Dark Palette
+        background: {
+          DEFAULT: '#0f172a', // Slate 900 (Main BG)
+          paper: '#1e293b',   // Slate 800 (Card BG)
+          subtle: '#334155',  // Slate 700 (Borders/Input BG)
+        },
+        text: {
+          primary: '#f8fafc',   // Slate 50
+          secondary: '#94a3b8', // Slate 400
+          muted: '#64748b',     // Slate 500
+        },
+        // "Electric" Data Colors
+        accent: {
+          primary: '#3b82f6',   // Electric Blue (Active/Primary)
+          success: '#10b981',   // Emerald Green (Growth/Positive)
+          warning: '#f59e0b',   // Amber (Alerts)
+          danger: '#ef4444',    // Red (Shortfall/Negative)
+          glow: 'rgba(59, 130, 246, 0.5)' // Glow effect color
         }
       },
-      backgroundImage: {
-        // Exact gradients from app.R lines 16-20
-        'shiny-primary': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        'shiny-success': 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)',
-        'shiny-warning': 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-        'shiny-info': 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-        'shiny-neutral': 'linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%)',
+      fontFamily: {
+        sans: ['Inter', 'system-ui', 'sans-serif'], // Clean, modern sans
       },
       boxShadow: {
-        'shiny-card': '0 10px 40px rgba(0,0,0,0.12)', // --shadow-lg
-        'shiny-hover': '0 20px 60px rgba(0,0,0,0.15)', // --shadow-xl
-        'shiny-glass': '0 5px 20px rgba(0,0,0,0.08)',  // --shadow-md
+        'glow-sm': '0 0 10px rgba(59, 130, 246, 0.1)',
+        'glow-md': '0 0 20px rgba(59, 130, 246, 0.15)',
+        'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.3)', // For glassmorphism
+      },
+      backgroundImage: {
+        'gradient-dark': 'linear-gradient(180deg, rgba(30, 41, 59, 0) 0%, rgba(30, 41, 59, 1) 100%)',
+        'gradient-glow': 'radial-gradient(circle at center, rgba(59, 130, 246, 0.15) 0%, transparent 70%)',
       }
     },
   },

@@ -1,6 +1,6 @@
 import { useStore } from '@nanostores/react';
 import { inputs, results } from '../stores/financialPlan';
-import { ShinyCard } from './ui/ShinyCard';
+import { FintechCard } from './ui/FintechCard';
 import { RangeSlider } from './ui/RangeSlider';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
@@ -125,7 +125,7 @@ export function Step2_RetirementDesign() {
   return (
     <div className="space-y-8">
       {/* Comparison Chart - Replicating R line 1421 */}
-      <ShinyCard variant="primary">
+      <FintechCard variant="primary">
         <h3 className="text-lg font-semibold text-shiny-text mb-4">Spending Comparison</h3>
         <p className="text-sm text-shiny-muted mb-6">
           Compare your current monthly spending vs. your planned retirement spending
@@ -133,35 +133,47 @@ export function Step2_RetirementDesign() {
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e8ecef" />
+              <defs>
+                <filter id="glow-blue">
+                  <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                  <feMerge>
+                    <feMergeNode in="coloredBlur"/>
+                    <feMergeNode in="SourceGraphic"/>
+                  </feMerge>
+                </filter>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
               <XAxis 
                 dataKey="name" 
-                tick={{ fill: '#7f8c8d' }}
-                tickLine={{ stroke: '#e8ecef' }}
+                tick={{ fill: '#94a3b8' }}
+                tickLine={{ stroke: '#334155' }}
               />
               <YAxis 
-                tick={{ fill: '#7f8c8d' }}
-                tickLine={{ stroke: '#e8ecef' }}
+                tick={{ fill: '#94a3b8' }}
+                tickLine={{ stroke: '#334155' }}
                 tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
               />
               <Tooltip 
-                formatter={(value: number) => formatCurrency(value)}
+                formatter={(value: number | undefined) => value !== undefined ? formatCurrency(value) : ''}
                 contentStyle={{
-                  backgroundColor: 'white',
-                  border: '1px solid #e8ecef',
+                  backgroundColor: '#1e293b',
+                  border: '1px solid #334155',
                   borderRadius: '8px',
+                  color: '#f8fafc',
                 }}
+                labelStyle={{ color: '#f8fafc' }}
               />
-              <Legend />
+              <Legend wrapperStyle={{ color: '#94a3b8' }} />
               <Bar 
                 dataKey="Current" 
-                fill="#764ba2"
+                fill="#3b82f6"
+                filter="url(#glow-blue)"
                 radius={[8, 8, 0, 0]}
                 name="Current Spending"
               />
               <Bar 
                 dataKey="Retirement" 
-                fill="#38ef7d"
+                fill="#10b981"
                 radius={[8, 8, 0, 0]}
                 name="Retirement Spending"
               />
@@ -182,10 +194,10 @@ export function Step2_RetirementDesign() {
             </div>
           </div>
         </div>
-      </ShinyCard>
+      </FintechCard>
 
       {/* Fixed Costs in Retirement */}
-      <ShinyCard variant="info">
+      <FintechCard variant="info">
         <h3 className="text-lg font-semibold text-shiny-text mb-4">Fixed Costs in Retirement</h3>
         <p className="text-sm text-shiny-muted mb-6">
           Adjust your expected fixed costs during retirement. Smart defaults are calculated from your current spending.
@@ -224,10 +236,10 @@ export function Step2_RetirementDesign() {
               );
             })}
         </div>
-      </ShinyCard>
+      </FintechCard>
 
       {/* Discretionary Spending in Retirement */}
-      <ShinyCard variant="primary">
+      <FintechCard variant="primary">
         <h3 className="text-lg font-semibold text-shiny-text mb-4">Discretionary Spending in Retirement</h3>
         <p className="text-sm text-shiny-muted mb-6">
           Adjust your expected discretionary spending during retirement. Smart defaults are calculated from your current spending.
@@ -266,7 +278,7 @@ export function Step2_RetirementDesign() {
               );
             })}
         </div>
-      </ShinyCard>
+      </FintechCard>
     </div>
   );
 }

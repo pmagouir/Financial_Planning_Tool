@@ -91,13 +91,13 @@ export function MoneyInput({
   return (
     <div className="w-full">
       {label && (
-        <label className="block text-sm font-medium text-slate-700 mb-1.5">
+        <label className="block text-sm font-medium text-text-secondary mb-1.5">
           {label}
         </label>
       )}
       <div className="relative">
         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <span className="text-slate-500 text-sm">$</span>
+          <span className="text-text-muted text-sm">$</span>
         </div>
         <input
           type="text"
@@ -106,11 +106,7 @@ export function MoneyInput({
           onFocus={handleFocus}
           onBlur={handleBlur}
           className={clsx(
-            'block w-full pl-7 pr-3 py-2.5',
-            'border border-gray-200 rounded-md',
-            'text-slate-900 placeholder-slate-400',
-            'focus:outline-none focus:ring-2 focus:ring-shiny-primary focus:border-shiny-primary',
-            'transition-colors',
+            'fintech-input pl-7 pr-3 font-mono',
             className
           )}
           placeholder="0"
@@ -118,9 +114,8 @@ export function MoneyInput({
         />
       </div>
       {helperText && (
-        <p className="mt-1.5 text-sm text-slate-500">{helperText}</p>
+        <p className="mt-1.5 text-sm text-text-muted">{helperText}</p>
       )}
     </div>
   );
 }
-

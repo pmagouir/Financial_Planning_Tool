@@ -37,7 +37,7 @@ function BudgetRibbon() {
   };
 
   return (
-    <div className="fixed top-20 right-8 z-50 print:hidden">
+    <div className="fixed bottom-8 left-8 z-50 print:hidden">
       <div className="fintech-card min-w-[320px]">
         <div className="p-4">
           {/* Header */}

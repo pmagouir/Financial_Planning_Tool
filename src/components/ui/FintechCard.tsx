@@ -22,3 +22,4 @@ export function FintechCard({ children, variant, className }: FintechCardProps) 
   );
 }
 
+

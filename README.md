@@ -1,205 +1,152 @@
-# 💰 Retirement Planning Navigator
+# Retirement Planning Navigator
 
-A modern, dark-themed financial planning application built with Astro and React. Plan your retirement with confidence using data-driven projections, smart defaults, and interactive visualizations.
+A dark-themed, all-in-one personal finance web app that synthesizes best practices from the most trusted voices in personal finance into a single, guided experience. Not a calculator — a coach.
 
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Astro](https://img.shields.io/badge/Astro-5.16.6-FF5D01?logo=astro)
-![React](https://img.shields.io/badge/React-19.2.3-61DAFB?logo=react)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6?logo=typescript)
-
-## ✨ Features
-
-### 📊 Step 1: Current Reality
-- **Budget Tracking**: Real-time budget ribbon showing spending vs. take-home pay
-- **Comprehensive Inputs**: Track fixed costs, investments, and guilt-free spending
-- **Percentage Breakdown**: Visual breakdown of spending allocation
-- **Collapsible Categories**: Organized sections for easy data entry
-
-### 🎯 Step 2: Retirement Design
-- **Smart Defaults**: Automatically calculates retirement spending estimates based on current reality
-- **Interactive Sliders**: Adjust each category with real-time comparisons
-- **Visual Comparisons**: Bar chart comparing current vs. retirement spending
-
-### 💰 Step 3: Your Number
-- **Trinity Study Integration**: Calculates withdrawal rates based on retirement duration
-- **Inflation Adjustments**: Accounts for inflation in all future calculations
-- **Customizable Parameters**: Adjust retirement year, duration, inflation rate, and withdrawal rate
-- **Income Sources**: Factor in Social Security, pensions, and other income
-
-### 📈 Step 4: Investment Path
-- **Portfolio Projections**: Visualize your portfolio growth over time
-- **Gap Analysis**: Identifies shortfalls and calculates additional monthly contributions needed
-- **Contribution Timeline**: Set when to stop contributions before retirement
-- **Return Scenarios**: Test conservative (5%), moderate (7%), and aggressive (9%) return rates
-
-### 📋 Summary
-- **Executive Summary**: Complete overview of your retirement plan
-- **Net Worth Projection**: Interactive chart showing portfolio from now through retirement
-- **Four Summary Tables**: Current spending, retirement spending, assumptions, and income sources
-- **Print-Ready Reports**: Professional PDF export functionality
-
-### 🧮 Bonus Features
-- **Compound Interest Calculator**: Standalone calculator with quick scenario buttons
-- **Resources Library**: Curated list of financial planning books and resources
-
-## 🎨 Design
-
-Built with a **dark fintech aesthetic** featuring:
-- Glass morphism card designs
-- Electric blue accent colors (#3b82f6)
-- Monospace typography for financial data
-- Smooth animations and transitions
-- Responsive design for all screen sizes
-
-## 🛠️ Tech Stack
-
-- **Framework**: [Astro](https://astro.build/) 5.16.6
-- **UI Library**: [React](https://react.dev/) 19.2.3
-- **State Management**: [Nanostores](https://github.com/nanostores/nanostores)
-- **Charts**: [Recharts](https://recharts.org/)
-- **Styling**: [Tailwind CSS](https://tailwindcss.com/) 4.1.18
-- **Animations**: [Framer Motion](https://www.framer.com/motion/)
-- **Language**: TypeScript
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-- Node.js 18+ and npm
-- Git
-
-### Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/pmagouir/Financial_Planning_Tool.git
-   cd Financial_Planning_Tool
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Start the development server**
-   ```bash
-   npm run dev
-   ```
-
-4. **Open your browser**
-   Navigate to `http://localhost:4321`
-
-### Build for Production
-
-```bash
-npm run build
-```
-
-The production build will be in the `dist/` directory.
-
-### Preview Production Build
-
-```bash
-npm run preview
-```
-
-## 📖 Usage Guide
-
-### Step-by-Step Process
-
-1. **Current Reality**: Enter your monthly take-home pay, fixed costs, investments, and spending
-2. **Retirement Design**: Review and adjust your planned retirement spending (smart defaults are provided)
-3. **Your Number**: Set retirement parameters and see your target portfolio value
-4. **Investment Path**: Enter your current portfolio and contributions to see if you're on track
-5. **Summary**: Review your complete retirement plan and export as PDF
-
-### Key Features
-
-- **Smart Defaults**: The app automatically calculates retirement spending estimates based on your current reality
-- **Real-Time Updates**: All calculations update instantly as you change inputs
-- **Data Persistence**: Your inputs are automatically saved to local storage
-- **Print Reports**: Generate professional PDF reports of your retirement plan
-
-## 🧮 Financial Calculations
-
-### Withdrawal Rate (Trinity Study)
-- **35+ years**: 3.5% withdrawal rate
-- **25-35 years**: 4.0% withdrawal rate (standard)
-- **15-25 years**: 4.5% withdrawal rate
-- **<15 years**: 5.0% withdrawal rate
-
-### Portfolio Projections
-- Accounts for monthly contributions with annual increases
-- Compound interest calculations with monthly compounding
-- Conservative return rates during retirement (60% of pre-retirement rate, minimum 4%)
-
-### Inflation Adjustments
-- Default: 3% annual inflation
-- All future dollar amounts are adjusted for inflation
-- User-configurable inflation rate
-
-## 🎯 Project Structure
-
-```
-Financial_Planning_Tool/
-├── src/
-│   ├── components/
-│   │   ├── calculator/      # Main calculation steps
-│   │   ├── bonus/           # Compound calculator & resources
-│   │   ├── ui/              # Reusable UI components
-│   │   └── NavigationTabs.tsx
-│   ├── stores/
-│   │   └── financialPlan.ts # State management & calculations
-│   ├── layouts/
-│   │   └── Layout.astro     # Main layout
-│   ├── pages/
-│   │   └── index.astro      # Home page
-│   └── styles/
-│       └── global.css       # Global styles & theme
-├── public/                   # Static assets
-└── package.json
-```
-
-## 🔧 Configuration
-
-### Customizing Colors
-
-Edit `tailwind.config.mjs` to customize the color scheme:
-
-```javascript
-colors: {
-  background: {
-    DEFAULT: '#0f172a',  // Main background
-    paper: '#1e293b',    // Card background
-    subtle: '#334155',   // Borders/inputs
-  },
-  accent: {
-    primary: '#3b82f6',  // Electric blue
-    success: '#10b981',   // Emerald green
-    warning: '#f59e0b',   // Amber
-    danger: '#ef4444',    // Red
-  }
-}
-```
-
-## 📝 License
-
-MIT License - feel free to use this project for personal or commercial purposes.
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## 🙏 Acknowledgments
-
-- Based on the Trinity Study for withdrawal rate calculations
-- Inspired by Ramit Sethi's "I Will Teach You To Be Rich" methodology
-- Built with modern web technologies for optimal performance
-
-## 📧 Contact
-
-For questions or suggestions, please open an issue on GitHub.
+Built with Astro + React + TypeScript. No accounts. No data leaving the browser.
 
 ---
 
-**Built with ❤️ for better financial planning**
+## Philosophy
+
+Three frameworks form the intellectual backbone of every design and calculation decision:
+
+- **Ramit Sethi** — Conscious spending plan (Fixed / Investments / Guilt-Free buckets), non-judgmental framing, smart defaults
+- **JL Collins / Bogleheads** — Low-cost index funds, 4% rule via Trinity Study, simplicity as a feature
+- **Morgan Housel** — Behavior over intelligence, time in market, "enough-ness" framing
+
+---
+
+## The Five-Step Flow
+
+| Step | What it does |
+|------|--------------|
+| **1 — Current Reality** | Enter take-home pay and spending. Animated stacked bar (Fixed / Investing / Guilt-Free) with Ramit Sethi benchmarks updates live. |
+| **2 — Retirement Design** | Adjust planned retirement spending with smart defaults pre-filled from Step 1. Per-category bar chart (Today vs Retirement) updates live as you move sliders. |
+| **3 — Your Number** | Cinematic reveal of your required retirement portfolio. Giant glowing number + 4-step math chain showing the exact calculation path. |
+| **4 — Investment Path** | Enter current portfolio and contributions. Monte Carlo probability cone shows pessimistic / median / optimistic outcomes. |
+| **Summary** | Dual-phase net worth chart (accumulation + withdrawal), progress bar, spending comparison, key assumptions. |
+
+---
+
+## Features
+
+- **Guided flow** — "Next Step →" button on each step; Welcome page "Get Started →" routes directly to Step 1
+- **Smart defaults** — Retirement spending pre-populated from current spending (healthcare +30%, transport −50%, etc.)
+- **Monte Carlo cone** — Three return scenarios (base ±2%) with uncertainty band and outcome summary
+- **Mobile bottom nav** — Collapses to a fixed bottom bar at ≤639px; desktop sidebar unchanged
+- **No data leaves the browser** — All state saved to localStorage via Nanostores persistent
+- **Trinity Study withdrawal rates** — Auto-calculated by retirement duration (3.5–5%), user-overridable
+
+---
+
+## Financial Calculations
+
+### Withdrawal Rate (Bengen 1994 / Trinity Study)
+| Retirement Duration | Rate |
+|---|---|
+| 35+ years | 3.5% |
+| 25–35 years | 4.0% (the "4% rule") |
+| 15–25 years | 4.5% |
+| < 15 years | 5.0% |
+
+### Required Portfolio
+```
+requiredPortfolio = (futureAnnualSpend − futurePassiveIncome) / withdrawalRate
+futureValue = presentValue × (1 + inflation)^yearsToRetirement
+```
+
+### Post-Retirement Returns
+```
+retirementReturnRate = max(4%, annualReturn × 0.6)
+```
+Conservative asset reallocation toward bonds assumed in retirement.
+
+---
+
+## Tech Stack
+
+| Layer | Tool |
+|---|---|
+| Meta-framework | Astro 5 |
+| UI | React 19 |
+| State | Nanostores + persistent |
+| Charts | Recharts |
+| Animations | Framer Motion |
+| Styling | Tailwind CSS 4 |
+| Language | TypeScript (strict) |
+
+---
+
+## Getting Started
+
+```bash
+git clone https://github.com/pmagouir/Financial_Planning_Tool.git
+cd Financial_Planning_Tool
+npm install
+npm run dev
+# → http://localhost:4321
+```
+
+### Build for production
+
+```bash
+npm run build   # → dist/
+npm run preview # preview production build
+```
+
+### Code quality
+
+```bash
+npm run lint        # ESLint
+npm run lint:fix    # ESLint --fix
+npm run format      # Prettier
+npm run format:check
+```
+
+---
+
+## Project Structure
+
+```
+src/
+├── components/
+│   ├── Welcome.tsx               # Landing page
+│   ├── Step1_CurrentReality.tsx  # Budget input + animated bar
+│   ├── Step2_RetirementDesign.tsx# Lifestyle sliders + comparison chart
+│   ├── Step4_InvestmentPath.tsx  # Monte Carlo cone + gap analysis
+│   ├── Step5_Summary.tsx         # Full plan summary + net worth chart
+│   ├── calculator/
+│   │   └── Step3_YourNumber.tsx  # Retirement number hero reveal
+│   ├── bonus/
+│   │   ├── CompoundCalculator.tsx
+│   │   └── Resources.tsx
+│   ├── ui/                       # Design system components
+│   └── NavigationTabs.tsx        # App shell + routing
+├── stores/
+│   └── financialPlan.ts          # ALL financial logic + state
+└── pages/
+    └── index.astro
+```
+
+> **Rule:** Financial calculations live exclusively in `src/stores/financialPlan.ts`. Never scatter logic into components.
+
+---
+
+## Deployment
+
+Deployed on Vercel. Connects to `main` branch — every push auto-deploys.
+
+Config: `vercel.json` sets framework to Astro, build command to `npm run build`, output to `dist`.
+`.npmrc` sets `legacy-peer-deps=true` to handle ESLint 9 peer dependency resolution.
+
+---
+
+## Work Log
+
+See [`WORKLOG.md`](./WORKLOG.md) for a full session-by-session record of what was built and what's next.
+
+---
+
+## License
+
+MIT — free to use for personal or commercial purposes.

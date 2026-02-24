@@ -54,6 +54,28 @@ Claude automatically adopts the right expert perspective based on the task. Thes
 
 ---
 
+### Orchestrator
+
+**Activates when:** Planning a multi-step initiative, running a full audit, coordinating work across multiple domains, or deciding what to build next.
+
+**How I think:** My first question is always "what's the right sequence and who should own what?" I break large goals into parallel tracks where possible, sequence dependencies correctly, synthesize findings from multiple agents into a single prioritized plan, and make sure nothing falls through the cracks between roles.
+
+**I own:**
+- Breaking down large requests into agent-specific tasks
+- Deciding which work can run in parallel vs. must sequence
+- Synthesizing audit results and agent outputs into actionable plans
+- Prioritizing the roadmap based on user impact, technical feasibility, and financial rigor
+- The "Definition of Done" checklist — making sure all agents have signed off before shipping
+
+**My standards:**
+- Never start building before the plan is clear and approved
+- Always run independent audits in parallel to save time
+- Surface conflicts between agents (e.g., CFP wants more complexity, UI/UX wants simplicity) and resolve them explicitly
+- Prioritize ruthlessly — a great tool does fewer things excellently rather than many things adequately
+- Every plan goes to the user for approval before execution begins
+
+---
+
 ### Certified Financial Planner (CFP)
 
 **Activates when:** Any task involves financial formulas, calculation logic, assumptions, or copy that makes a financial claim.
@@ -223,17 +245,18 @@ Before making any change, read the relevant files. Don't modify code you haven't
 **Canonical file locations:**
 | What | Where | Notes |
 |---|---|---|
-| Main calculator steps | `src/components/calculator/` | **Use these** |
-| Root-level Step files | `src/components/Step*.tsx` | Legacy — do not touch |
+| Step 1, 2, 4, 5 (live) | `src/components/Step*.tsx` | **These are the live files** — imported directly by NavigationTabs |
+| Step 3 (live) | `src/components/calculator/Step3_YourNumber.tsx` | The one calculator/ file actually in use |
+| Bonus tools | `src/components/bonus/` | CompoundCalculator, Resources — uses FintechCard |
 | Design system | `src/components/ui/` | All reusable components |
-| Financial logic | `src/stores/financialPlan.ts` | All calculations here |
-| Dark-theme tools | `src/components/bonus/` | Uses FintechCard |
-| Light-theme calculator | `src/components/calculator/` | Uses Card |
+| Financial logic | `src/stores/financialPlan.ts` | All calculations here — only exports `inputs` and `results` |
+| Navigation | `src/components/NavigationTabs.tsx` | Renders the whole app; controls tab routing |
+| Entry point | `src/pages/index.astro` | Renders `<NavigationTabs client:load />` |
 
 **Never do:**
 - Scatter financial calculations into component files
 - Create a new component if one in `ui/` already does the job
-- Touch the root-level `Step*.tsx` files (legacy, being phased out)
+- Import store names other than `inputs` and `results` from `financialPlan.ts` (those are the only two exports)
 - Add state to a component that should live in the store
 
 ---

@@ -1,5 +1,9 @@
 import { FintechCard } from './ui/FintechCard';
 
+interface WelcomeProps {
+  onStart?: () => void;
+}
+
 const steps = [
   {
     num: '01',
@@ -67,7 +71,7 @@ const stats = [
   { value: '5 Steps', label: 'Start to finish' },
 ];
 
-export function Welcome() {
+export function Welcome({ onStart }: WelcomeProps) {
   return (
     <div className="space-y-12">
 
@@ -126,23 +130,62 @@ export function Welcome() {
           Built on battle-tested financial research.
         </p>
 
-        {/* Navigation hint */}
-        <div
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '6px',
-            padding: '8px 18px',
-            borderRadius: '8px',
-            border: '1px solid rgba(255,255,255,0.08)',
-            background: 'rgba(255,255,255,0.03)',
-            color: '#64748b',
-            fontSize: '0.875rem',
-            position: 'relative',
-          }}
-        >
-          <span style={{ fontSize: '1rem' }}>↓</span>
-          Select Step 1 in the sidebar to begin
+        {/* CTA Button */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', position: 'relative' }}>
+          {onStart ? (
+            <button
+              onClick={onStart}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '10px',
+                padding: '14px 32px',
+                borderRadius: '12px',
+                border: '1px solid rgba(59,130,246,0.45)',
+                background: 'rgba(59,130,246,0.15)',
+                color: '#93c5fd',
+                fontSize: '1rem',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'background 0.2s, border-color 0.2s, color 0.2s',
+                letterSpacing: '0.01em',
+              }}
+              onMouseEnter={(e) => {
+                const el = e.currentTarget as HTMLButtonElement;
+                el.style.background = 'rgba(59,130,246,0.28)';
+                el.style.borderColor = 'rgba(59,130,246,0.65)';
+                el.style.color = '#bfdbfe';
+              }}
+              onMouseLeave={(e) => {
+                const el = e.currentTarget as HTMLButtonElement;
+                el.style.background = 'rgba(59,130,246,0.15)';
+                el.style.borderColor = 'rgba(59,130,246,0.45)';
+                el.style.color = '#93c5fd';
+              }}
+            >
+              Get Started <span style={{ fontSize: '1.1rem' }}>→</span>
+            </button>
+          ) : (
+            <div
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '8px 18px',
+                borderRadius: '8px',
+                border: '1px solid rgba(255,255,255,0.08)',
+                background: 'rgba(255,255,255,0.03)',
+                color: '#64748b',
+                fontSize: '0.875rem',
+              }}
+            >
+              <span style={{ fontSize: '1rem' }}>↓</span>
+              Select Step 1 in the sidebar to begin
+            </div>
+          )}
+          <div style={{ fontSize: '0.75rem', color: '#334155' }}>
+            or select a step in the sidebar
+          </div>
         </div>
       </div>
 

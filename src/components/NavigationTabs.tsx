@@ -75,7 +75,7 @@ export function NavigationTabs() {
   const renderContent = () => {
     switch (activeTab) {
       case 'welcome':
-        return <Welcome />;
+        return <Welcome onStart={handleNext} />;
       case 'step1':
         return <Step1_CurrentReality onNext={handleNext} />;
       case 'step2':

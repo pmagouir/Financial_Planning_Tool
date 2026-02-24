@@ -17,29 +17,32 @@ type TabId = 'welcome' | 'step1' | 'step2' | 'step3' | 'step4' | 'summary' | 'co
 interface Tab {
   id: TabId;
   label: string;
+  shortLabel: string; // for bottom nav
   icon: string;
   isDivider?: boolean;
   isBonus?: boolean;
 }
 
 const tabs: Tab[] = [
-  { id: 'welcome', label: 'Welcome', icon: '🏠' },
-  { id: 'step1', label: 'Step 1: Current Reality', icon: '📊' },
-  { id: 'step2', label: 'Step 2: Retirement Design', icon: '🎯' },
-  { id: 'step3', label: 'Step 3: Your Number', icon: '💰' },
-  { id: 'step4', label: 'Step 4: Investment Path', icon: '📈' },
-  { id: 'summary', label: 'Summary', icon: '📋' },
-  { id: 'divider', label: '', icon: '', isDivider: true },
-  { id: 'compound', label: 'Bonus: Compound Calc', icon: '🧮', isBonus: true },
-  { id: 'resources', label: 'Bonus: Resources', icon: '📚', isBonus: true },
+  { id: 'welcome', label: 'Welcome', shortLabel: 'Home', icon: '🏠' },
+  { id: 'step1', label: 'Step 1: Current Reality', shortLabel: 'Reality', icon: '📊' },
+  { id: 'step2', label: 'Step 2: Retirement Design', shortLabel: 'Design', icon: '🎯' },
+  { id: 'step3', label: 'Step 3: Your Number', shortLabel: 'Number', icon: '💰' },
+  { id: 'step4', label: 'Step 4: Investment Path', shortLabel: 'Invest', icon: '📈' },
+  { id: 'summary', label: 'Summary', shortLabel: 'Summary', icon: '📋' },
+  { id: 'divider', label: '', shortLabel: '', icon: '', isDivider: true },
+  { id: 'compound', label: 'Bonus: Compound Calc', shortLabel: 'Compound', icon: '🧮', isBonus: true },
+  { id: 'resources', label: 'Bonus: Resources', shortLabel: 'Resources', icon: '📚', isBonus: true },
 ];
 
-// Navigation order for "Next Step" flow (excludes bonus tabs and divider)
+// Core nav tabs shown in the bottom mobile nav (no divider/bonus)
+const mobileNavTabs = tabs.filter((t) => !t.isDivider && !t.isBonus);
+
+// Navigation order for "Next Step" flow
 const navOrder: TabId[] = ['welcome', 'step1', 'step2', 'step3', 'step4', 'summary'];
 
-// Get page title for header
 const getPageTitle = (tabId: TabId): string => {
-  const tab = tabs.find(t => t.id === tabId);
+  const tab = tabs.find((t) => t.id === tabId);
   if (!tab || tab.isDivider) return 'Retirement Planning Navigator';
   return tab.label;
 };
@@ -48,7 +51,6 @@ export function NavigationTabs() {
   const [activeTab, setActiveTab] = useState<TabId>('welcome');
   const i = useStore(inputs);
 
-  // Navigate to the next step in the sequence
   const handleNext = () => {
     const currentIndex = navOrder.indexOf(activeTab);
     if (currentIndex !== -1 && currentIndex < navOrder.length - 1) {
@@ -56,7 +58,6 @@ export function NavigationTabs() {
     }
   };
 
-  // Step completion checks
   const step1Complete = i.takeHomePay > 0;
   const step2Complete = i.hasModifiedRetirement === true || i.retHousing > 0;
   const step3Complete = i.retYear > 0 && i.retDuration > 0;
@@ -74,115 +75,203 @@ export function NavigationTabs() {
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'welcome':
-        return <Welcome onStart={handleNext} />;
-      case 'step1':
-        return <Step1_CurrentReality onNext={handleNext} />;
-      case 'step2':
-        return <Step2_RetirementDesign onNext={handleNext} />;
-      case 'step3':
-        return <Step3_YourNumber onNext={handleNext} />;
-      case 'step4':
-        return <Step4_InvestmentPath onNext={handleNext} />;
-      case 'summary':
-        return <Step5_Summary />;
-      case 'compound':
-        return <CompoundCalculator />;
-      case 'resources':
-        return <Resources />;
-      default:
-        return <Welcome />;
+      case 'welcome': return <Welcome onStart={handleNext} />;
+      case 'step1': return <Step1_CurrentReality onNext={handleNext} />;
+      case 'step2': return <Step2_RetirementDesign onNext={handleNext} />;
+      case 'step3': return <Step3_YourNumber onNext={handleNext} />;
+      case 'step4': return <Step4_InvestmentPath onNext={handleNext} />;
+      case 'summary': return <Step5_Summary />;
+      case 'compound': return <CompoundCalculator />;
+      case 'resources': return <Resources />;
+      default: return <Welcome />;
     }
   };
 
   return (
-    <div className="flex min-h-screen">
-      {/* Left Sidebar Navigation */}
-      <aside className="w-64 flex-shrink-0 border-r border-white/5 bg-background-paper/30 backdrop-blur-md print:hidden">
-        <nav className="sticky top-0 h-screen overflow-y-auto p-6 space-y-1">
-          {/* Logo/Brand */}
-          <div className="mb-8 pb-6 border-b border-white/5">
-            <h2 className="text-lg font-semibold text-text-primary tracking-tight">
-              Retirement Navigator
-            </h2>
-          </div>
+    <>
+      {/* ── Responsive layout ──────────────────────────────────────────────── */}
+      <style>{`
+        /* Mobile: hide sidebar, show bottom nav, add bottom padding */
+        @media (max-width: 639px) {
+          .nav-sidebar { display: none !important; }
+          .mobile-bottom-nav { display: flex !important; }
+          .main-content-area { padding-bottom: 72px !important; }
+          .main-top-header .px-8 { padding-left: 16px !important; padding-right: 16px !important; }
+          .main-top-header h1 { font-size: 1.25rem !important; }
+        }
+        /* Desktop: show sidebar, hide bottom nav */
+        @media (min-width: 640px) {
+          .nav-sidebar { display: flex !important; }
+          .mobile-bottom-nav { display: none !important; }
+        }
+      `}</style>
 
-          {tabs.map((tab) => {
-            if (tab.isDivider) {
+      <div className="flex min-h-screen">
+
+        {/* ── Left Sidebar (desktop) ────────────────────────────────────────── */}
+        <aside className="nav-sidebar w-64 flex-shrink-0 border-r border-white/5 bg-background-paper/30 backdrop-blur-md print:hidden">
+          <nav className="sticky top-0 h-screen overflow-y-auto p-6 space-y-1">
+            <div className="mb-8 pb-6 border-b border-white/5">
+              <h2 className="text-lg font-semibold text-text-primary tracking-tight">
+                Retirement Navigator
+              </h2>
+            </div>
+
+            {tabs.map((tab) => {
+              if (tab.isDivider) {
+                return <div key="divider" className="my-4 border-t border-white/5" />;
+              }
+
+              const isActive = activeTab === tab.id;
+              const isComplete = getCompletionDot(tab.id);
+
               return (
-                <div key="divider" className="my-4 border-t border-white/5" />
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id as TabId)}
+                  className={clsx(
+                    'w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 relative group',
+                    isActive
+                      ? 'bg-accent-primary/20 text-accent-primary'
+                      : 'text-text-secondary hover:text-accent-primary'
+                  )}
+                >
+                  <span className="text-lg flex-shrink-0">{tab.icon}</span>
+                  <span className="text-left flex-1">{tab.label}</span>
+                  {isComplete && (
+                    <span
+                      className="w-2 h-2 rounded-full flex-shrink-0"
+                      style={{ backgroundColor: '#10b981', boxShadow: '0 0 6px rgba(16,185,129,0.6)' }}
+                      title="Step complete"
+                    />
+                  )}
+                  {!isActive && (
+                    <span className="absolute inset-0 rounded-lg bg-accent-primary/0 group-hover:bg-accent-primary/5 transition-all duration-200" />
+                  )}
+                  {isActive && (
+                    <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-accent-primary rounded-r-full" />
+                  )}
+                </button>
               );
-            }
+            })}
+          </nav>
+        </aside>
 
-            const isActive = activeTab === tab.id;
-            const isComplete = getCompletionDot(tab.id);
+        {/* ── Main Content ──────────────────────────────────────────────────── */}
+        <main className="flex-1 min-w-0">
+          <header className="main-top-header sticky top-0 z-10 border-b border-white/5 bg-background/50 backdrop-blur-sm print:hidden">
+            <div className="px-8 py-4 max-w-6xl mx-auto">
+              <h1 className="text-3xl font-light text-white tracking-tight">
+                {getPageTitle(activeTab)}
+              </h1>
+            </div>
+          </header>
 
-            return (
-              <button
-                key={tab.id}
-                onClick={() => {
-                  if (tab.id !== 'divider' && !tab.isDivider) {
-                    setActiveTab(tab.id as TabId);
-                  }
+          <div className="main-content-area relative min-h-[calc(100vh-72px)] p-8">
+            <div className="max-w-6xl mx-auto">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={activeTab}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.3, ease: 'easeInOut' }}
+                >
+                  {renderContent()}
+                </motion.div>
+              </AnimatePresence>
+            </div>
+          </div>
+        </main>
+      </div>
+
+      {/* ── Mobile Bottom Nav (≤639px) ─────────────────────────────────────── */}
+      <nav
+        className="mobile-bottom-nav print:hidden"
+        style={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          zIndex: 50,
+          height: '64px',
+          borderTop: '1px solid rgba(255,255,255,0.07)',
+          background: 'rgba(15,23,42,0.95)',
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+          display: 'flex',
+          alignItems: 'stretch',
+        }}
+      >
+        {mobileNavTabs.map((tab) => {
+          const isActive = activeTab === tab.id;
+          const isComplete = getCompletionDot(tab.id);
+
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as TabId)}
+              style={{
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '3px',
+                background: 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                padding: '0 2px',
+                position: 'relative',
+                transition: 'background 0.15s',
+              }}
+            >
+              {/* Active indicator — top bar */}
+              {isActive && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: '20%',
+                    right: '20%',
+                    height: '2px',
+                    borderRadius: '0 0 2px 2px',
+                    background: '#3b82f6',
+                    boxShadow: '0 0 8px rgba(59,130,246,0.6)',
+                  }}
+                />
+              )}
+              {/* Completion dot */}
+              {isComplete && !isActive && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '6px',
+                    right: 'calc(50% - 14px)',
+                    width: '5px',
+                    height: '5px',
+                    borderRadius: '50%',
+                    background: '#10b981',
+                    boxShadow: '0 0 4px rgba(16,185,129,0.7)',
+                  }}
+                />
+              )}
+              <span style={{ fontSize: '1.1rem', lineHeight: 1 }}>{tab.icon}</span>
+              <span
+                style={{
+                  fontSize: '0.6rem',
+                  letterSpacing: '0.03em',
+                  color: isActive ? '#60a5fa' : '#475569',
+                  fontWeight: isActive ? 600 : 400,
+                  lineHeight: 1,
                 }}
-                className={clsx(
-                  'w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 relative group',
-                  isActive
-                    ? 'bg-accent-primary/20 text-accent-primary'
-                    : 'text-text-secondary hover:text-accent-primary'
-                )}
               >
-                <span className="text-lg flex-shrink-0">{tab.icon}</span>
-                <span className="text-left flex-1">{tab.label}</span>
-                {/* Completion indicator */}
-                {isComplete && (
-                  <span
-                    className="w-2 h-2 rounded-full flex-shrink-0"
-                    style={{ backgroundColor: '#10b981', boxShadow: '0 0 6px rgba(16,185,129,0.6)' }}
-                    title="Step complete"
-                  />
-                )}
-                {/* Glow effect on hover */}
-                {!isActive && (
-                  <span className="absolute inset-0 rounded-lg bg-accent-primary/0 group-hover:bg-accent-primary/5 transition-all duration-200" />
-                )}
-                {isActive && (
-                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-accent-primary rounded-r-full" />
-                )}
-              </button>
-            );
-          })}
-        </nav>
-      </aside>
-
-      {/* Main Content Area */}
-      <main className="flex-1 min-w-0">
-        {/* Top Header with Page Title */}
-        <header className="sticky top-0 z-10 border-b border-white/5 bg-background/50 backdrop-blur-sm print:hidden">
-          <div className="px-8 py-6 max-w-6xl mx-auto">
-            <h1 className="text-3xl font-light text-white tracking-tight">
-              {getPageTitle(activeTab)}
-            </h1>
-          </div>
-        </header>
-
-        {/* Content Area */}
-        <div className="relative min-h-[calc(100vh-120px)] p-8">
-          <div className="max-w-6xl mx-auto">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeTab}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.3, ease: 'easeInOut' }}
-              >
-                {renderContent()}
-              </motion.div>
-            </AnimatePresence>
-          </div>
-        </div>
-      </main>
-    </div>
+                {tab.shortLabel}
+              </span>
+            </button>
+          );
+        })}
+      </nav>
+    </>
   );
 }

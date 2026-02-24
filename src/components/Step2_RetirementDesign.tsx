@@ -2,254 +2,288 @@ import { useStore } from '@nanostores/react';
 import { inputs, results } from '../stores/financialPlan';
 import { FintechCard } from './ui/FintechCard';
 import { RangeSlider } from './ui/RangeSlider';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from 'recharts';
 
 interface Step2Props {
   onNext?: () => void;
 }
 
+const formatCurrency = (value: number): string =>
+  new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(value);
+
 export function Step2_RetirementDesign({ onNext }: Step2Props) {
   const i = useStore(inputs);
   const res = useStore(results);
 
-  // Format currency
-  const formatCurrency = (value: number): string => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(value);
+  // ── Current values (from Step 1) ───────────────────────────────────────────
+  const currentValues: Record<string, number> = {
+    housing: i.rent + i.propTax + i.utilities + i.internet,
+    transport: i.carPayment + i.carIns + i.gas + i.carMaint,
+    groceries: i.groceries,
+    health: i.healthIns,
+    child: i.childcare,
+    ins: i.otherIns,
+    debt: i.debtMin,
+    ent: i.ent + i.travel + i.hobbies,
+    dining: i.dining,
+    personal: i.personal + i.clothes + i.gifts + i.dev,
+    misc: i.tech + i.homeImp + i.misc,
   };
 
-  // Get current values for comparison (from Step 1)
-  const getCurrentValue = (category: string): number => {
-    switch (category) {
-      case 'housing':
-        return i.rent + i.propTax + i.utilities + i.internet;
-      case 'transport':
-        return i.carPayment + i.carIns + i.gas + i.carMaint;
-      case 'groceries':
-        return i.groceries;
-      case 'health':
-        return i.healthIns;
-      case 'child':
-        return i.childcare;
-      case 'ins':
-        return i.otherIns;
-      case 'debt':
-        return i.debtMin;
-      case 'ent':
-        return i.ent + i.travel + i.hobbies;
-      case 'dining':
-        return i.dining;
-      case 'personal':
-        return i.personal + i.clothes + i.gifts + i.dev;
-      case 'misc':
-        return i.tech + i.homeImp + i.misc;
-      default:
-        return 0;
-    }
+  const retirementValues: Record<string, number> = {
+    housing: i.retHousing,
+    transport: i.retTransport,
+    groceries: i.retGroceries,
+    health: i.retHealth,
+    child: i.retChild,
+    ins: i.retIns,
+    debt: i.retDebt,
+    ent: i.retEnt,
+    dining: i.retDining,
+    personal: i.retPersonal,
+    misc: i.retMisc,
   };
 
-  // Get retirement value from inputs
-  const getRetirementValue = (category: string): number => {
-    switch (category) {
-      case 'housing': return i.retHousing;
-      case 'transport': return i.retTransport;
-      case 'groceries': return i.retGroceries;
-      case 'health': return i.retHealth;
-      case 'child': return i.retChild;
-      case 'ins': return i.retIns;
-      case 'debt': return i.retDebt;
-      case 'ent': return i.retEnt;
-      case 'dining': return i.retDining;
-      case 'personal': return i.retPersonal;
-      case 'misc': return i.retMisc;
-      default: return 0;
-    }
-  };
-
-  // Handle slider change - update value and set flag to stop auto-updates
+  // Handle slider change
   const handleSliderChange = (category: string, value: number) => {
     const keyMap: Record<string, string> = {
-      housing: 'retHousing',
-      transport: 'retTransport',
-      groceries: 'retGroceries',
-      health: 'retHealth',
-      child: 'retChild',
-      ins: 'retIns',
-      debt: 'retDebt',
-      ent: 'retEnt',
-      dining: 'retDining',
-      personal: 'retPersonal',
-      misc: 'retMisc',
+      housing: 'retHousing', transport: 'retTransport', groceries: 'retGroceries',
+      health: 'retHealth', child: 'retChild', ins: 'retIns', debt: 'retDebt',
+      ent: 'retEnt', dining: 'retDining', personal: 'retPersonal', misc: 'retMisc',
     };
-    
     inputs.setKey(keyMap[category] as any, value);
-    // Set flag to stop auto-updates when user manually adjusts
     inputs.setKey('hasModifiedRetirement', true);
   };
 
-  // Calculate max value for slider (200% of current or $10,000, whichever is higher)
-  const getMaxValue = (currentValue: number): number => {
-    return Math.max(currentValue * 2, 10000);
-  };
+  const getMaxValue = (currentValue: number): number =>
+    Math.max(currentValue * 2, 10000);
 
-  // Categories for sliders
   const categories = [
-    { key: 'housing', label: 'Housing' },
-    { key: 'transport', label: 'Transport' },
-    { key: 'groceries', label: 'Groceries' },
-    { key: 'health', label: 'Healthcare' },
-    { key: 'child', label: 'Childcare' },
-    { key: 'ins', label: 'Insurance' },
-    { key: 'debt', label: 'Debt Payments' },
-    { key: 'ent', label: 'Entertainment' },
-    { key: 'dining', label: 'Dining Out' },
-    { key: 'personal', label: 'Personal Care' },
-    { key: 'misc', label: 'Miscellaneous' },
+    { key: 'housing', label: 'Housing', isFixed: true },
+    { key: 'transport', label: 'Transport', isFixed: true },
+    { key: 'groceries', label: 'Groceries', isFixed: true },
+    { key: 'health', label: 'Healthcare', isFixed: true },
+    { key: 'child', label: 'Childcare', isFixed: true },
+    { key: 'ins', label: 'Insurance', isFixed: true },
+    { key: 'debt', label: 'Debt Payments', isFixed: true },
+    { key: 'ent', label: 'Entertainment', isFixed: false },
+    { key: 'dining', label: 'Dining Out', isFixed: false },
+    { key: 'personal', label: 'Personal', isFixed: false },
+    { key: 'misc', label: 'Misc', isFixed: false },
   ];
 
-  // Calculate retirement monthly spending
-  const retMonthlySpend = (i.retHousing + i.retTransport + i.retGroceries + i.retHealth + 
-                           i.retChild + i.retIns + i.retDebt + i.retEnt + i.retDining + 
-                           i.retPersonal + i.retMisc);
+  // ── Per-category chart data (only rows with any value) ─────────────────────
+  const chartData = categories
+    .map((cat) => ({
+      name: cat.label,
+      Today: currentValues[cat.key],
+      Retirement: retirementValues[cat.key],
+    }))
+    .filter((d) => d.Today > 0 || d.Retirement > 0);
 
-  // Prepare chart data - matching R line 1421 comparison_chart
-  // Side-by-side bars: Current (Purple) vs Retirement (Green)
-  const chartData = [
-    {
-      name: 'Monthly Spending',
-      Current: res.totalAllocated,
-      Retirement: retMonthlySpend,
-    },
-  ];
+  const retMonthlySpend =
+    i.retHousing + i.retTransport + i.retGroceries + i.retHealth +
+    i.retChild + i.retIns + i.retDebt + i.retEnt + i.retDining +
+    i.retPersonal + i.retMisc;
+
+  const delta = retMonthlySpend - res.totalAllocated;
+  const deltaPositive = delta >= 0;
+
+  const hasCurrent = res.totalAllocated > 0;
 
   return (
     <div className="space-y-8">
-      {/* Intro Context Card */}
+
+      {/* ── Intro ──────────────────────────────────────────────────────────── */}
       <FintechCard variant="info">
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-shiny-text">Design Your Retirement Lifestyle</h3>
           <p className="text-sm text-shiny-muted leading-relaxed">
-            Spending patterns shift in retirement. Some costs drop (no more commuting, work clothes, or childcare). Others rise (healthcare, travel, hobbies you finally have time for). The sliders below start from your current spending as a baseline — adjust each to reflect your vision.
+            Spending shifts in retirement. Some costs drop (no commute, no childcare). Others rise
+            (healthcare, travel, hobbies you finally have time for). Sliders start from your current
+            spending — adjust each to reflect your vision.
           </p>
           <div className="rounded-lg border border-white/10 bg-white/5 p-4 text-sm text-text-secondary space-y-1">
             <p className="font-medium text-text-primary mb-2">Smart defaults applied:</p>
             <p>• Healthcare: +30% (medical costs rise with age)</p>
-            <p>• Transportation: -50% (no daily commute)</p>
+            <p>• Transportation: −50% (no daily commute)</p>
             <p>• Entertainment: +20% (more time for the things you love)</p>
-            <p>• Debt: -80% (most debt paid off by retirement)</p>
+            <p>• Debt: −80% (most debt paid off by retirement)</p>
           </div>
         </div>
       </FintechCard>
 
-      {/* Comparison Chart - Replicating R line 1421 */}
+      {/* ── Live Category Comparison Chart ─────────────────────────────────── */}
       <FintechCard variant="primary">
-        <h3 className="text-lg font-semibold text-shiny-text mb-4">Spending Comparison</h3>
-        <p className="text-sm text-shiny-muted mb-6">
-          Compare your current monthly spending vs. your planned retirement spending
+        <h3 className="text-lg font-semibold text-shiny-text mb-1">Now vs. Retirement — by Category</h3>
+        <p className="text-sm text-shiny-muted mb-5">
+          Updates live as you adjust sliders below. Blue = today, violet = retirement.
         </p>
-        <div className="h-64">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData}>
-              <defs>
-                <filter id="glow-blue">
-                  <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-                  <feMerge>
-                    <feMergeNode in="coloredBlur"/>
-                    <feMergeNode in="SourceGraphic"/>
-                  </feMerge>
-                </filter>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-              <XAxis 
-                dataKey="name" 
-                tick={{ fill: '#94a3b8' }}
-                tickLine={{ stroke: '#334155' }}
-              />
-              <YAxis 
-                tick={{ fill: '#94a3b8' }}
-                tickLine={{ stroke: '#334155' }}
-                tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
-              />
-              <Tooltip 
-                formatter={(value: number | undefined) => value !== undefined ? formatCurrency(value) : ''}
-                contentStyle={{
-                  backgroundColor: '#1e293b',
-                  border: '1px solid #334155',
-                  borderRadius: '8px',
-                  color: '#f8fafc',
-                }}
-                labelStyle={{ color: '#f8fafc' }}
-              />
-              <Legend wrapperStyle={{ color: '#94a3b8' }} />
-              <Bar 
-                dataKey="Current" 
-                fill="#3b82f6"
-                filter="url(#glow-blue)"
-                radius={[8, 8, 0, 0]}
-                name="Current Spending"
-              />
-              <Bar 
-                dataKey="Retirement" 
-                fill="#10b981"
-                radius={[8, 8, 0, 0]}
-                name="Retirement Spending"
-              />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-        <div className="mt-4 grid grid-cols-2 gap-4">
-          <div className="text-center">
-            <div className="text-sm text-shiny-muted mb-1">Current Monthly</div>
-            <div className="text-2xl font-bold text-shiny-text">
-              {formatCurrency(res.totalAllocated)}
+
+        {hasCurrent && chartData.length > 0 ? (
+          <>
+            {/* Chart */}
+            <div style={{ height: `${Math.max(220, chartData.length * 48)}px` }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={chartData}
+                  layout="vertical"
+                  margin={{ top: 0, right: 20, left: 0, bottom: 0 }}
+                  barCategoryGap="28%"
+                  barGap={3}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" horizontal={false} />
+                  <XAxis
+                    type="number"
+                    tickFormatter={(v: number) => `$${(v / 1000).toFixed(0)}k`}
+                    tick={{ fill: '#94a3b8', fontSize: 10 }}
+                    tickLine={false}
+                    axisLine={{ stroke: '#334155' }}
+                  />
+                  <YAxis
+                    type="category"
+                    dataKey="name"
+                    tick={{ fill: '#cbd5e1', fontSize: 11 }}
+                    tickLine={false}
+                    axisLine={false}
+                    width={82}
+                  />
+                  <Tooltip
+                    formatter={(value: number, name: string) => [formatCurrency(value), name]}
+                    contentStyle={{
+                      backgroundColor: '#0f172a',
+                      border: '1px solid #334155',
+                      borderRadius: '8px',
+                      color: '#f8fafc',
+                      fontSize: '12px',
+                    }}
+                  />
+                  <Legend
+                    iconType="circle"
+                    iconSize={9}
+                    wrapperStyle={{ fontSize: '11px', color: '#94a3b8', paddingTop: '8px' }}
+                  />
+                  <Bar dataKey="Today" fill="#3b82f6" radius={[0, 3, 3, 0]} maxBarSize={13} />
+                  <Bar dataKey="Retirement" fill="#8b5cf6" radius={[0, 3, 3, 0]} maxBarSize={13} />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
-          </div>
-          <div className="text-center">
-            <div className="text-sm text-shiny-muted mb-1">Retirement Monthly</div>
-            <div className="text-2xl font-bold" style={{ color: '#38ef7d' }}>
-              {formatCurrency(retMonthlySpend)}
+
+            {/* Summary strip below chart */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'stretch',
+                marginTop: '20px',
+                borderRadius: '10px',
+                border: '1px solid rgba(255,255,255,0.07)',
+                overflow: 'hidden',
+              }}
+            >
+              {[
+                { label: 'Current Monthly', value: formatCurrency(res.totalAllocated), color: '#3b82f6' },
+                { label: 'Retirement Monthly', value: formatCurrency(retMonthlySpend), color: '#8b5cf6' },
+                {
+                  label: deltaPositive ? 'Increase' : 'Decrease',
+                  value: `${deltaPositive ? '+' : ''}${formatCurrency(delta)}`,
+                  color: deltaPositive ? '#f59e0b' : '#10b981',
+                },
+              ].map((stat, idx) => (
+                <div
+                  key={stat.label}
+                  style={{
+                    flex: 1,
+                    padding: '14px 16px',
+                    textAlign: 'center',
+                    borderRight: idx < 2 ? '1px solid rgba(255,255,255,0.07)' : 'none',
+                    background: 'rgba(255,255,255,0.02)',
+                  }}
+                >
+                  <div style={{ fontSize: '0.65rem', color: '#475569', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '5px' }}>
+                    {stat.label}
+                  </div>
+                  <div style={{ fontSize: '1.05rem', fontWeight: 700, color: stat.color, fontVariantNumeric: 'tabular-nums' }}>
+                    {stat.value}
+                  </div>
+                </div>
+              ))}
             </div>
+          </>
+        ) : (
+          <div
+            style={{
+              height: '120px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#475569',
+              fontSize: '0.875rem',
+              borderRadius: '8px',
+              border: '1px dashed rgba(255,255,255,0.07)',
+            }}
+          >
+            Complete Step 1 to see a live spending comparison here
           </div>
-        </div>
+        )}
       </FintechCard>
 
-      {/* Fixed Costs in Retirement */}
+      {/* ── Fixed Costs Sliders ─────────────────────────────────────────────── */}
       <FintechCard variant="info">
-        <h3 className="text-lg font-semibold text-shiny-text mb-4">Fixed Costs in Retirement</h3>
+        <h3 className="text-lg font-semibold text-shiny-text mb-2">Fixed Costs in Retirement</h3>
         <p className="text-sm text-shiny-muted mb-6">
-          Adjust your expected fixed costs during retirement. Smart defaults are calculated from your current spending.
+          Essentials: housing, transport, food, healthcare, insurance, debt.
         </p>
         <div className="space-y-6">
           {categories
-            .filter(cat => ['housing', 'transport', 'groceries', 'health', 'child', 'ins', 'debt'].includes(cat.key))
+            .filter((cat) => cat.isFixed)
             .map((category) => {
-              const currentValue = getCurrentValue(category.key);
-              const retirementValue = getRetirementValue(category.key);
-              const maxValue = getMaxValue(currentValue || 1000);
+              const current = currentValues[category.key];
+              const retirement = retirementValues[category.key];
+              const pct = current > 0 ? Math.round((retirement / current) * 100) : null;
+              const pctLabel =
+                pct === null ? null
+                : pct > 100 ? `+${pct - 100}% vs today`
+                : pct < 100 ? `−${100 - pct}% vs today`
+                : 'same as today';
+              const pctColor =
+                pct === null ? '#475569'
+                : pct > 100 ? '#f59e0b'
+                : pct < 100 ? '#10b981'
+                : '#64748b';
 
               return (
-                <div key={category.key} className="space-y-3">
+                <div key={category.key}>
                   <div className="flex items-center justify-between text-sm mb-2">
                     <span className="font-medium text-shiny-text">{category.label}</span>
-                    <div className="flex items-center gap-4">
-                      {/* Current Value in grey text for reference */}
-                      <span className="text-shiny-muted text-sm">
-                        Current: {formatCurrency(currentValue)}
-                      </span>
-                      <span className="font-bold text-shiny-text">
-                        Future: {formatCurrency(retirementValue)}
-                      </span>
+                    <div className="flex items-center gap-3">
+                      <span className="text-shiny-muted text-xs">Today: {formatCurrency(current)}</span>
+                      <span className="font-bold text-shiny-text">{formatCurrency(retirement)}</span>
+                      {pctLabel && (
+                        <span style={{ fontSize: '0.7rem', color: pctColor, fontWeight: 600 }}>
+                          {pctLabel}
+                        </span>
+                      )}
                     </div>
                   </div>
                   <RangeSlider
-                    value={retirementValue}
+                    value={retirement}
                     onChange={(value) => handleSliderChange(category.key, value)}
                     min={0}
-                    max={maxValue}
+                    max={getMaxValue(current || 1000)}
                     step={50}
                     formatValue={formatCurrency}
                   />
@@ -259,39 +293,49 @@ export function Step2_RetirementDesign({ onNext }: Step2Props) {
         </div>
       </FintechCard>
 
-      {/* Discretionary Spending in Retirement */}
+      {/* ── Discretionary Sliders ───────────────────────────────────────────── */}
       <FintechCard variant="primary">
-        <h3 className="text-lg font-semibold text-shiny-text mb-4">Discretionary Spending in Retirement</h3>
+        <h3 className="text-lg font-semibold text-shiny-text mb-2">Discretionary Spending in Retirement</h3>
         <p className="text-sm text-shiny-muted mb-6">
-          Adjust your expected discretionary spending during retirement. Smart defaults are calculated from your current spending.
+          Lifestyle spending: entertainment, dining, personal care, miscellaneous.
         </p>
         <div className="space-y-6">
           {categories
-            .filter(cat => ['ent', 'dining', 'personal', 'misc'].includes(cat.key))
+            .filter((cat) => !cat.isFixed)
             .map((category) => {
-              const currentValue = getCurrentValue(category.key);
-              const retirementValue = getRetirementValue(category.key);
-              const maxValue = getMaxValue(currentValue || 1000);
+              const current = currentValues[category.key];
+              const retirement = retirementValues[category.key];
+              const pct = current > 0 ? Math.round((retirement / current) * 100) : null;
+              const pctLabel =
+                pct === null ? null
+                : pct > 100 ? `+${pct - 100}% vs today`
+                : pct < 100 ? `−${100 - pct}% vs today`
+                : 'same as today';
+              const pctColor =
+                pct === null ? '#475569'
+                : pct > 100 ? '#f59e0b'
+                : pct < 100 ? '#10b981'
+                : '#64748b';
 
               return (
-                <div key={category.key} className="space-y-3">
+                <div key={category.key}>
                   <div className="flex items-center justify-between text-sm mb-2">
                     <span className="font-medium text-shiny-text">{category.label}</span>
-                    <div className="flex items-center gap-4">
-                      {/* Current Value in grey text for reference */}
-                      <span className="text-shiny-muted text-sm">
-                        Current: {formatCurrency(currentValue)}
-                      </span>
-                      <span className="font-bold text-shiny-text">
-                        Future: {formatCurrency(retirementValue)}
-                      </span>
+                    <div className="flex items-center gap-3">
+                      <span className="text-shiny-muted text-xs">Today: {formatCurrency(current)}</span>
+                      <span className="font-bold text-shiny-text">{formatCurrency(retirement)}</span>
+                      {pctLabel && (
+                        <span style={{ fontSize: '0.7rem', color: pctColor, fontWeight: 600 }}>
+                          {pctLabel}
+                        </span>
+                      )}
                     </div>
                   </div>
                   <RangeSlider
-                    value={retirementValue}
+                    value={retirement}
                     onChange={(value) => handleSliderChange(category.key, value)}
                     min={0}
-                    max={maxValue}
+                    max={getMaxValue(current || 1000)}
                     step={50}
                     formatValue={formatCurrency}
                   />
@@ -301,7 +345,7 @@ export function Step2_RetirementDesign({ onNext }: Step2Props) {
         </div>
       </FintechCard>
 
-      {/* Next Step Navigation */}
+      {/* Next Step */}
       {onNext && (
         <div className="flex justify-end">
           <button

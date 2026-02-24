@@ -8,7 +8,11 @@ import { useMemo } from 'react';
 
 const CURRENT_YEAR = new Date().getFullYear();
 
-export function Step3_YourNumber() {
+interface Step3Props {
+  onNext?: () => void;
+}
+
+export function Step3_YourNumber({ onNext }: Step3Props) {
   const i = useStore(inputs);
   const res = useStore(results);
 
@@ -216,7 +220,48 @@ export function Step3_YourNumber() {
           </div>
         </div>
       </FintechCard>
+
+      {/* Math Breakdown Card */}
+      <FintechCard variant="info">
+        <div className="p-6">
+          <h3 className="text-lg font-semibold text-shiny-text mb-4">How this number is calculated</h3>
+          <div className="space-y-3 font-mono text-sm">
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <span className="text-text-secondary">Monthly retirement need (today's $)</span>
+              <span className="text-text-primary font-semibold">{formatCurrency(res.annualRetSpend / 12)}</span>
+            </div>
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <span className="text-text-secondary">× 12 months = annual need (today's $)</span>
+              <span className="text-text-primary font-semibold">{formatCurrency(res.annualRetSpend)}</span>
+            </div>
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <span className="text-text-secondary">× Inflation adjustment ({res.yearsToRet}yr @ {i.inflation.toFixed(1)}%) = {res.inflationMult.toFixed(2)}x</span>
+              <span className="text-text-primary font-semibold">{formatCurrency(res.futureAnnualNeed)}</span>
+            </div>
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <span className="text-text-secondary">÷ {formatPercent(res.withdrawalRate)} withdrawal rate (1 ÷ rate = {(1 / res.withdrawalRate).toFixed(0)}x multiplier)</span>
+              <span className="text-text-secondary text-xs">÷ {formatPercent(res.withdrawalRate)}</span>
+            </div>
+            <div className="flex items-center justify-between pt-1">
+              <span className="text-text-primary font-semibold">= Required portfolio</span>
+              <span className="text-green-400 font-bold text-base">{formatCurrency(res.requiredPortfolio)}</span>
+            </div>
+          </div>
+        </div>
+      </FintechCard>
         </>
+      )}
+
+      {/* Next Step Navigation */}
+      {onNext && (
+        <div className="flex justify-end">
+          <button
+            onClick={onNext}
+            className="mt-2 flex items-center gap-2 px-6 py-3 bg-accent-primary text-white rounded-lg font-medium hover:bg-accent-primary/90 transition-colors"
+          >
+            Next Step <span>→</span>
+          </button>
+        </div>
       )}
     </div>
   );

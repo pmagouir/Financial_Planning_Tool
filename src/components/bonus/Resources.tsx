@@ -72,6 +72,24 @@ export function Resources() {
         </p>
       </div>
 
+      {/* Methodology Card */}
+      <FintechCard variant="info">
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-shiny-text">The Methodology Behind This Tool</h3>
+          <p className="text-sm text-shiny-muted leading-relaxed">
+            This tool synthesizes three proven frameworks:
+          </p>
+          <ul className="space-y-2 text-sm text-text-secondary">
+            <li>• <span className="text-text-primary font-medium">The Trinity Study (Bengen 1994, Cooley et al. 1998)</span> — basis for the 4% safe withdrawal rate</li>
+            <li>• <span className="text-text-primary font-medium">Ramit Sethi's Conscious Spending Plan</span> — the Fixed / Investments / Guilt-Free bucket structure</li>
+            <li>• <span className="text-text-primary font-medium">JL Collins' Simple Path to Wealth</span> — index fund philosophy and FI/RE principles</li>
+          </ul>
+          <div className="rounded-lg border border-white/10 bg-white/5 p-3 text-sm text-text-secondary">
+            All projections assume constant returns and are educational estimates, not guarantees.
+          </div>
+        </div>
+      </FintechCard>
+
       {/* Books Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {books.map((book) => (

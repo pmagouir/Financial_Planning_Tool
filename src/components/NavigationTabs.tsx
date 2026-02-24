@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useStore } from '@nanostores/react';
 import { clsx } from 'clsx';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Step1_CurrentReality } from './Step1_CurrentReality';
@@ -9,6 +10,7 @@ import { Step5_Summary } from './Step5_Summary';
 import { CompoundCalculator } from './bonus/CompoundCalculator';
 import { Resources } from './bonus/Resources';
 import { Welcome } from './Welcome';
+import { inputs } from '../stores/financialPlan';
 
 type TabId = 'welcome' | 'step1' | 'step2' | 'step3' | 'step4' | 'summary' | 'compound' | 'resources' | 'divider';
 
@@ -32,6 +34,9 @@ const tabs: Tab[] = [
   { id: 'resources', label: 'Bonus: Resources', icon: '📚', isBonus: true },
 ];
 
+// Navigation order for "Next Step" flow (excludes bonus tabs and divider)
+const navOrder: TabId[] = ['welcome', 'step1', 'step2', 'step3', 'step4', 'summary'];
+
 // Get page title for header
 const getPageTitle = (tabId: TabId): string => {
   const tab = tabs.find(t => t.id === tabId);
@@ -41,19 +46,44 @@ const getPageTitle = (tabId: TabId): string => {
 
 export function NavigationTabs() {
   const [activeTab, setActiveTab] = useState<TabId>('welcome');
+  const i = useStore(inputs);
+
+  // Navigate to the next step in the sequence
+  const handleNext = () => {
+    const currentIndex = navOrder.indexOf(activeTab);
+    if (currentIndex !== -1 && currentIndex < navOrder.length - 1) {
+      setActiveTab(navOrder[currentIndex + 1]);
+    }
+  };
+
+  // Step completion checks
+  const step1Complete = i.takeHomePay > 0;
+  const step2Complete = i.hasModifiedRetirement === true || i.retHousing > 0;
+  const step3Complete = i.retYear > 0 && i.retDuration > 0;
+  const step4Complete = i.currentPortfolio > 0 || i.monthlyContrib > 0;
+
+  const getCompletionDot = (tabId: TabId): boolean => {
+    switch (tabId) {
+      case 'step1': return step1Complete;
+      case 'step2': return step2Complete;
+      case 'step3': return step3Complete;
+      case 'step4': return step4Complete;
+      default: return false;
+    }
+  };
 
   const renderContent = () => {
     switch (activeTab) {
       case 'welcome':
         return <Welcome />;
       case 'step1':
-        return <Step1_CurrentReality />;
+        return <Step1_CurrentReality onNext={handleNext} />;
       case 'step2':
-        return <Step2_RetirementDesign />;
+        return <Step2_RetirementDesign onNext={handleNext} />;
       case 'step3':
-        return <Step3_YourNumber />;
+        return <Step3_YourNumber onNext={handleNext} />;
       case 'step4':
-        return <Step4_InvestmentPath />;
+        return <Step4_InvestmentPath onNext={handleNext} />;
       case 'summary':
         return <Step5_Summary />;
       case 'compound':
@@ -83,9 +113,10 @@ export function NavigationTabs() {
                 <div key="divider" className="my-4 border-t border-white/5" />
               );
             }
-            
+
             const isActive = activeTab === tab.id;
-            
+            const isComplete = getCompletionDot(tab.id);
+
             return (
               <button
                 key={tab.id}
@@ -103,6 +134,14 @@ export function NavigationTabs() {
               >
                 <span className="text-lg flex-shrink-0">{tab.icon}</span>
                 <span className="text-left flex-1">{tab.label}</span>
+                {/* Completion indicator */}
+                {isComplete && (
+                  <span
+                    className="w-2 h-2 rounded-full flex-shrink-0"
+                    style={{ backgroundColor: '#10b981', boxShadow: '0 0 6px rgba(16,185,129,0.6)' }}
+                    title="Step complete"
+                  />
+                )}
                 {/* Glow effect on hover */}
                 {!isActive && (
                   <span className="absolute inset-0 rounded-lg bg-accent-primary/0 group-hover:bg-accent-primary/5 transition-all duration-200" />
@@ -120,7 +159,7 @@ export function NavigationTabs() {
       <main className="flex-1 min-w-0">
         {/* Top Header with Page Title */}
         <header className="sticky top-0 z-10 border-b border-white/5 bg-background/50 backdrop-blur-sm print:hidden">
-          <div className="px-8 py-6">
+          <div className="px-8 py-6 max-w-6xl mx-auto">
             <h1 className="text-3xl font-light text-white tracking-tight">
               {getPageTitle(activeTab)}
             </h1>
@@ -129,17 +168,19 @@ export function NavigationTabs() {
 
         {/* Content Area */}
         <div className="relative min-h-[calc(100vh-120px)] p-8">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeTab}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.3, ease: 'easeInOut' }}
-            >
-              {renderContent()}
-            </motion.div>
-          </AnimatePresence>
+          <div className="max-w-6xl mx-auto">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeTab}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3, ease: 'easeInOut' }}
+              >
+                {renderContent()}
+              </motion.div>
+            </AnimatePresence>
+          </div>
         </div>
       </main>
     </div>

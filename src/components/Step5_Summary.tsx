@@ -639,6 +639,11 @@ export function Step5_Summary() {
           </table>
         </div>
       </FintechCard>
+
+      {/* Disclaimer */}
+      <div className="rounded-lg border border-white/10 bg-white/5 p-4 text-sm text-text-secondary">
+        These projections are estimates based on constant return assumptions. Actual results will vary based on market conditions, tax implications, and personal circumstances. This is not financial advice — consider reviewing your plan annually with a Certified Financial Planner.
+      </div>
     </div>
   );
 }

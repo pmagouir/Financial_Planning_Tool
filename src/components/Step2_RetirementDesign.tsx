@@ -4,7 +4,11 @@ import { FintechCard } from './ui/FintechCard';
 import { RangeSlider } from './ui/RangeSlider';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
-export function Step2_RetirementDesign() {
+interface Step2Props {
+  onNext?: () => void;
+}
+
+export function Step2_RetirementDesign({ onNext }: Step2Props) {
   const i = useStore(inputs);
   const res = useStore(results);
 
@@ -124,6 +128,23 @@ export function Step2_RetirementDesign() {
 
   return (
     <div className="space-y-8">
+      {/* Intro Context Card */}
+      <FintechCard variant="info">
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-shiny-text">Design Your Retirement Lifestyle</h3>
+          <p className="text-sm text-shiny-muted leading-relaxed">
+            Spending patterns shift in retirement. Some costs drop (no more commuting, work clothes, or childcare). Others rise (healthcare, travel, hobbies you finally have time for). The sliders below start from your current spending as a baseline — adjust each to reflect your vision.
+          </p>
+          <div className="rounded-lg border border-white/10 bg-white/5 p-4 text-sm text-text-secondary space-y-1">
+            <p className="font-medium text-text-primary mb-2">Smart defaults applied:</p>
+            <p>• Healthcare: +30% (medical costs rise with age)</p>
+            <p>• Transportation: -50% (no daily commute)</p>
+            <p>• Entertainment: +20% (more time for the things you love)</p>
+            <p>• Debt: -80% (most debt paid off by retirement)</p>
+          </div>
+        </div>
+      </FintechCard>
+
       {/* Comparison Chart - Replicating R line 1421 */}
       <FintechCard variant="primary">
         <h3 className="text-lg font-semibold text-shiny-text mb-4">Spending Comparison</h3>
@@ -279,6 +300,18 @@ export function Step2_RetirementDesign() {
             })}
         </div>
       </FintechCard>
+
+      {/* Next Step Navigation */}
+      {onNext && (
+        <div className="flex justify-end">
+          <button
+            onClick={onNext}
+            className="mt-2 flex items-center gap-2 px-6 py-3 bg-accent-primary text-white rounded-lg font-medium hover:bg-accent-primary/90 transition-colors"
+          >
+            Next Step <span>→</span>
+          </button>
+        </div>
+      )}
     </div>
   );
 }

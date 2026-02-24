@@ -87,11 +87,16 @@ export function Welcome() {
           <div className="p-6">
             <h3 className="text-lg font-semibold text-shiny-text mb-3">Accounting for Inflation</h3>
             <p className="text-sm text-shiny-muted">
-              We account for inflation in all calculations. Your retirement needs will be higher in future dollars due to inflation. 
+              We account for inflation in all calculations. Your retirement needs will be higher in future dollars due to inflation.
               The default assumption is 3% annual inflation, but you can adjust this to see how different inflation rates impact your retirement number.
             </p>
           </div>
         </FintechCard>
+      </div>
+
+      {/* Educational Disclaimer */}
+      <div className="rounded-lg border border-white/10 bg-white/5 p-4 text-sm text-text-secondary">
+        This tool provides educational estimates to help you think about retirement planning. It is not personalized financial advice. Results assume constant investment returns and do not account for taxes, fees, or market volatility. Consider consulting a Certified Financial Planner (CFP) before making major financial decisions. Your data stays private — everything is calculated locally in your browser.
       </div>
     </div>
   );

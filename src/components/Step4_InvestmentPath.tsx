@@ -4,11 +4,85 @@ import { FintechCard } from './ui/FintechCard';
 import { MoneyInput } from './ui/MoneyInput';
 import { RangeSlider } from './ui/RangeSlider';
 import { useMemo } from 'react';
-import { ComposedChart, Line, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import {
+  ComposedChart,
+  Line,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  ReferenceLine,
+  ReferenceArea,
+} from 'recharts';
 
 const CURRENT_YEAR = new Date().getFullYear();
 
-export function Step4_InvestmentPath() {
+interface Step4Props {
+  onNext?: () => void;
+}
+
+// Custom tooltip for the projection chart
+interface TooltipPayloadEntry {
+  name: string;
+  value: number;
+  color: string;
+}
+
+interface CustomTooltipProps {
+  active?: boolean;
+  label?: number;
+  payload?: TooltipPayloadEntry[];
+}
+
+function ProjectionTooltip({ active, label, payload }: CustomTooltipProps) {
+  if (!active || !payload || payload.length === 0) return null;
+
+  const formatCurrency = (value: number): string =>
+    new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(value);
+
+  const portfolioEntry = payload.find((p) => p.name === 'Portfolio');
+  const targetEntry = payload.find((p) => p.name === 'Target Portfolio');
+
+  return (
+    <div
+      style={{
+        backgroundColor: '#1e293b',
+        border: '1px solid #334155',
+        borderRadius: '8px',
+        padding: '12px 16px',
+        color: '#f8fafc',
+        fontSize: '13px',
+        minWidth: '200px',
+      }}
+    >
+      <div style={{ fontWeight: 600, marginBottom: '8px', color: '#94a3b8', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+        Year {label}
+      </div>
+      {portfolioEntry && (
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '16px', marginBottom: '4px' }}>
+          <span style={{ color: '#3b82f6' }}>Projected Portfolio</span>
+          <span style={{ fontWeight: 700, fontFamily: 'monospace' }}>{formatCurrency(portfolioEntry.value)}</span>
+        </div>
+      )}
+      {targetEntry && (
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '16px' }}>
+          <span style={{ color: '#ef4444' }}>Required Portfolio</span>
+          <span style={{ fontWeight: 700, fontFamily: 'monospace' }}>{formatCurrency(targetEntry.value)}</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function Step4_InvestmentPath({ onNext }: Step4Props) {
   const i = useStore(inputs);
   const res = useStore(results);
 
@@ -46,7 +120,7 @@ export function Step4_InvestmentPath() {
 
       // Portfolio with contributions (compound principal + contributions with increase)
       let portfolio = i.currentPortfolio * Math.pow(1 + r, yearOffset);
-      
+
       // Add monthly contributions with increase and compounding (only up to stop year)
       const monthsContributing = Math.min(totalMonths, yearsContributing * 12);
       if (rMonthly > 0 && monthsContributing > 0) {
@@ -79,6 +153,32 @@ export function Step4_InvestmentPath() {
     res.requiredPortfolio,
     res.yearsToRet,
   ]);
+
+  // Determine the range of years where projected portfolio < required portfolio
+  // Used for ReferenceArea red shading
+  const shortfallRanges = useMemo(() => {
+    const ranges: Array<{ x1: number; x2: number }> = [];
+    let rangeStart: number | null = null;
+
+    for (let idx = 0; idx < projectionData.length; idx++) {
+      const point = projectionData[idx];
+      const isBehind = point.portfolio < point.target;
+
+      if (isBehind && rangeStart === null) {
+        rangeStart = point.year;
+      } else if (!isBehind && rangeStart !== null) {
+        ranges.push({ x1: rangeStart, x2: projectionData[idx - 1].year });
+        rangeStart = null;
+      }
+    }
+
+    // Close an open range at the end of data
+    if (rangeStart !== null && projectionData.length > 0) {
+      ranges.push({ x1: rangeStart, x2: projectionData[projectionData.length - 1].year });
+    }
+
+    return ranges;
+  }, [projectionData]);
 
   return (
     <div className="space-y-8">
@@ -215,7 +315,7 @@ export function Step4_InvestmentPath() {
       {i.currentPortfolio > 0 && i.monthlyContrib > 0 && res.gap >= 0 && (
         <div className="rounded-2xl shadow-shiny-card bg-shiny-success text-white overflow-hidden">
           <div className="p-8">
-            <h2 className="text-3xl font-bold mb-4">On Track! 🎉</h2>
+            <h2 className="text-3xl font-bold mb-4">On Track!</h2>
             <p className="text-xl leading-relaxed">
               You're projected to meet your retirement goal with a surplus of{' '}
               <span className="font-bold text-2xl">{formatCurrency(res.gap)}</span>.
@@ -228,7 +328,7 @@ export function Step4_InvestmentPath() {
       <FintechCard variant="info">
         <h3 className="text-lg font-semibold text-shiny-text mb-4">Portfolio Projection</h3>
         <p className="text-sm text-shiny-muted mb-6">
-          Your projected portfolio growth over time vs. your retirement target
+          Your projected portfolio growth over time vs. your retirement target. The dashed vertical line marks your retirement year.
         </p>
         <div className="h-96">
           <ResponsiveContainer width="100%" height="100%">
@@ -257,17 +357,21 @@ export function Step4_InvestmentPath() {
                 tickLine={{ stroke: '#334155' }}
                 tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
               />
-              <Tooltip
-                formatter={(value: number | undefined) => value !== undefined ? formatCurrency(value) : ''}
-                contentStyle={{
-                  backgroundColor: '#1e293b',
-                  border: '1px solid #334155',
-                  borderRadius: '8px',
-                  color: '#f8fafc',
-                }}
-                labelStyle={{ color: '#f8fafc' }}
-              />
+              <Tooltip content={<ProjectionTooltip />} />
               <Legend wrapperStyle={{ color: '#94a3b8' }} />
+
+              {/* Red shading where projected portfolio < required portfolio */}
+              {shortfallRanges.map((range, idx) => (
+                <ReferenceArea
+                  key={`shortfall-${idx}`}
+                  x1={range.x1}
+                  x2={range.x2}
+                  fill="#ef4444"
+                  fillOpacity={0.08}
+                  stroke="none"
+                />
+              ))}
+
               {/* Area/Line 1: Portfolio (Electric Blue) */}
               <Area
                 type="monotone"
@@ -289,10 +393,39 @@ export function Step4_InvestmentPath() {
                 dot={false}
                 name="Target Portfolio"
               />
+
+              {/* Vertical reference line at retirement year */}
+              {i.retYear > CURRENT_YEAR && (
+                <ReferenceLine
+                  x={i.retYear}
+                  stroke="#f59e0b"
+                  strokeWidth={2}
+                  strokeDasharray="6 4"
+                  label={{
+                    value: 'Retirement',
+                    position: 'insideTopRight',
+                    fill: '#f59e0b',
+                    fontSize: 12,
+                    fontWeight: 600,
+                  }}
+                />
+              )}
             </ComposedChart>
           </ResponsiveContainer>
         </div>
       </FintechCard>
+
+      {/* Next Step Navigation */}
+      {onNext && (
+        <div className="flex justify-end">
+          <button
+            onClick={onNext}
+            className="mt-2 flex items-center gap-2 px-6 py-3 bg-accent-primary text-white rounded-lg font-medium hover:bg-accent-primary/90 transition-colors"
+          >
+            Next Step <span>→</span>
+          </button>
+        </div>
+      )}
     </div>
   );
 }

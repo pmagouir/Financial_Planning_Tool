@@ -103,7 +103,11 @@ function BudgetRibbon() {
   );
 }
 
-export function Step1_CurrentReality() {
+interface Step1Props {
+  onNext?: () => void;
+}
+
+export function Step1_CurrentReality({ onNext }: Step1Props) {
   const i = useStore(inputs);
   const res = useStore(results);
 
@@ -379,6 +383,9 @@ export function Step1_CurrentReality() {
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <h3 className="text-lg font-semibold text-shiny-text">Guilt-Free Spending</h3>
+                  <p className="text-xs text-text-muted italic mb-3">
+                    Inspired by Ramit Sethi's conscious spending framework — spend extravagantly on what you love, cut ruthlessly on what you don't.
+                  </p>
                   <p className="text-sm text-shiny-muted">
                     Money for fun, experiences, and things you love
                   </p>
@@ -456,6 +463,18 @@ export function Step1_CurrentReality() {
           </details>
         </FintechCard>
       </div>
+
+      {/* Next Step Navigation */}
+      {onNext && (
+        <div className="flex justify-end">
+          <button
+            onClick={onNext}
+            className="mt-2 flex items-center gap-2 px-6 py-3 bg-accent-primary text-white rounded-lg font-medium hover:bg-accent-primary/90 transition-colors"
+          >
+            Next Step <span>→</span>
+          </button>
+        </div>
+      )}
     </div>
   );
 }

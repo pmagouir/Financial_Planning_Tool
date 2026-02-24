@@ -137,36 +137,216 @@ export function Step1_CurrentReality({ onNext }: Step1Props) {
       {/* Floating Budget HUD */}
       <BudgetRibbon />
 
-      {/* Percentage Breakdown */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <MetricCard variant="info">
-          <div className="uppercase text-xs tracking-widest text-text-muted mb-2">Fixed Costs</div>
-          <div className="text-4xl font-light tracking-tighter text-white mb-1">
-            {fixedPercent.toFixed(1)}%
+      {/* Budget Allocation Visualization */}
+      <FintechCard>
+        {/* Top row: header + unallocated badge */}
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <span className="text-xs uppercase tracking-widest text-text-muted font-medium">
+              Budget Allocation
+            </span>
+            <div className="text-lg font-semibold text-white mt-0.5">
+              Monthly Budget
+              {takeHome > 0 && (
+                <span className="font-mono ml-2 text-text-secondary">
+                  — {formatCurrency(takeHome)} / mo
+                </span>
+              )}
+            </div>
           </div>
-          <div className="text-xs text-text-muted">
-            {formatCurrency(res.currentFixed)} of {formatCurrency(takeHome)}
+          {takeHome > 0 && res.totalAllocated <= takeHome && (takeHome - res.totalAllocated) > 0 && (
+            <div
+              style={{
+                background: 'rgba(255,255,255,0.05)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: '9999px',
+                padding: '4px 12px',
+              }}
+            >
+              <span className="text-xs font-mono text-text-muted">
+                Unallocated: {formatCurrency(takeHome - res.totalAllocated)}
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Stacked progress bar */}
+        <div
+          style={{
+            display: 'flex',
+            height: '20px',
+            borderRadius: '9999px',
+            overflow: 'hidden',
+            backgroundColor: '#0f172a',
+            border: '1px solid rgba(255,255,255,0.1)',
+          }}
+        >
+          <div
+            style={{
+              width: `${Math.min(fixedPercent, 100)}%`,
+              background: '#3b82f6',
+              transition: 'width 0.4s ease',
+              flexShrink: 0,
+            }}
+          />
+          <div
+            style={{
+              width: `${Math.min(investPercent, Math.max(0, 100 - fixedPercent))}%`,
+              background: '#10b981',
+              transition: 'width 0.4s ease',
+              flexShrink: 0,
+            }}
+          />
+          <div
+            style={{
+              width: `${Math.min(guiltFreePercent, Math.max(0, 100 - fixedPercent - investPercent))}%`,
+              background: '#8b5cf6',
+              transition: 'width 0.4s ease',
+              flexShrink: 0,
+            }}
+          />
+        </div>
+
+        {/* Three stat columns */}
+        <div className="grid grid-cols-3 gap-4 mt-5">
+          {/* Fixed Costs */}
+          <div>
+            <div className="flex items-center gap-1.5 mb-1">
+              <div
+                style={{
+                  width: '8px',
+                  height: '8px',
+                  borderRadius: '50%',
+                  background: '#3b82f6',
+                  boxShadow: '0 0 6px rgba(59,130,246,0.7)',
+                  flexShrink: 0,
+                }}
+              />
+              <span
+                className="text-xs uppercase tracking-widest"
+                style={{ color: 'rgba(255,255,255,0.45)' }}
+              >
+                Fixed Costs
+              </span>
+            </div>
+            <div className="font-mono text-2xl font-semibold text-white">
+              {formatCurrency(res.currentFixed)}
+            </div>
+            <div className="text-sm mt-0.5" style={{ color: 'rgba(255,255,255,0.45)' }}>
+              {fixedPercent.toFixed(1)}% of income
+            </div>
+            <div
+              className="text-xs italic mt-1"
+              style={{ color: 'rgba(255,255,255,0.3)' }}
+            >
+              Ramit's target: 50–60%
+            </div>
           </div>
-        </MetricCard>
-        <MetricCard variant="success">
-          <div className="uppercase text-xs tracking-widest text-text-muted mb-2">Saving/Investing</div>
-          <div className="text-4xl font-light tracking-tighter text-white mb-1">
-            {investPercent.toFixed(1)}%
+
+          {/* Investing */}
+          <div>
+            <div className="flex items-center gap-1.5 mb-1">
+              <div
+                style={{
+                  width: '8px',
+                  height: '8px',
+                  borderRadius: '50%',
+                  background: '#10b981',
+                  boxShadow: '0 0 6px rgba(16,185,129,0.7)',
+                  flexShrink: 0,
+                }}
+              />
+              <span
+                className="text-xs uppercase tracking-widest"
+                style={{ color: 'rgba(255,255,255,0.45)' }}
+              >
+                Investing
+              </span>
+            </div>
+            <div className="font-mono text-2xl font-semibold text-white">
+              {formatCurrency(res.currentInvest)}
+            </div>
+            <div className="text-sm mt-0.5" style={{ color: 'rgba(255,255,255,0.45)' }}>
+              {investPercent.toFixed(1)}% of income
+            </div>
+            <div
+              className="text-xs italic mt-1"
+              style={{ color: 'rgba(255,255,255,0.3)' }}
+            >
+              Ramit's target: ≥ 20%
+            </div>
           </div>
-          <div className="text-xs text-text-muted">
-            {formatCurrency(res.currentInvest)} of {formatCurrency(takeHome)}
+
+          {/* Guilt-Free Spending */}
+          <div>
+            <div className="flex items-center gap-1.5 mb-1">
+              <div
+                style={{
+                  width: '8px',
+                  height: '8px',
+                  borderRadius: '50%',
+                  background: '#8b5cf6',
+                  boxShadow: '0 0 6px rgba(139,92,246,0.7)',
+                  flexShrink: 0,
+                }}
+              />
+              <span
+                className="text-xs uppercase tracking-widest"
+                style={{ color: 'rgba(255,255,255,0.45)' }}
+              >
+                Guilt-Free Spending
+              </span>
+            </div>
+            <div className="font-mono text-2xl font-semibold text-white">
+              {formatCurrency(res.currentGuiltFree)}
+            </div>
+            <div className="text-sm mt-0.5" style={{ color: 'rgba(255,255,255,0.45)' }}>
+              {guiltFreePercent.toFixed(1)}% of income
+            </div>
+            <div
+              className="text-xs italic mt-1"
+              style={{ color: 'rgba(255,255,255,0.3)' }}
+            >
+              Your money, your choice
+            </div>
           </div>
-        </MetricCard>
-        <MetricCard variant="primary">
-          <div className="uppercase text-xs tracking-widest text-text-muted mb-2">Guilt-Free Spending</div>
-          <div className="text-4xl font-light tracking-tighter text-white mb-1">
-            {guiltFreePercent.toFixed(1)}%
+        </div>
+
+        {/* Overspending warning */}
+        {res.totalAllocated > takeHome && takeHome > 0 && (
+          <div
+            className="mt-4 flex items-center gap-2 rounded-lg px-4 py-2.5"
+            style={{
+              background: 'rgba(239,68,68,0.1)',
+              border: '1px solid rgba(239,68,68,0.3)',
+            }}
+          >
+            <span style={{ color: '#ef4444', fontSize: '15px' }}>⚠</span>
+            <span className="text-sm font-medium" style={{ color: '#ef4444' }}>
+              You've allocated {formatCurrency(res.totalAllocated - takeHome)} more than your take-home pay
+            </span>
           </div>
-          <div className="text-xs text-text-muted">
-            {formatCurrency(res.currentGuiltFree)} of {formatCurrency(takeHome)}
+        )}
+
+        {/* Unallocated reminder */}
+        {takeHome > 0 && res.totalAllocated <= takeHome && (takeHome - res.totalAllocated) > 0 && (
+          <div className="mt-3">
+            <span className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>
+              {formatCurrency(takeHome - res.totalAllocated)} unallocated — consider increasing investments
+            </span>
           </div>
-        </MetricCard>
-      </div>
+        )}
+
+        {/* Attribution */}
+        <div
+          className="mt-4 pt-3"
+          style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
+        >
+          <span className="text-xs italic" style={{ color: 'rgba(255,255,255,0.2)' }}>
+            Based on Ramit Sethi's Conscious Spending Plan (I Will Teach You To Be Rich)
+          </span>
+        </div>
+      </FintechCard>
 
       {/* Monthly Take-Home Input */}
       <FintechCard variant="info">

@@ -1,102 +1,412 @@
 import { FintechCard } from './ui/FintechCard';
 
+const steps = [
+  {
+    num: '01',
+    title: 'Current Reality',
+    desc: 'Map where your money actually goes today.',
+    color: '#3b82f6',
+  },
+  {
+    num: '02',
+    title: 'Retirement Design',
+    desc: 'Envision the lifestyle you want in retirement.',
+    color: '#8b5cf6',
+  },
+  {
+    num: '03',
+    title: 'Your Number',
+    desc: 'Calculate the exact portfolio you need.',
+    color: '#10b981',
+  },
+  {
+    num: '04',
+    title: 'Investment Path',
+    desc: "See if you're on track — and what to do if not.",
+    color: '#f59e0b',
+  },
+  {
+    num: '05',
+    title: 'Summary',
+    desc: 'Your complete retirement plan at a glance.',
+    color: '#ef4444',
+  },
+];
+
+const pillars = [
+  {
+    pill: 'Conscious Spending',
+    pillColor: '#3b82f6',
+    author: 'Ramit Sethi',
+    book: 'I Will Teach You To Be Rich',
+    insight:
+      "Spend extravagantly on what you love. Cut mercilessly on what you don't. Automate the rest.",
+  },
+  {
+    pill: 'Simple Investing',
+    pillColor: '#10b981',
+    author: 'JL Collins',
+    book: 'The Simple Path to Wealth',
+    insight:
+      'Low-cost index funds + time + consistency beats clever strategies every time.',
+  },
+  {
+    pill: 'Behavioral Wisdom',
+    pillColor: '#8b5cf6',
+    author: 'Morgan Housel',
+    book: 'The Psychology of Money',
+    insight:
+      'Wealth is more about behavior than intelligence. Enough-ness matters.',
+  },
+];
+
+const stats = [
+  { value: '4%', label: 'Proven since 1994' },
+  { value: '25x', label: 'Portfolio multiplier' },
+  { value: '$0 data', label: 'Runs in-browser' },
+  { value: '5 Steps', label: 'Start to finish' },
+];
+
 export function Welcome() {
   return (
-    <div className="space-y-8">
-      {/* Hero Section */}
-      <div className="text-center space-y-4">
-        <h1 className="text-4xl font-bold text-shiny-text">
-          Welcome to Your Retirement Planning Navigator
+    <div className="space-y-12">
+
+      {/* ── Hero Section ─────────────────────────────────────────────────────── */}
+      <div
+        className="relative text-center py-16 space-y-6"
+        style={{ borderRadius: '24px', overflow: 'hidden' }}
+      >
+        {/* Background glow */}
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            borderRadius: '24px',
+            background:
+              'radial-gradient(ellipse 80% 50% at 50% 0%, rgba(59,130,246,0.12) 0%, transparent 70%)',
+            pointerEvents: 'none',
+          }}
+        />
+
+        {/* Eyebrow label */}
+        <div
+          style={{
+            display: 'inline-block',
+            padding: '4px 14px',
+            borderRadius: '999px',
+            border: '1px solid rgba(59,130,246,0.35)',
+            background: 'rgba(59,130,246,0.08)',
+            fontSize: '0.75rem',
+            letterSpacing: '0.05em',
+            color: '#93c5fd',
+            fontWeight: 500,
+            position: 'relative',
+          }}
+        >
+          Based on the Trinity Study · JL Collins · Ramit Sethi
+        </div>
+
+        {/* Main headline */}
+        <h1
+          className="text-5xl font-bold text-white tracking-tight leading-tight"
+          style={{ position: 'relative' }}
+        >
+          Find Your
+          <br />
+          <span style={{ color: '#3b82f6' }}>Retirement Number.</span>
         </h1>
-        <p className="text-xl text-shiny-muted max-w-3xl mx-auto">
-          A step-by-step guide to understanding your financial future and building the retirement you want
+
+        {/* Sub-headline */}
+        <p
+          className="text-lg max-w-xl mx-auto leading-relaxed"
+          style={{ color: '#94a3b8', position: 'relative' }}
+        >
+          Five steps. No accounts. No data leaving your browser.
+          <br />
+          Built on battle-tested financial research.
         </p>
+
+        {/* Navigation hint */}
+        <div
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+            padding: '8px 18px',
+            borderRadius: '8px',
+            border: '1px solid rgba(255,255,255,0.08)',
+            background: 'rgba(255,255,255,0.03)',
+            color: '#64748b',
+            fontSize: '0.875rem',
+            position: 'relative',
+          }}
+        >
+          <span style={{ fontSize: '1rem' }}>↓</span>
+          Select Step 1 in the sidebar to begin
+        </div>
       </div>
 
-      {/* Process Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {/* Step 1 Card */}
-        <FintechCard variant="info">
-          <div className="p-6">
-            <div className="text-4xl mb-4">📊</div>
-            <h3 className="text-lg font-semibold text-shiny-text mb-2">Step 1: Current Reality</h3>
-            <p className="text-sm text-shiny-muted">
-              Document your current financial situation. Track your monthly take-home pay, fixed costs, investments, and spending. See exactly where your money goes and how it's allocated.
-            </p>
+      {/* ── Stats Strip ──────────────────────────────────────────────────────── */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'stretch',
+          borderRadius: '12px',
+          border: '1px solid rgba(255,255,255,0.07)',
+          background: 'rgba(255,255,255,0.02)',
+          overflow: 'hidden',
+        }}
+      >
+        {stats.map((stat, idx) => (
+          <div
+            key={stat.value}
+            style={{
+              flex: 1,
+              padding: '20px 24px',
+              textAlign: 'center',
+              borderRight:
+                idx < stats.length - 1
+                  ? '1px solid rgba(255,255,255,0.06)'
+                  : 'none',
+            }}
+          >
+            <div
+              className="text-2xl font-bold text-white"
+              style={{ fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.02em' }}
+            >
+              {stat.value}
+            </div>
+            <div
+              style={{
+                fontSize: '0.7rem',
+                color: '#475569',
+                marginTop: '4px',
+                letterSpacing: '0.04em',
+                textTransform: 'uppercase',
+              }}
+            >
+              {stat.label}
+            </div>
           </div>
-        </FintechCard>
-
-        {/* Step 2 Card */}
-        <FintechCard variant="primary">
-          <div className="p-6">
-            <div className="text-4xl mb-4">🎯</div>
-            <h3 className="text-lg font-semibold text-shiny-text mb-2">Step 2: Retirement Design</h3>
-            <p className="text-sm text-shiny-muted">
-              Design your ideal retirement lifestyle. Our smart defaults help you estimate future spending based on your current reality. Adjust each category to match your vision.
-            </p>
-          </div>
-        </FintechCard>
-
-        {/* Step 3 Card */}
-        <FintechCard variant="success">
-          <div className="p-6">
-            <div className="text-4xl mb-4">💰</div>
-            <h3 className="text-lg font-semibold text-shiny-text mb-2">Step 3: Your Number</h3>
-            <p className="text-sm text-shiny-muted">
-              Calculate your retirement target using the Trinity Study's 4% rule. See how inflation impacts your future needs and understand exactly how much you'll need to retire comfortably.
-            </p>
-          </div>
-        </FintechCard>
-
-        {/* Step 4 Card */}
-        <FintechCard variant="warning">
-          <div className="p-6">
-            <div className="text-4xl mb-4">📈</div>
-            <h3 className="text-lg font-semibold text-shiny-text mb-2">Step 4: Investment Path</h3>
-            <p className="text-sm text-shiny-muted">
-              See if you're on track to reach your retirement number. Get personalized recommendations if adjustments are needed. Visualize your portfolio growth over time.
-            </p>
-          </div>
-        </FintechCard>
+        ))}
       </div>
 
-      {/* Key Concepts */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <FintechCard variant="success">
-          <div className="p-6">
-            <h3 className="text-lg font-semibold text-shiny-text mb-3">The 4% Rule</h3>
-            <p className="text-sm text-shiny-muted">
-              Based on the Trinity Study, you can safely withdraw 4% of your portfolio annually in retirement (adjusted for your retirement duration). 
-              This rule helps determine how much you need to save to support your desired lifestyle.
-            </p>
-          </div>
-        </FintechCard>
+      {/* ── How It Works — Numbered Step Flow ────────────────────────────────── */}
+      <div className="space-y-4">
+        <div className="text-center space-y-1">
+          <h2 className="text-xl font-semibold text-white">How it works</h2>
+          <p style={{ fontSize: '0.875rem', color: '#64748b' }}>
+            A guided five-step process, start to finish.
+          </p>
+        </div>
 
-        <FintechCard variant="primary">
-          <div className="p-6">
-            <h3 className="text-lg font-semibold text-shiny-text mb-3">Smart Defaults</h3>
-            <p className="text-sm text-shiny-muted">
-              We automatically calculate retirement spending estimates based on your current reality. 
-              For example, transportation costs typically decrease in retirement, while healthcare costs increase. 
-              You can adjust any category to match your personal vision.
-            </p>
-          </div>
-        </FintechCard>
+        {/* Step cards grid with connecting line */}
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(5, 1fr)',
+            gap: '0',
+            position: 'relative',
+          }}
+          className="step-flow-grid"
+        >
+          {/* Desktop connecting line */}
+          <div
+            style={{
+              position: 'absolute',
+              top: '28px',
+              left: '10%',
+              right: '10%',
+              height: '1px',
+              background: 'rgba(255,255,255,0.08)',
+              pointerEvents: 'none',
+              zIndex: 0,
+            }}
+            className="hidden md:block"
+          />
 
-        <FintechCard variant="info">
-          <div className="p-6">
-            <h3 className="text-lg font-semibold text-shiny-text mb-3">Accounting for Inflation</h3>
-            <p className="text-sm text-shiny-muted">
-              We account for inflation in all calculations. Your retirement needs will be higher in future dollars due to inflation.
-              The default assumption is 3% annual inflation, but you can adjust this to see how different inflation rates impact your retirement number.
-            </p>
-          </div>
-        </FintechCard>
+          {steps.map((step, idx) => (
+            <div
+              key={step.num}
+              style={{
+                position: 'relative',
+                zIndex: 1,
+                padding: idx === 0 ? '20px 16px 20px 20px' : idx === steps.length - 1 ? '20px 20px 20px 16px' : '20px 16px',
+                background: 'rgba(255,255,255,0.03)',
+                border: '1px solid rgba(255,255,255,0.07)',
+                borderLeft: idx > 0 ? '1px solid rgba(255,255,255,0.04)' : '1px solid rgba(255,255,255,0.07)',
+                borderRadius:
+                  idx === 0
+                    ? '12px 0 0 12px'
+                    : idx === steps.length - 1
+                    ? '0 12px 12px 0'
+                    : '0',
+                transition: 'background 0.2s, border-color 0.2s',
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLDivElement).style.background = 'rgba(255,255,255,0.055)';
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLDivElement).style.background = 'rgba(255,255,255,0.03)';
+              }}
+            >
+              {/* Step number bubble */}
+              <div
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '50%',
+                  background: `${step.color}18`,
+                  border: `1px solid ${step.color}40`,
+                  marginBottom: '12px',
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: '0.65rem',
+                    fontWeight: 700,
+                    color: step.color,
+                    letterSpacing: '0.05em',
+                    fontVariantNumeric: 'tabular-nums',
+                  }}
+                >
+                  {step.num}
+                </span>
+              </div>
+
+              <div
+                className="font-semibold text-white"
+                style={{ fontSize: '0.875rem', marginBottom: '6px', lineHeight: 1.3 }}
+              >
+                {step.title}
+              </div>
+              <div
+                style={{
+                  fontSize: '0.75rem',
+                  color: '#64748b',
+                  lineHeight: 1.5,
+                }}
+              >
+                {step.desc}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Mobile fallback: vertical list (shown below md, grid above) */}
+        <style>{`
+          @media (max-width: 767px) {
+            .step-flow-grid {
+              grid-template-columns: 1fr !important;
+            }
+            .step-flow-grid > div {
+              border-radius: 0 !important;
+              border-left: 1px solid rgba(255,255,255,0.07) !important;
+              border-top: 1px solid rgba(255,255,255,0.04) !important;
+            }
+            .step-flow-grid > div:first-child {
+              border-radius: 12px 12px 0 0 !important;
+              border-top: 1px solid rgba(255,255,255,0.07) !important;
+            }
+            .step-flow-grid > div:last-child {
+              border-radius: 0 0 12px 12px !important;
+            }
+          }
+        `}</style>
       </div>
 
-      {/* Educational Disclaimer */}
-      <div className="rounded-lg border border-white/10 bg-white/5 p-4 text-sm text-text-secondary">
-        This tool provides educational estimates to help you think about retirement planning. It is not personalized financial advice. Results assume constant investment returns and do not account for taxes, fees, or market volatility. Consider consulting a Certified Financial Planner (CFP) before making major financial decisions. Your data stays private — everything is calculated locally in your browser.
+      {/* ── Three Pillars Section ─────────────────────────────────────────────── */}
+      <div className="space-y-4">
+        <div className="text-center space-y-1">
+          <h2 className="text-xl font-semibold text-white">The philosophy behind this tool</h2>
+          <p style={{ fontSize: '0.875rem', color: '#64748b' }}>
+            Three frameworks. One coherent system.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {pillars.map((pillar) => (
+            <FintechCard key={pillar.pill}>
+              <div
+                style={{
+                  borderLeft: `3px solid ${pillar.pillColor}`,
+                  paddingLeft: '16px',
+                  marginLeft: '-4px',
+                }}
+              >
+                {/* Pill label */}
+                <div
+                  style={{
+                    display: 'inline-block',
+                    padding: '3px 10px',
+                    borderRadius: '999px',
+                    background: `${pillar.pillColor}18`,
+                    border: `1px solid ${pillar.pillColor}35`,
+                    fontSize: '0.7rem',
+                    fontWeight: 600,
+                    color: pillar.pillColor,
+                    letterSpacing: '0.05em',
+                    textTransform: 'uppercase',
+                    marginBottom: '14px',
+                  }}
+                >
+                  {pillar.pill}
+                </div>
+
+                {/* Author + book */}
+                <div className="space-y-1 mb-4">
+                  <div className="font-semibold text-white" style={{ fontSize: '0.9rem' }}>
+                    {pillar.author}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: '0.75rem',
+                      color: '#475569',
+                      fontStyle: 'italic',
+                    }}
+                  >
+                    {pillar.book}
+                  </div>
+                </div>
+
+                {/* Key insight */}
+                <p
+                  style={{
+                    fontSize: '0.85rem',
+                    color: '#94a3b8',
+                    lineHeight: 1.65,
+                  }}
+                >
+                  {pillar.insight}
+                </p>
+              </div>
+            </FintechCard>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Educational Disclaimer ────────────────────────────────────────────── */}
+      <div
+        className="rounded-lg text-sm"
+        style={{
+          border: '1px solid rgba(255,255,255,0.07)',
+          background: 'rgba(255,255,255,0.02)',
+          padding: '16px 20px',
+          color: '#475569',
+          lineHeight: 1.65,
+        }}
+      >
+        <span style={{ color: '#64748b', fontWeight: 600 }}>Educational use only.</span>{' '}
+        This tool provides estimates to help you think about retirement planning — it is not
+        personalized financial advice. Results assume constant investment returns and do not account
+        for taxes, fees, or market volatility. Consider consulting a Certified Financial Planner
+        (CFP) before making major financial decisions.{' '}
+        <span style={{ color: '#334155' }}>
+          Your data stays private — everything is calculated locally in your browser.
+        </span>
       </div>
     </div>
   );

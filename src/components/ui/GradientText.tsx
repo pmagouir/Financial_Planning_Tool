@@ -8,10 +8,10 @@ interface GradientTextProps {
 }
 
 const gradientClasses = {
-  primary: 'bg-shiny-primary',
-  success: 'bg-shiny-success',
-  warning: 'bg-shiny-warning',
-  info: 'bg-shiny-info',
+  primary: 'bg-accent-primary',
+  success: 'bg-accent-success',
+  warning: 'bg-accent-warning',
+  info: 'bg-accent-primary',
 };
 
 export function GradientText({ children, className, gradient = 'primary' }: GradientTextProps) {

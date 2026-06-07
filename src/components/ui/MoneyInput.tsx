@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useId } from 'react';
 import type { InputHTMLAttributes } from 'react';
 import { clsx } from 'clsx';
 
@@ -47,7 +47,11 @@ export function MoneyInput({
 }: MoneyInputProps) {
   // Ensure value is always a number
   const numericValue = typeof value === 'number' ? value : (typeof value === 'string' ? parseFloat(value) || 0 : 0);
-  
+
+  // Programmatic label + helper association (WCAG 1.3.1 / 3.3.2).
+  const inputId = useId();
+  const helperId = useId();
+
   const [displayValue, setDisplayValue] = useState(formatCurrency(numericValue));
   const [isFocused, setIsFocused] = useState(false);
 
@@ -91,20 +95,23 @@ export function MoneyInput({
   return (
     <div className="w-full">
       {label && (
-        <label className="block text-sm font-medium text-text-secondary mb-1.5">
+        <label htmlFor={inputId} className="block text-sm font-medium text-text-secondary mb-1.5">
           {label}
         </label>
       )}
       <div className="relative">
-        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <span className="text-text-muted text-sm">$</span>
+        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none" aria-hidden="true">
+          <span className="text-text-secondary text-sm">$</span>
         </div>
         <input
+          id={inputId}
           type="text"
+          inputMode="numeric"
           value={displayValue}
           onChange={handleChange}
           onFocus={handleFocus}
           onBlur={handleBlur}
+          aria-describedby={helperText ? helperId : undefined}
           className={clsx(
             'fintech-input pl-7 pr-3 font-mono',
             className
@@ -114,7 +121,7 @@ export function MoneyInput({
         />
       </div>
       {helperText && (
-        <p className="mt-1.5 text-sm text-text-muted">{helperText}</p>
+        <p id={helperId} className="mt-1.5 text-sm text-text-secondary">{helperText}</p>
       )}
     </div>
   );

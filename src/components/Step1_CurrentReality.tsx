@@ -42,7 +42,7 @@ function BudgetRibbon() {
         <div className="p-4">
           {/* Header */}
           <div className="flex items-center justify-between mb-3 border-b border-white/10 pb-2">
-            <span className="text-xs uppercase tracking-widest text-text-muted font-medium">Budget Status</span>
+            <span className="text-xs uppercase tracking-widest text-text-secondary font-medium">Budget Status</span>
             <div 
               className="w-2 h-2 rounded-full"
               style={{
@@ -90,7 +90,7 @@ function BudgetRibbon() {
             {/* Percentage */}
             <div className="pt-1">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-text-muted uppercase tracking-wider">Usage</span>
+                <span className="text-xs text-text-secondary uppercase tracking-wider">Usage</span>
                 <span className="font-mono text-xs font-medium text-text-secondary">
                   {takeHome > 0 ? ((totalAllocated / takeHome) * 100).toFixed(1) : '0.0'}%
                 </span>
@@ -142,7 +142,7 @@ export function Step1_CurrentReality({ onNext }: Step1Props) {
         {/* Top row: header + unallocated badge */}
         <div className="flex items-center justify-between mb-4">
           <div>
-            <span className="text-xs uppercase tracking-widest text-text-muted font-medium">
+            <span className="text-xs uppercase tracking-widest text-text-secondary font-medium">
               Budget Allocation
             </span>
             <div className="text-lg font-semibold text-white mt-0.5">
@@ -163,7 +163,7 @@ export function Step1_CurrentReality({ onNext }: Step1Props) {
                 padding: '4px 12px',
               }}
             >
-              <span className="text-xs font-mono text-text-muted">
+              <span className="text-xs font-mono text-text-secondary">
                 Unallocated: {formatCurrency(takeHome - res.totalAllocated)}
               </span>
             </div>
@@ -350,7 +350,7 @@ export function Step1_CurrentReality({ onNext }: Step1Props) {
 
       {/* Monthly Take-Home Input */}
       <FintechCard variant="info">
-        <h3 className="text-lg font-semibold text-shiny-text mb-4">Monthly Take-Home Pay</h3>
+        <h3 className="text-lg font-semibold text-text-primary mb-4">Monthly Take-Home Pay</h3>
         <MoneyInput
           label="Monthly Take-Home Income"
           helperText="Your after-tax monthly income"
@@ -367,29 +367,29 @@ export function Step1_CurrentReality({ onNext }: Step1Props) {
             <summary className="cursor-pointer">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <h3 className="text-lg font-semibold text-shiny-text">Fixed Costs</h3>
-                  <p className="text-sm text-shiny-muted">
+                  <h3 className="text-lg font-semibold text-text-primary">Fixed Costs</h3>
+                  <p className="text-sm text-text-secondary">
                     Essential expenses that stay relatively constant
                   </p>
                 </div>
                 <div className="text-right">
-                  <div className="text-2xl font-bold text-shiny-text">
+                  <div className="text-2xl font-bold text-text-primary">
                     {formatCurrency(res.currentFixed)}
                   </div>
-                  <div className="text-xs text-shiny-muted">Total</div>
+                  <div className="text-xs text-text-secondary">Total</div>
                 </div>
               </div>
             </summary>
             <div className="space-y-4">
               {/* Housing - Collapsible */}
               <details className="group">
-                <summary className="cursor-pointer flex items-center justify-between py-2 px-3 rounded-md hover:bg-shiny-surface transition-colors">
-                  <span className="font-medium text-shiny-text">Housing</span>
-                  <span className="text-sm text-shiny-muted font-semibold">
+                <summary className="cursor-pointer flex items-center justify-between py-2 px-3 rounded-md hover:bg-background-paper transition-colors">
+                  <span className="font-medium text-text-primary">Housing</span>
+                  <span className="text-sm text-text-secondary font-semibold">
                     {formatCurrency(housingTotal)}
                   </span>
                 </summary>
-                <div className="mt-3 space-y-3 pl-4 border-l-2 border-shiny-border">
+                <div className="mt-3 space-y-3 pl-4 border-l-2 border-background-subtle">
                   <MoneyInput
                     label="Rent/Mortgage"
                     value={i.rent}
@@ -415,13 +415,13 @@ export function Step1_CurrentReality({ onNext }: Step1Props) {
 
               {/* Transport - Collapsible */}
               <details className="group">
-                <summary className="cursor-pointer flex items-center justify-between py-2 px-3 rounded-md hover:bg-shiny-surface transition-colors">
-                  <span className="font-medium text-shiny-text">Transport</span>
-                  <span className="text-sm text-shiny-muted font-semibold">
+                <summary className="cursor-pointer flex items-center justify-between py-2 px-3 rounded-md hover:bg-background-paper transition-colors">
+                  <span className="font-medium text-text-primary">Transport</span>
+                  <span className="text-sm text-text-secondary font-semibold">
                     {formatCurrency(transportTotal)}
                   </span>
                 </summary>
-                <div className="mt-3 space-y-3 pl-4 border-l-2 border-shiny-border">
+                <div className="mt-3 space-y-3 pl-4 border-l-2 border-background-subtle">
                   <MoneyInput
                     label="Car Payment"
                     value={i.carPayment}
@@ -447,13 +447,13 @@ export function Step1_CurrentReality({ onNext }: Step1Props) {
 
               {/* Other Fixed Costs - Collapsible */}
               <details className="group">
-                <summary className="cursor-pointer flex items-center justify-between py-2 px-3 rounded-md hover:bg-shiny-surface transition-colors">
-                  <span className="font-medium text-shiny-text">Other</span>
-                  <span className="text-sm text-shiny-muted font-semibold">
+                <summary className="cursor-pointer flex items-center justify-between py-2 px-3 rounded-md hover:bg-background-paper transition-colors">
+                  <span className="font-medium text-text-primary">Other</span>
+                  <span className="text-sm text-text-secondary font-semibold">
                     {formatCurrency(otherFixedTotal)}
                   </span>
                 </summary>
-                <div className="mt-3 space-y-3 pl-4 border-l-2 border-shiny-border">
+                <div className="mt-3 space-y-3 pl-4 border-l-2 border-background-subtle">
                   <MoneyInput
                     label="Groceries"
                     value={i.groceries}
@@ -496,16 +496,16 @@ export function Step1_CurrentReality({ onNext }: Step1Props) {
             <summary className="cursor-pointer">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <h3 className="text-lg font-semibold text-shiny-text">Investments</h3>
-                  <p className="text-sm text-shiny-muted">
+                  <h3 className="text-lg font-semibold text-text-primary">Investments</h3>
+                  <p className="text-sm text-text-secondary">
                     Money you're setting aside for the future (including employer match - not part of take-home pay)
                   </p>
                 </div>
                 <div className="text-right">
-                  <div className="text-2xl font-bold text-shiny-text">
+                  <div className="text-2xl font-bold text-text-primary">
                     {formatCurrency(res.currentInvest)}
                   </div>
-                  <div className="text-xs text-shiny-muted">Total</div>
+                  <div className="text-xs text-text-secondary">Total</div>
                 </div>
               </div>
             </summary>
@@ -562,19 +562,19 @@ export function Step1_CurrentReality({ onNext }: Step1Props) {
             <summary className="cursor-pointer">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <h3 className="text-lg font-semibold text-shiny-text">Guilt-Free Spending</h3>
-                  <p className="text-xs text-text-muted italic mb-3">
+                  <h3 className="text-lg font-semibold text-text-primary">Guilt-Free Spending</h3>
+                  <p className="text-xs text-text-secondary italic mb-3">
                     Inspired by Ramit Sethi's conscious spending framework — spend extravagantly on what you love, cut ruthlessly on what you don't.
                   </p>
-                  <p className="text-sm text-shiny-muted">
+                  <p className="text-sm text-text-secondary">
                     Money for fun, experiences, and things you love
                   </p>
                 </div>
                 <div className="text-right">
-                  <div className="text-2xl font-bold text-shiny-text">
+                  <div className="text-2xl font-bold text-text-primary">
                     {formatCurrency(res.currentGuiltFree)}
                   </div>
-                  <div className="text-xs text-shiny-muted">Total</div>
+                  <div className="text-xs text-text-secondary">Total</div>
                 </div>
               </div>
             </summary>

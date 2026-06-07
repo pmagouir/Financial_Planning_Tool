@@ -111,8 +111,8 @@ export function Step2_RetirementDesign({ onNext }: Step2Props) {
       {/* ── Intro ──────────────────────────────────────────────────────────── */}
       <FintechCard variant="info">
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-shiny-text">Design Your Retirement Lifestyle</h3>
-          <p className="text-sm text-shiny-muted leading-relaxed">
+          <h3 className="text-lg font-semibold text-text-primary">Design Your Retirement Lifestyle</h3>
+          <p className="text-sm text-text-secondary leading-relaxed">
             Spending shifts in retirement. Some costs drop (no commute, no childcare). Others rise
             (healthcare, travel, hobbies you finally have time for). Sliders start from your current
             spending — adjust each to reflect your vision.
@@ -129,8 +129,8 @@ export function Step2_RetirementDesign({ onNext }: Step2Props) {
 
       {/* ── Live Category Comparison Chart ─────────────────────────────────── */}
       <FintechCard variant="primary">
-        <h3 className="text-lg font-semibold text-shiny-text mb-1">Now vs. Retirement — by Category</h3>
-        <p className="text-sm text-shiny-muted mb-5">
+        <h3 className="text-lg font-semibold text-text-primary mb-1">Now vs. Retirement — by Category</h3>
+        <p className="text-sm text-text-secondary mb-5">
           Updates live as you adjust sliders below. Blue = today, violet = retirement.
         </p>
 
@@ -213,7 +213,7 @@ export function Step2_RetirementDesign({ onNext }: Step2Props) {
                     background: 'rgba(255,255,255,0.02)',
                   }}
                 >
-                  <div style={{ fontSize: '0.65rem', color: '#475569', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '5px' }}>
+                  <div style={{ fontSize: '0.65rem', color: '#94a3b8', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '5px' }}>
                     {stat.label}
                   </div>
                   <div style={{ fontSize: '1.05rem', fontWeight: 700, color: stat.color, fontVariantNumeric: 'tabular-nums' }}>
@@ -230,7 +230,7 @@ export function Step2_RetirementDesign({ onNext }: Step2Props) {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: '#475569',
+              color: '#94a3b8',
               fontSize: '0.875rem',
               borderRadius: '8px',
               border: '1px dashed rgba(255,255,255,0.07)',
@@ -243,8 +243,8 @@ export function Step2_RetirementDesign({ onNext }: Step2Props) {
 
       {/* ── Fixed Costs Sliders ─────────────────────────────────────────────── */}
       <FintechCard variant="info">
-        <h3 className="text-lg font-semibold text-shiny-text mb-2">Fixed Costs in Retirement</h3>
-        <p className="text-sm text-shiny-muted mb-6">
+        <h3 className="text-lg font-semibold text-text-primary mb-2">Fixed Costs in Retirement</h3>
+        <p className="text-sm text-text-secondary mb-6">
           Essentials: housing, transport, food, healthcare, insurance, debt.
         </p>
         <div className="space-y-6">
@@ -260,18 +260,18 @@ export function Step2_RetirementDesign({ onNext }: Step2Props) {
                 : pct < 100 ? `−${100 - pct}% vs today`
                 : 'same as today';
               const pctColor =
-                pct === null ? '#475569'
+                pct === null ? '#94a3b8'
                 : pct > 100 ? '#f59e0b'
                 : pct < 100 ? '#10b981'
-                : '#64748b';
+                : '#94a3b8';
 
               return (
                 <div key={category.key}>
                   <div className="flex items-center justify-between text-sm mb-2">
-                    <span className="font-medium text-shiny-text">{category.label}</span>
+                    <span className="font-medium text-text-primary">{category.label}</span>
                     <div className="flex items-center gap-3">
-                      <span className="text-shiny-muted text-xs">Today: {formatCurrency(current)}</span>
-                      <span className="font-bold text-shiny-text">{formatCurrency(retirement)}</span>
+                      <span className="text-text-secondary text-xs">Today: {formatCurrency(current)}</span>
+                      <span className="font-bold text-text-primary">{formatCurrency(retirement)}</span>
                       {pctLabel && (
                         <span style={{ fontSize: '0.7rem', color: pctColor, fontWeight: 600 }}>
                           {pctLabel}
@@ -280,6 +280,7 @@ export function Step2_RetirementDesign({ onNext }: Step2Props) {
                     </div>
                   </div>
                   <RangeSlider
+                    aria-label={`${category.label} — monthly spending in retirement`}
                     value={retirement}
                     onChange={(value) => handleSliderChange(category.key, value)}
                     min={0}
@@ -295,8 +296,8 @@ export function Step2_RetirementDesign({ onNext }: Step2Props) {
 
       {/* ── Discretionary Sliders ───────────────────────────────────────────── */}
       <FintechCard variant="primary">
-        <h3 className="text-lg font-semibold text-shiny-text mb-2">Discretionary Spending in Retirement</h3>
-        <p className="text-sm text-shiny-muted mb-6">
+        <h3 className="text-lg font-semibold text-text-primary mb-2">Discretionary Spending in Retirement</h3>
+        <p className="text-sm text-text-secondary mb-6">
           Lifestyle spending: entertainment, dining, personal care, miscellaneous.
         </p>
         <div className="space-y-6">
@@ -312,18 +313,18 @@ export function Step2_RetirementDesign({ onNext }: Step2Props) {
                 : pct < 100 ? `−${100 - pct}% vs today`
                 : 'same as today';
               const pctColor =
-                pct === null ? '#475569'
+                pct === null ? '#94a3b8'
                 : pct > 100 ? '#f59e0b'
                 : pct < 100 ? '#10b981'
-                : '#64748b';
+                : '#94a3b8';
 
               return (
                 <div key={category.key}>
                   <div className="flex items-center justify-between text-sm mb-2">
-                    <span className="font-medium text-shiny-text">{category.label}</span>
+                    <span className="font-medium text-text-primary">{category.label}</span>
                     <div className="flex items-center gap-3">
-                      <span className="text-shiny-muted text-xs">Today: {formatCurrency(current)}</span>
-                      <span className="font-bold text-shiny-text">{formatCurrency(retirement)}</span>
+                      <span className="text-text-secondary text-xs">Today: {formatCurrency(current)}</span>
+                      <span className="font-bold text-text-primary">{formatCurrency(retirement)}</span>
                       {pctLabel && (
                         <span style={{ fontSize: '0.7rem', color: pctColor, fontWeight: 600 }}>
                           {pctLabel}
@@ -332,6 +333,7 @@ export function Step2_RetirementDesign({ onNext }: Step2Props) {
                     </div>
                   </div>
                   <RangeSlider
+                    aria-label={`${category.label} — monthly spending in retirement`}
                     value={retirement}
                     onChange={(value) => handleSliderChange(category.key, value)}
                     min={0}

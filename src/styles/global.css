@@ -1,5 +1,29 @@
 @import "tailwindcss";
 
+/* ── Design tokens (canonical §6) ──────────────────────────────────────────
+   Tailwind v4 derives the theme from this @theme block, not tailwind.config.mjs
+   (the JS config is not loaded by @tailwindcss/vite). This merges with — does
+   not replace — the default palette, so slate-*, white, blue-* still resolve.
+   Every value traces to studio/.learn/canonical.md §6. */
+@theme {
+  /* Backgrounds */
+  --color-background: #0f172a;          /* Slate 900 — main background */
+  --color-background-paper: #1e293b;    /* Slate 800 — cards */
+  --color-background-subtle: #334155;   /* Slate 700 — borders, input backgrounds */
+  /* Text */
+  --color-text-primary: #f8fafc;        /* Slate 50 — body and headings */
+  --color-text-secondary: #94a3b8;      /* Slate 400 — secondary text (smallest AA-safe body) */
+  --color-text-muted: #64748b;          /* Slate 500 — large/decorative text ONLY (see §7) */
+  /* Accents */
+  --color-accent-primary: #3b82f6;      /* Electric blue — CTAs, highlights */
+  --color-accent-success: #10b981;      /* Emerald — positive, on track */
+  --color-accent-warning: #f59e0b;      /* Amber — approaching limits */
+  --color-accent-danger: #ef4444;       /* Red — over budget, shortfall */
+  /* Type & elevation */
+  --font-sans: "Inter", system-ui, sans-serif;
+  --shadow-card: 0 8px 32px 0 rgb(0 0 0 / 0.3);
+}
+
 @layer base {
   body {
     background-color: #0f172a;
@@ -40,7 +64,7 @@
     outline: none;
   }
   .fintech-input::placeholder {
-    color: #64748b;
+    color: #94a3b8;
   }
   .fintech-input:focus {
     border-color: #3b82f6;
@@ -64,6 +88,20 @@
   }
   .fintech-btn:active {
     transform: scale(0.95);
+  }
+}
+
+/* Respect reduced-motion (canonical §6; WCAG 2.3.3). Content and navigation must
+   never depend on an animation completing. Framer Motion is gated in NavigationTabs
+   via useReducedMotion; this neutralizes CSS transitions/animations. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
 

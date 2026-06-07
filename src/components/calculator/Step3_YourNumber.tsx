@@ -67,7 +67,7 @@ export function Step3_YourNumber({ onNext }: Step3Props) {
     <div className="space-y-8">
       {!hasRetirementData && (
         <FintechCard variant="info">
-          <p className="text-shiny-text p-2">
+          <p className="text-text-primary p-2">
             Complete Steps 1 and 2 first — your retirement number will appear here automatically.
           </p>
         </FintechCard>
@@ -146,7 +146,7 @@ export function Step3_YourNumber({ onNext }: Step3Props) {
               style={{
                 position: 'relative',
                 fontSize: '0.95rem',
-                color: '#64748b',
+                color: '#94a3b8',
                 marginBottom: '32px',
               }}
             >
@@ -193,7 +193,7 @@ export function Step3_YourNumber({ onNext }: Step3Props) {
                   <div
                     style={{
                       fontSize: '0.68rem',
-                      color: '#475569',
+                      color: '#94a3b8',
                       marginTop: '3px',
                       letterSpacing: '0.04em',
                       textTransform: 'uppercase',
@@ -210,7 +210,7 @@ export function Step3_YourNumber({ onNext }: Step3Props) {
           <div>
             <div className="text-center mb-4">
               <h2 className="text-xl font-semibold text-white">How we calculated this</h2>
-              <p style={{ fontSize: '0.875rem', color: '#64748b' }}>
+              <p style={{ fontSize: '0.875rem', color: '#94a3b8' }}>
                 Every number is traceable. Here's the exact chain.
               </p>
             </div>
@@ -325,7 +325,7 @@ export function Step3_YourNumber({ onNext }: Step3Props) {
                         <div
                           style={{
                             fontSize: '0.72rem',
-                            color: '#475569',
+                            color: '#94a3b8',
                             marginTop: '4px',
                             fontStyle: 'italic',
                           }}
@@ -357,7 +357,7 @@ export function Step3_YourNumber({ onNext }: Step3Props) {
 
           {/* ── Parameters ──────────────────────────────────────────────────────── */}
           <FintechCard variant="info">
-            <h3 className="text-lg font-semibold text-shiny-text mb-6">Retirement Parameters</h3>
+            <h3 className="text-lg font-semibold text-text-primary mb-6">Retirement Parameters</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <RangeSlider
                 label="Retirement Year"
@@ -381,19 +381,19 @@ export function Step3_YourNumber({ onNext }: Step3Props) {
               />
               <MoneyInput
                 label="Annual Social Security"
-                helperText="Expected annual Social Security benefits (today's dollars)"
+                helperText="Today's dollars. Grows with inflation (COLA); shown pre-tax."
                 value={i.socialSecurity}
                 onChange={(value) => inputs.setKey('socialSecurity', value)}
               />
               <MoneyInput
                 label="Annual Pension"
-                helperText="Expected annual pension income (today's dollars)"
+                helperText="Today's dollars. Held flat — we do NOT inflation-adjust pensions, a conservative choice since most private pensions have no COLA."
                 value={i.pension}
                 onChange={(value) => inputs.setKey('pension', value)}
               />
               <MoneyInput
                 label="Other Annual Income"
-                helperText="Any other expected retirement income (today's dollars)"
+                helperText="Today's dollars. Held flat (no inflation adjustment) — conservative."
                 value={i.otherIncome}
                 onChange={(value) => inputs.setKey('otherIncome', value)}
               />
@@ -426,7 +426,7 @@ export function Step3_YourNumber({ onNext }: Step3Props) {
                 }
               />
               {i.withdrawalRate === 0 && (
-                <p className="mt-2 text-xs text-text-muted italic">
+                <p className="mt-2 text-xs text-text-secondary italic">
                   Auto-calculated from your retirement duration. Adjust the slider to override.
                 </p>
               )}

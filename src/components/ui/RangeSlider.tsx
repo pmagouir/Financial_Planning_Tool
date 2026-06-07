@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useId } from 'react';
 import type { InputHTMLAttributes } from 'react';
 
 interface RangeSliderProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'value' | 'onChange' | 'type'> {
@@ -24,6 +24,10 @@ export function RangeSlider({
   className,
   ...props
 }: RangeSliderProps) {
+  // Programmatic label + helper association (WCAG 1.3.1).
+  const sliderId = useId();
+  const helperId = useId();
+
   const [displayValue, setDisplayValue] = useState(value);
 
   // Sync display value when value prop changes externally
@@ -47,22 +51,28 @@ export function RangeSlider({
     <div className={`w-full ${className || ''}`}>
       {label && (
         <div className="flex items-center justify-between mb-2">
-          <label className="block text-sm font-medium text-text-primary">
+          <label htmlFor={sliderId} className="block text-sm font-medium text-text-primary">
             {label}
           </label>
-          <span className="text-sm font-semibold text-text-primary bg-background-subtle/50 px-2.5 py-1 rounded-md font-mono">
+          <span
+            aria-hidden="true"
+            className="text-sm font-semibold text-text-primary bg-background-subtle/50 px-2.5 py-1 rounded-md font-mono"
+          >
             {formatDisplay(displayValue)}
           </span>
         </div>
       )}
       <div className="relative">
         <input
+          id={sliderId}
           type="range"
           min={min}
           max={max}
           step={step}
           value={displayValue}
           onChange={handleChange}
+          aria-describedby={helperText ? helperId : undefined}
+          aria-valuetext={formatValue ? formatDisplay(displayValue) : undefined}
           className="
             w-full h-2 bg-background-subtle/30 rounded-lg appearance-none cursor-pointer
             [&::-webkit-slider-thumb]:appearance-none
@@ -92,7 +102,7 @@ export function RangeSlider({
         />
       </div>
       {helperText && (
-        <p className="mt-1.5 text-sm text-text-muted">{helperText}</p>
+        <p id={helperId} className="mt-1.5 text-sm text-text-secondary">{helperText}</p>
       )}
     </div>
   );

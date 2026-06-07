@@ -40,8 +40,8 @@ const formatYAxis = (value: number): string => {
 
 // ── Project a single portfolio scenario ──────────────────────────────────────
 
-// Projection now lives in the store's single canonical engine (financialPlan.ts, canonical §3).
-// Step 4 reads res.coneSeries — it does not recompute a projection (errors.md row 2).
+// Projection + Monte Carlo live in the store's single canonical engine (financialPlan.ts,
+// canonical §3 + §10). Step 4 reads res.mcCone — it does not recompute (errors.md rows 2, 1).
 
 // ── Custom Tooltip ────────────────────────────────────────────────────────────
 
@@ -61,9 +61,9 @@ function ConeTooltip({ active, label, payload, requiredPortfolio }: ConeTooltipP
   if (!active || !payload || payload.length === 0) return null;
 
   const get = (name: string) => payload.find((p) => p.name === name)?.value;
-  const pessimistic = get('Pessimistic');
+  const pessimistic = get('P10');
   const median = get('Median');
-  const optimistic = get('Optimistic');
+  const optimistic = get('P90');
   const target = get('Target');
 
   return (
@@ -84,19 +84,19 @@ function ConeTooltip({ active, label, payload, requiredPortfolio }: ConeTooltipP
 
       {optimistic !== undefined && (
         <div style={{ display: 'flex', justifyContent: 'space-between', gap: '16px', marginBottom: '3px' }}>
-          <span style={{ color: '#10b981' }}>Optimistic</span>
+          <span style={{ color: '#10b981' }}>90th percentile</span>
           <span style={{ fontWeight: 700, fontFamily: 'monospace', color: '#f8fafc' }}>{formatCurrency(optimistic)}</span>
         </div>
       )}
       {median !== undefined && (
         <div style={{ display: 'flex', justifyContent: 'space-between', gap: '16px', marginBottom: '3px' }}>
-          <span style={{ color: '#3b82f6' }}>Expected</span>
+          <span style={{ color: '#3b82f6' }}>Median (typical)</span>
           <span style={{ fontWeight: 700, fontFamily: 'monospace', color: '#f8fafc' }}>{formatCurrency(median)}</span>
         </div>
       )}
       {pessimistic !== undefined && (
         <div style={{ display: 'flex', justifyContent: 'space-between', gap: '16px', marginBottom: '3px' }}>
-          <span style={{ color: '#f59e0b' }}>Cautious</span>
+          <span style={{ color: '#f59e0b' }}>10th percentile</span>
           <span style={{ fontWeight: 700, fontFamily: 'monospace', color: '#f8fafc' }}>{formatCurrency(pessimistic)}</span>
         </div>
       )}
@@ -108,8 +108,8 @@ function ConeTooltip({ active, label, payload, requiredPortfolio }: ConeTooltipP
       )}
       {median !== undefined && (
         <div style={{ marginTop: '8px', borderTop: '1px solid #334155', paddingTop: '6px' }}>
-          <span style={{ fontSize: '11px', color: '#64748b' }}>
-            Scenario spread: {formatCurrency(Math.abs((optimistic ?? 0) - (pessimistic ?? 0)))}
+          <span style={{ fontSize: '11px', color: '#94a3b8' }}>
+            10th–90th pct range: {formatCurrency(Math.abs((optimistic ?? 0) - (pessimistic ?? 0)))}
           </span>
         </div>
       )}
@@ -123,29 +123,26 @@ export function Step4_InvestmentPath({ onNext }: Step4Props) {
   const i = useStore(inputs);
   const res = useStore(results);
 
-  const baseReturn = i.annualReturn / 100;
-
-  // ── Monte Carlo cone: 3 deterministic scenarios ───────────────────────────
-  // Pessimistic = base − 2%, Median = base, Optimistic = base + 2%
-  // Scenario cone — read straight from the single store engine (canonical §3); no local projection.
-  const coneData = res.coneSeries.map((p) => ({
+  // ── Probability cone (canonical §10) — real Monte Carlo percentiles ────────
+  // Read straight from the single store engine; Step 4 does not simulate locally.
+  // The shaded band spans the 10th–90th percentile of 1,000 simulations; the line
+  // is the median (typical) path.
+  const coneData = res.mcCone.map((p) => ({
     year: p.year,
-    Pessimistic: p.cautious,
-    Median: p.expected,
-    Optimistic: p.optimistic,
-    coneBase: p.cautious,
-    coneBand: p.optimistic - p.cautious,
+    P10: p.p10,
+    Median: p.p50,
+    P90: p.p90,
+    coneBase: p.p10,
+    coneBand: p.p90 - p.p10,
     Target: res.requiredPortfolio,
   }));
 
   // ── Gap/track status ──────────────────────────────────────────────────────
-  const medianFinal = coneData[coneData.length - 1]?.Median ?? 0;
-  const pessimisticFinal = coneData[coneData.length - 1]?.Pessimistic ?? 0;
-  const onTrackMedian = medianFinal >= res.requiredPortfolio;
-  const onTrackPessimistic = pessimisticFinal >= res.requiredPortfolio;
-
-  const pessReturn = Math.max(0.01, baseReturn - 0.02);
-  const optimReturn = baseReturn + 0.02;
+  const p10Final = coneData[coneData.length - 1]?.P10 ?? 0;
+  const onTrackP10 = p10Final >= res.requiredPortfolio;
+  const successPct = Math.round(res.successProbability * 100);
+  // Today's-dollars gap (errors.md row 15) — shown so the figure doesn't move with the calendar.
+  const medianGapToday = res.medianGap / (res.inflationMult || 1);
 
   const hasData = i.currentPortfolio > 0 || i.monthlyContrib > 0;
 
@@ -155,7 +152,7 @@ export function Step4_InvestmentPath({ onNext }: Step4Props) {
       {/* ── Inputs ──────────────────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <FintechCard variant="info">
-          <h3 className="text-lg font-semibold text-shiny-text mb-4">Current Portfolio</h3>
+          <h3 className="text-lg font-semibold text-text-primary mb-4">Current Portfolio</h3>
           <MoneyInput
             label="Current Portfolio Value"
             helperText="Total value of all your current investments"
@@ -165,7 +162,7 @@ export function Step4_InvestmentPath({ onNext }: Step4Props) {
         </FintechCard>
 
         <FintechCard variant="success">
-          <h3 className="text-lg font-semibold text-shiny-text mb-4">Monthly Contribution</h3>
+          <h3 className="text-lg font-semibold text-text-primary mb-4">Monthly Contribution</h3>
           <MoneyInput
             label="Monthly Investment Contribution"
             helperText="How much you'll invest each month going forward"
@@ -189,7 +186,7 @@ export function Step4_InvestmentPath({ onNext }: Step4Props) {
 
       {/* ── Return Selection ─────────────────────────────────────────────────── */}
       <FintechCard variant="primary">
-        <h3 className="text-lg font-semibold text-shiny-text mb-4">Expected Annual Return</h3>
+        <h3 className="text-lg font-semibold text-text-primary mb-4">Expected Annual Return</h3>
         <RangeSlider
           label="Annual Return Rate"
           value={i.annualReturn}
@@ -202,9 +199,9 @@ export function Step4_InvestmentPath({ onNext }: Step4Props) {
         />
         <div className="mt-4 flex gap-4 flex-wrap">
           {[
-            { label: 'Conservative (5%)', value: 5, activeClass: 'bg-shiny-info text-white shadow-shiny-card' },
-            { label: 'Moderate (7%)', value: 7, activeClass: 'bg-shiny-primary text-white shadow-shiny-card' },
-            { label: 'Aggressive (9%)', value: 9, activeClass: 'bg-shiny-success text-white shadow-shiny-card' },
+            { label: 'Conservative (5%)', value: 5, activeClass: 'bg-accent-primary text-white shadow-card' },
+            { label: 'Moderate (7%)', value: 7, activeClass: 'bg-accent-primary text-white shadow-card' },
+            { label: 'Aggressive (9%)', value: 9, activeClass: 'bg-accent-success text-white shadow-card' },
           ].map((btn) => (
             <button
               key={btn.value}
@@ -212,7 +209,7 @@ export function Step4_InvestmentPath({ onNext }: Step4Props) {
               className={`px-4 py-2 rounded-lg font-medium transition-all ${
                 i.annualReturn === btn.value
                   ? btn.activeClass
-                  : 'bg-shiny-surface text-shiny-text hover:bg-shiny-border'
+                  : 'bg-background-paper text-text-primary hover:bg-background-subtle'
               }`}
             >
               {btn.label}
@@ -223,7 +220,7 @@ export function Step4_InvestmentPath({ onNext }: Step4Props) {
 
       {/* ── Contribution Timeline ─────────────────────────────────────────────── */}
       <FintechCard variant="info">
-        <h3 className="text-lg font-semibold text-shiny-text mb-4">Contribution Timeline</h3>
+        <h3 className="text-lg font-semibold text-text-primary mb-4">Contribution Timeline</h3>
         <RangeSlider
           label="Stop Contributions Year"
           value={i.contribStopYear > 0 ? i.contribStopYear : i.retYear}
@@ -238,7 +235,7 @@ export function Step4_InvestmentPath({ onNext }: Step4Props) {
           }}
           helperText="When you plan to stop making contributions (default: retirement year)"
         />
-        <p className="mt-2 text-sm text-shiny-muted">
+        <p className="mt-2 text-sm text-text-secondary">
           {i.contribStopYear > 0 && i.contribStopYear < i.retYear
             ? `Contributions will stop in ${i.contribStopYear}, ${i.retYear - i.contribStopYear} years before retirement.`
             : 'Contributions will continue until retirement.'}
@@ -246,7 +243,7 @@ export function Step4_InvestmentPath({ onNext }: Step4Props) {
       </FintechCard>
 
       {/* ── Gap Panel ────────────────────────────────────────────────────────── */}
-      {hasData && res.gap < 0 && (
+      {hasData && res.medianGap < 0 && (
         <div
           style={{
             borderRadius: '16px',
@@ -258,7 +255,7 @@ export function Step4_InvestmentPath({ onNext }: Step4Props) {
           <h2 className="text-2xl font-bold text-white mb-3">Action Required</h2>
           <p className="text-lg text-slate-300 mb-4">
             Even in the <span style={{ color: '#f59e0b', fontWeight: 700 }}>median scenario</span>, you're projected to fall short by{' '}
-            <span className="font-bold" style={{ color: '#fbbf24' }}>{formatCurrency(Math.abs(res.gap))}</span>.
+            <span className="font-bold" style={{ color: '#fbbf24' }}>{formatCurrency(Math.abs(medianGapToday))}</span> (today's $).
           </p>
           <div
             style={{
@@ -274,7 +271,7 @@ export function Step4_InvestmentPath({ onNext }: Step4Props) {
         </div>
       )}
 
-      {hasData && res.gap >= 0 && (
+      {hasData && res.medianGap >= 0 && (
         <div
           style={{
             borderRadius: '16px',
@@ -286,9 +283,9 @@ export function Step4_InvestmentPath({ onNext }: Step4Props) {
           <h2 className="text-2xl font-bold text-white mb-2">On Track</h2>
           <p className="text-lg text-slate-300">
             Your <span style={{ color: '#10b981', fontWeight: 700 }}>median projection</span> exceeds your target by{' '}
-            <span className="font-bold" style={{ color: '#34d399' }}>{formatCurrency(res.gap)}</span>.
-            {onTrackPessimistic && (
-              <span className="text-slate-400 text-base ml-2">Even the pessimistic scenario clears the target.</span>
+            <span className="font-bold" style={{ color: '#34d399' }}>{formatCurrency(medianGapToday)}</span> (today's $).
+            {onTrackP10 && (
+              <span className="text-slate-400 text-base ml-2">Even the 10th-percentile outcome clears the target.</span>
             )}
           </p>
         </div>
@@ -296,10 +293,28 @@ export function Step4_InvestmentPath({ onNext }: Step4Props) {
 
       {/* ── Monte Carlo Cone Chart ────────────────────────────────────────────── */}
       <FintechCard variant="info">
-        <h3 className="text-lg font-semibold text-shiny-text mb-1">Scenario Range</h3>
-        <p className="text-sm text-shiny-muted mb-2">
-          Three deterministic return scenarios — at your rate, and ±2%. This is a range of projections, not a probability forecast.
+        <h3 className="text-lg font-semibold text-text-primary mb-1">Projected Range</h3>
+        <p className="text-sm text-text-secondary mb-4">
+          1,000 Monte Carlo simulations of your plan. The shaded band spans the 10th–90th percentile of outcomes; the line is the median (typical) path. An estimate under the stated return assumptions, not a guarantee.
         </p>
+        {hasData && (
+          <div
+            role="status"
+            style={{
+              display: 'flex', alignItems: 'baseline', gap: '14px', marginBottom: '18px',
+              padding: '16px 20px', borderRadius: '10px',
+              background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.2)',
+            }}
+          >
+            <span style={{ fontSize: '2.25rem', fontWeight: 700, fontFamily: 'monospace', lineHeight: 1, color: successPct >= 80 ? '#10b981' : successPct >= 60 ? '#f59e0b' : '#ef4444' }}>
+              {successPct}%
+            </span>
+            <span className="text-sm text-text-secondary">
+              of simulations fund your full {i.retDuration}-year retirement.{' '}
+              {successPct >= 80 ? 'Strong footing.' : successPct >= 60 ? 'Workable — closing the gap below would strengthen it.' : 'Fragile — more contributions or a later retirement would help.'}
+            </span>
+          </div>
+        )}
 
         {/* Scenario legend */}
         <div
@@ -315,9 +330,9 @@ export function Step4_InvestmentPath({ onNext }: Step4Props) {
           }}
         >
           {[
-            { label: `Optimistic (${(optimReturn * 100).toFixed(1)}%)`, color: '#10b981' },
-            { label: `Expected (${i.annualReturn.toFixed(1)}%)`, color: '#3b82f6' },
-            { label: `Cautious (${(pessReturn * 100).toFixed(1)}%)`, color: '#f59e0b' },
+            { label: '90th percentile', color: '#10b981' },
+            { label: 'Median (typical)', color: '#3b82f6' },
+            { label: '10th percentile', color: '#f59e0b' },
             { label: 'Target', color: '#ef4444', dashed: true },
           ].map((item) => (
             <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -333,7 +348,7 @@ export function Step4_InvestmentPath({ onNext }: Step4Props) {
           ))}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <div style={{ width: '20px', height: '12px', borderRadius: '3px', background: 'rgba(59,130,246,0.12)', border: '1px solid rgba(59,130,246,0.2)', flexShrink: 0 }} />
-            <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Scenario band</span>
+            <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Probability band (10th–90th)</span>
           </div>
         </div>
 
@@ -400,12 +415,12 @@ export function Step4_InvestmentPath({ onNext }: Step4Props) {
               {/* ── Three scenario lines ── */}
               <Line
                 type="monotone"
-                dataKey="Optimistic"
+                dataKey="P90"
                 stroke="#10b981"
                 strokeWidth={1.5}
                 strokeDasharray="5 3"
                 dot={false}
-                name="Optimistic"
+                name="P90"
               />
               <Line
                 type="monotone"
@@ -417,12 +432,12 @@ export function Step4_InvestmentPath({ onNext }: Step4Props) {
               />
               <Line
                 type="monotone"
-                dataKey="Pessimistic"
+                dataKey="P10"
                 stroke="#f59e0b"
                 strokeWidth={1.5}
                 strokeDasharray="5 3"
                 dot={false}
-                name="Pessimistic"
+                name="P10"
               />
 
               {/* ── Target line ── */}
@@ -470,22 +485,22 @@ export function Step4_InvestmentPath({ onNext }: Step4Props) {
           >
             {[
               {
-                label: 'Cautious outcome',
-                value: coneData[coneData.length - 1]?.Pessimistic ?? 0,
-                rate: `${(pessReturn * 100).toFixed(1)}% return`,
-                onTrack: (coneData[coneData.length - 1]?.Pessimistic ?? 0) >= res.requiredPortfolio,
+                label: '10th percentile',
+                value: coneData[coneData.length - 1]?.P10 ?? 0,
+                rate: 'pessimistic',
+                onTrack: (coneData[coneData.length - 1]?.P10 ?? 0) >= res.requiredPortfolio,
               },
               {
-                label: 'Expected outcome',
+                label: 'Median (typical)',
                 value: coneData[coneData.length - 1]?.Median ?? 0,
-                rate: `${i.annualReturn.toFixed(1)}% return`,
+                rate: 'most likely',
                 onTrack: (coneData[coneData.length - 1]?.Median ?? 0) >= res.requiredPortfolio,
               },
               {
-                label: 'Optimistic outcome',
-                value: coneData[coneData.length - 1]?.Optimistic ?? 0,
-                rate: `${(optimReturn * 100).toFixed(1)}% return`,
-                onTrack: (coneData[coneData.length - 1]?.Optimistic ?? 0) >= res.requiredPortfolio,
+                label: '90th percentile',
+                value: coneData[coneData.length - 1]?.P90 ?? 0,
+                rate: 'optimistic',
+                onTrack: (coneData[coneData.length - 1]?.P90 ?? 0) >= res.requiredPortfolio,
               },
             ].map((item, idx) => (
               <div
@@ -498,7 +513,7 @@ export function Step4_InvestmentPath({ onNext }: Step4Props) {
                   background: 'rgba(255,255,255,0.02)',
                 }}
               >
-                <div style={{ fontSize: '0.65rem', color: '#475569', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '5px' }}>
+                <div style={{ fontSize: '0.65rem', color: '#94a3b8', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '5px' }}>
                   {item.label}
                 </div>
                 <div
@@ -514,7 +529,7 @@ export function Step4_InvestmentPath({ onNext }: Step4Props) {
                     ? `$${(item.value / 1_000_000).toFixed(2)}M`
                     : `$${(item.value / 1_000).toFixed(0)}K`}
                 </div>
-                <div style={{ fontSize: '0.65rem', color: '#334155' }}>{item.rate}</div>
+                <div style={{ fontSize: '0.65rem', color: '#94a3b8' }}>{item.rate}</div>
                 <div
                   style={{
                     marginTop: '4px',

@@ -66,8 +66,8 @@ export function Resources() {
     <div className="space-y-8">
       {/* Header */}
       <div className="text-center space-y-4">
-        <h1 className="text-4xl font-bold text-shiny-text">Recommended Resources</h1>
-        <p className="text-xl text-shiny-muted max-w-3xl mx-auto">
+        <h1 className="text-4xl font-bold text-text-primary">Recommended Resources</h1>
+        <p className="text-xl text-text-secondary max-w-3xl mx-auto">
           Essential books to deepen your understanding of personal finance, investing, and building wealth
         </p>
       </div>
@@ -75,8 +75,8 @@ export function Resources() {
       {/* Methodology Card */}
       <FintechCard variant="info">
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-shiny-text">The Methodology Behind This Tool</h3>
-          <p className="text-sm text-shiny-muted leading-relaxed">
+          <h3 className="text-lg font-semibold text-text-primary">The Methodology Behind This Tool</h3>
+          <p className="text-sm text-text-secondary leading-relaxed">
             This tool synthesizes three proven frameworks:
           </p>
           <ul className="space-y-2 text-sm text-text-secondary">
@@ -93,21 +93,21 @@ export function Resources() {
       {/* Books Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {books.map((book) => (
-          <FintechCard key={book.title} variant={book.variant} className="hover:shadow-shiny-xl transition-shadow h-full flex flex-col">
+          <FintechCard key={book.title} variant={book.variant} className="hover:shadow-xl transition-shadow h-full flex flex-col">
             <div className="flex flex-col flex-grow">
               {/* Book Title and Author */}
               <div className="mb-4">
-                <h3 className="text-xl font-bold text-shiny-text mb-2 leading-tight">
+                <h3 className="text-xl font-bold text-text-primary mb-2 leading-tight">
                   {book.title}
                 </h3>
-                <p className="text-sm text-shiny-muted font-medium">
+                <p className="text-sm text-text-secondary font-medium">
                   by {book.author}
                 </p>
               </div>
 
               {/* Key Insight */}
               <div className="mb-4 flex-grow">
-                <p className="text-sm text-shiny-text leading-relaxed italic">
+                <p className="text-sm text-text-primary leading-relaxed italic">
                   "{book.keyInsight}"
                 </p>
               </div>
@@ -117,7 +117,7 @@ export function Resources() {
                 href={book.link}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-md font-medium text-sm bg-shiny-surface text-shiny-text hover:bg-shiny-border transition-colors mt-auto"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-md font-medium text-sm bg-background-paper text-text-primary hover:bg-background-subtle transition-colors mt-auto"
               >
                 View on Amazon
                 <svg

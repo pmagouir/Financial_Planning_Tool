@@ -74,7 +74,7 @@ export function Resources() {
       {/* Books Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {books.map((book) => (
-          <Card key={book.title} variant={book.variant} className="hover:shadow-shiny-hover transition-shadow h-full flex flex-col">
+          <Card key={book.title} variant={book.variant} className="hover:shadow-card transition-shadow h-full flex flex-col">
             <div className="p-6 flex flex-col flex-grow">
               {/* Book Title and Author */}
               <div className="mb-4">

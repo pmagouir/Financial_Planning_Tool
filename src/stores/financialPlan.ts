@@ -133,6 +133,112 @@ function projectAccumulation(
   return series;
 }
 
+// ── Monte Carlo stochastic layer (canonical §10) ────────────────────────────────
+// Seeded so identical inputs always produce identical bands and success rate
+// (reproducible, testable, no render flicker — canonical §10.3).
+const MC_TRIALS = 1000;
+const MC_SEED = 0x9e3779b9;
+const SIGMA_ACCUM = 0.16; // canonical §10.2 (S&P long-run σ, trimmed)
+const SIGMA_RET = 0.10;   // canonical §10.2 (60/40 σ)
+
+// mulberry32 — small deterministic PRNG, uniform [0,1).
+function mulberry32(seed: number): () => number {
+  let a = seed >>> 0;
+  return function () {
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+// Standard normal via Box–Muller from a uniform generator.
+function makeNormal(rand: () => number): () => number {
+  return function () {
+    let u1 = rand();
+    const u2 = rand();
+    if (u1 < 1e-12) u1 = 1e-12;
+    return Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+  };
+}
+
+// Lognormal annual gross-return params, moment-matched to arithmetic mean (1+mu)
+// and volatility sigma so E[G]=1+mu, Var[G]=sigma^2 exactly (canonical §10.1).
+function lognormalParams(mu: number, sigma: number): { nu: number; s: number } {
+  const M = 1 + mu;
+  const s2 = Math.log(1 + (sigma * sigma) / (M * M));
+  return { nu: Math.log(M) - s2 / 2, s: Math.sqrt(s2) };
+}
+
+interface PercentilePoint { year: number; p10: number; p50: number; p90: number; }
+interface MonteCarloResult {
+  successProbability: number;          // fraction of trials surviving the full retirement
+  cone: PercentilePoint[];             // accumulation percentile bands (Step 4)
+  medianPortfolio: number;             // p50 balance at retirement
+  netWorthCone: PercentilePoint[];     // FULL lifecycle bands incl. drawdown (Step 5 — shows depletion)
+}
+
+// One seeded Monte Carlo over the full lifecycle: stochastic accumulation, then
+// stochastic drawdown with sequence-of-returns risk (return applied BEFORE the
+// withdrawal each year, so a bad early sequence can permanently impair the plan).
+function runMonteCarlo(
+  annualReturn: number, currentPortfolio: number, monthlyContrib: number, contribGrowth: number,
+  yearsToRet: number, yearsContributing: number,
+  retReturn: number, retDuration: number, inflatingNet: number, flatIncome: number, inflation: number,
+  currentYear: number,
+): MonteCarloResult {
+  const rand = mulberry32(MC_SEED);
+  const normal = makeNormal(rand);
+  const accumP = lognormalParams(annualReturn, SIGMA_ACCUM);
+  const retP = lognormalParams(retReturn, SIGMA_RET);
+  const annualContrib = monthlyContrib * 12;
+
+  const accumByYear: number[][] = Array.from({ length: yearsToRet + 1 }, () => []);
+  const retByYear: number[][] = Array.from({ length: retDuration + 1 }, () => []); // index 1..retDuration
+  let successes = 0;
+
+  for (let t = 0; t < MC_TRIALS; t++) {
+    let bal = currentPortfolio;
+    accumByYear[0].push(bal);
+    for (let y = 1; y <= yearsToRet; y++) {
+      bal *= Math.exp(accumP.nu + accumP.s * normal());          // sampled annual growth
+      if (y <= yearsContributing) bal += annualContrib * Math.pow(1 + contribGrowth, y - 1);
+      accumByYear[y].push(bal);
+    }
+
+    // Drawdown — sequence-of-returns risk: grow, THEN withdraw, each year in order.
+    // Record EVERY year (not just until depletion) so the net-worth band shows depleting
+    // paths honestly; once a path hits 0 it stays at 0.
+    let rbal = bal;
+    let survived = true;
+    for (let y = 1; y <= retDuration; y++) {
+      // SS-adjusted spending grows with CPI; the flat (non-COLA) pension/other is then netted off.
+      const withdrawal = Math.max(0, inflatingNet * Math.pow(1 + inflation, y - 1) - flatIncome);
+      rbal = rbal * Math.exp(retP.nu + retP.s * normal()) - withdrawal;
+      if (rbal <= 0) { rbal = 0; survived = false; }
+      retByYear[y].push(rbal);
+    }
+    if (survived) successes++;
+  }
+
+  const pct = (sorted: number[], p: number) => sorted[Math.min(sorted.length - 1, Math.floor(p * sorted.length))];
+  const band = (arr: number[], year: number): PercentilePoint => {
+    const s = arr.slice().sort((a, b) => a - b);
+    return { year, p10: pct(s, 0.1), p50: pct(s, 0.5), p90: pct(s, 0.9) };
+  };
+  const cone = accumByYear.map((arr, idx) => band(arr, currentYear + idx));
+  const retYearAbs = currentYear + yearsToRet;
+  const retCone: PercentilePoint[] = [];
+  for (let y = 1; y <= retDuration; y++) retCone.push(band(retByYear[y], retYearAbs + y));
+
+  return {
+    successProbability: successes / MC_TRIALS,
+    cone,
+    medianPortfolio: cone.length ? cone[cone.length - 1].p50 : currentPortfolio,
+    netWorthCone: [...cone, ...retCone],
+  };
+}
+
 // 3. ENGINE: Financial calculations
 export const results = computed(inputs, (i) => {
   const currentYear = new Date().getFullYear();
@@ -162,6 +268,14 @@ export const results = computed(inputs, (i) => {
   const netNeed = Math.max(0, futureAnnualNeed - futureIncome);
   const requiredPortfolio = withdrawalRate > 0 ? netNeed / withdrawalRate : 0;
 
+  // Row 9 (canonical §2): SS keeps pace with CPI (COLA); pension + other are FIXED NOMINAL
+  // (no COLA — a deliberately conservative default). So during retirement the portfolio's draw
+  // grows faster than CPI as the pension's real value erodes. `inflatingNet` (spending − SS)
+  // grows with CPI; `flatIncome` (pension + other) is held flat. At t=1 the draw equals netNeed.
+  const ssRet = i.socialSecurity * inflationMult;                 // COLA'd
+  const flatIncome = (i.pension + i.otherIncome) * inflationMult; // fixed nominal in retirement
+  const inflatingNet = Math.max(0, futureAnnualNeed - ssRet);
+
   // C. Projection — single canonical engine (canonical §3)
   const r = i.annualReturn / 100;
   const g = i.contribIncrease / 100;
@@ -169,33 +283,12 @@ export const results = computed(inputs, (i) => {
   const yearsContributing = Math.max(0, Math.min(yearsToRet, contribStopYear - currentYear));
 
   const expectedSeries = projectAccumulation(r, i.currentPortfolio, i.monthlyContrib, g, yearsToRet, yearsContributing);
+  // Deterministic MEAN path — the engine's compounding result. Retained (canonical §5 LOCKED,
+  // single-engine guard), but NOT the headline: the user-facing "projected" number is the MC
+  // median below (mean > median for right-skewed returns — errors.md row 13).
   const projectedPortfolio = expectedSeries[expectedSeries.length - 1];
   const gap = projectedPortfolio - requiredPortfolio;
-
-  // Scenario cone — the same engine at ±2% return. These are deterministic scenario
-  // paths, not a probability distribution (relabel pending errors.md row 1).
-  const cautiousSeries = projectAccumulation(Math.max(0.01, r - 0.02), i.currentPortfolio, i.monthlyContrib, g, yearsToRet, yearsContributing);
-  const optimisticSeries = projectAccumulation(r + 0.02, i.currentPortfolio, i.monthlyContrib, g, yearsToRet, yearsContributing);
-  const coneSeries = expectedSeries.map((expected, idx) => ({
-    year: currentYear + idx,
-    cautious: cautiousSeries[idx],
-    expected,
-    optimistic: optimisticSeries[idx],
-  }));
-
-  // D. Gap solver — additional first-year monthly contribution to close a negative gap,
-  // using the same effective monthly rate as the engine.
-  let monthlyShortfall = 0;
-  if (gap < 0 && yearsContributing > 0) {
-    const m = Math.pow(1 + r, 1 / 12) - 1;
-    const monthsToRet = yearsToRet * 12;
-    const contributingMonths = yearsContributing * 12;
-    let factorSum = 0;
-    for (let k = 1; k <= contributingMonths; k++) {
-      factorSum += Math.pow(1 + m, monthsToRet - k);
-    }
-    if (factorSum > 0) monthlyShortfall = Math.abs(gap) / factorSum;
-  }
+  // D. Gap solver moved below — it now closes the MEDIAN gap (needs the Monte Carlo result).
 
   // E. Net worth series — accumulation reuses the canonical engine (so it ends exactly
   // at projectedPortfolio), then the post-retirement drawdown (canonical §4).
@@ -206,11 +299,12 @@ export const results = computed(inputs, (i) => {
       phase: 'Pre-Retirement',
     }));
 
-  const retirementReturnRate = Math.max(0.04, r * 0.6); // conservative reallocation in retirement
+  const retirementReturnRate = Math.max(0.04, r * 0.85); // realistic ~60/40 retirement return (canonical §4, ratified 2026-06-07)
   let portfolioAtRetirement = projectedPortfolio;
   for (let yearOffset = 1; yearOffset <= i.retDuration; yearOffset++) {
     let netWorth = portfolioAtRetirement * (1 + retirementReturnRate);
-    const annualWithdrawalInflated = futureAnnualNeed * Math.pow(1 + i.inflation / 100, yearOffset - 1);
+    // Per-year net draw: SS-adjusted spending grows with CPI, flat (non-COLA) income netted off (§2, row 9).
+    const annualWithdrawalInflated = Math.max(0, inflatingNet * Math.pow(1 + i.inflation / 100, yearOffset - 1) - flatIncome);
     netWorth = Math.max(0, netWorth - annualWithdrawalInflated);
     netWorthData.push({ year: i.retYear + yearOffset, netWorth, phase: 'Retirement' });
     portfolioAtRetirement = netWorth;
@@ -224,6 +318,33 @@ export const results = computed(inputs, (i) => {
   const currentGuiltFree = i.dining + i.ent + i.travel + i.hobbies + i.personal + i.clothes + i.gifts + i.dev + i.tech + i.homeImp + i.subscriptions + i.misc;
   const totalAllocated = currentFixed + currentInvestForBudget + currentGuiltFree;
 
+  // G. Monte Carlo (canonical §10) — the real probability layer. Seeded, so the same
+  // plan always yields the same success rate and percentile cone. The deterministic
+  // projectedPortfolio above remains the mean/expected path (canonical §5, LOCKED);
+  // the MC adds the distribution around it and the retirement-survival probability.
+  const mc = runMonteCarlo(
+    r, i.currentPortfolio, i.monthlyContrib, g, yearsToRet, yearsContributing,
+    retirementReturnRate, i.retDuration, inflatingNet, flatIncome, i.inflation / 100, currentYear,
+  );
+
+  // ── Headline projection = the MC MEDIAN (the typical outcome the user should plan around).
+  // Every user-facing "projected / surplus / progress / additional-needed" number reads from
+  // the median so it matches the net-worth chart and the success rate — one number, one story
+  // (Pattern 1; errors.md row 13). The deterministic mean (projectedPortfolio/gap) is retained
+  // above as the engine value but is no longer headlined.
+  const medianGap = mc.medianPortfolio - requiredPortfolio;
+
+  // D. Gap solver — additional monthly contribution to lift the MEDIAN outcome to the target.
+  let monthlyShortfall = 0;
+  if (medianGap < 0 && yearsContributing > 0) {
+    const m = Math.pow(1 + r, 1 / 12) - 1;
+    const monthsToRet = yearsToRet * 12;
+    const contributingMonths = yearsContributing * 12;
+    let factorSum = 0;
+    for (let k = 1; k <= contributingMonths; k++) factorSum += Math.pow(1 + m, monthsToRet - k);
+    if (factorSum > 0) monthlyShortfall = Math.abs(medianGap) / factorSum;
+  }
+
   return {
     inflationMult, withdrawalRate, yearsToRet,
     annualRetSpend, futureAnnualNeed,
@@ -231,6 +352,11 @@ export const results = computed(inputs, (i) => {
     monthlyShortfall,
     currentFixed, currentInvest, currentGuiltFree, totalAllocated,
     netWorthData, yearsContributing,
-    coneSeries,
+    // Monte Carlo (canonical §10) — the median is the headline projection
+    successProbability: mc.successProbability,
+    mcCone: mc.cone,
+    medianPortfolio: mc.medianPortfolio,
+    medianGap,
+    mcNetWorthCone: mc.netWorthCone,
   };
 });

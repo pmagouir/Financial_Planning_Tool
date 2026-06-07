@@ -45,7 +45,15 @@ requiredPortfolio   = netNeed / withdrawalRate
 ```
 Source for `requiredPortfolio = annualNeed / withdrawalRate`: the 4% rule restated as the 25× rule (1 / 0.04 = 25). **Confidence: high.**
 
-**Open assumption flag (CFP + Quant):** passive income (SS, pension, other) is inflated by the *same* CPI multiplier as spending (`financialPlan.ts:113`). Social Security has its own COLA and is partially taxable; many pensions are not inflation-adjusted at all. Inflating all passive income at full CPI likely **overstates** future income and therefore **understates** the required portfolio. Documented simplification, currently optimistic. Do not present as conservative.
+**Passive-income COLA treatment — RATIFIED 2026-06-07 (resolves `.learn/errors.md` row 9):**
+- **Social Security → grows with CPI (COLA).** SS COLA is CPI-indexed (CPI-W), so inflating it at the same CPI multiplier is defensible — SS keeps its real value. (Source: SSA COLA methodology.) Shown **pre-tax** (SS is partially taxable; see tax note).
+- **Pension + Other income → FIXED NOMINAL (no COLA).** Most private pensions have no cost-of-living adjustment, so they are held flat in nominal terms — their real value erodes over retirement. This is a **deliberately conservative** default (no per-pension toggle; stated plainly in the UI). It is the material correction: a flat pension loses ~half its real value over 25 years at 3%.
+- **`requiredPortfolio` is unchanged** — still the year-1 net need (`netNeed`, with all income at its retirement-year value) ÷ withdrawal rate, the standard 25× heuristic. The COLA differentiation lives in the **drawdown**, where the portfolio's annual draw grows *faster* than CPI as the pension erodes (so the Monte Carlo success rate, not `requiredPortfolio`, carries the honest consequence).
+- **Drawdown (per year t of retirement):** `withdrawal_t = max(0, inflatingNet × (1+inflation)^(t−1) − flatIncome)`, where `inflatingNet = futureAnnualNeed − ssRet` (spending minus COLA'd SS, both grow with CPI) and `flatIncome = (pension + other) × inflationMult` (held flat). Applies to BOTH the deterministic net-worth path and the §10 Monte Carlo. At t=1 this equals `netNeed` (consistent with `requiredPortfolio`).
+
+**Tax — caveated, NOT modeled (ratified 2026-06-07).** All figures are **pre-tax**. SS is partially taxable (up to 85% via provisional income) and traditional 401(k)/IRA withdrawals are ordinary income, so real spendable income is lower than shown. A full tax engine (brackets, account types, provisional income, RMDs) is a separate future loop — a half-modeled version would be its own false-rigor risk. State the caveat; do not pretend to model it.
+
+**Display convention — RATIFIED 2026-06-07 (resolves `.learn/errors.md` row 15).** The engine computes in **nominal future dollars** (so the projected-vs-required comparison and the §10 success rate are internally consistent). But headline figures (Required, Projected, Surplus, Monthly Need) are **displayed in today's dollars** (nominal ÷ `inflationMult`) with the nominal "≈ $X in {retYear}" shown beside them. Rationale: a "what you need" figure shown only in nominal dollars *decreases* the earlier you retire (less inflation compounded to a nearer date), which is backwards and erodes trust. In today's dollars it is stable — driven by spending and retirement length, not the calendar. Charts remain nominal and are labeled "future dollars." Both denominations are always visible.
 
 ## 3. Portfolio projection
 
@@ -61,11 +69,11 @@ Both terms compound at the same effective monthly rate `m`, so the engine is one
 ## 4. Post-retirement drawdown
 
 ```
-retirementReturnRate     = max(0.04, annualReturn × 0.6)
+retirementReturnRate     = max(0.04, annualReturn × 0.85)   [RATIFIED 2026-06-07 — realistic 60/40 return]
 annualWithdrawal(year)   = futureAnnualNeed × (1 + inflation/100) ^ (year − 1)
 netWorth(year)           = max(0, netWorth(year−1) × (1 + retirementReturnRate) − annualWithdrawal(year))
 ```
-Premise: conservative reallocation toward bonds in retirement (`financialPlan.ts:261`). **Confidence: medium.** The `0.6×` haircut and `4%` floor are reasonable but un-sourced heuristics — CFP to attach a basis or replace with an age-based glide path. This model has **no sequence-of-returns risk and no volatility** — depletion is smooth, which hides the single biggest real-world failure mode of the 4% rule. The Quant agent owns adding stochastic drawdown in Phase 2.
+Premise: conservative reallocation toward a ~60/40 mix in retirement (`financialPlan.ts`). **RATIFIED 2026-06-07 (Preston's call):** the multiplier changed `0.6 → 0.85` so the default 7% accumulation maps to ~5.95% nominal (~2.9% real after 3% inflation) — a realistic 60/40 retirement return, not the old ~4.2% which was a *deterministic-depletion artifact* far below any real expected return. The `4%` floor remains for very low return assumptions. **Confidence: medium** (educational). The deterministic path here is the smooth mean; the **sequence-of-returns risk and volatility now live in the Monte Carlo (§10)** — this smooth line is explicitly the "expected/mean" view, shown alongside the §10 percentile cone, never as the only story.
 
 ## 5. Reference values (LOCKED — QA asserts against these)
 
@@ -136,6 +144,54 @@ Rules: body text uses `#94a3b8` or lighter. `#64748b` is permitted only for larg
 - IRS Pub 590-B (account taxation, RMDs), Pub 915 (SS taxation); SSA COLA history — for the Quant agent's tax/COLA work.
 - W3C WCAG 2.2 — contrast (1.4.3, 1.4.6).
 - The seven-book library in `src/components/bonus/Resources.tsx` is the curated starting bibliography.
+- Volatility / capital-market assumptions (Monte Carlo, §10): macrotrends S&P 500 annual returns 1927–2026; NYU Stern V-Lab SPX GARCH volatility; CFA Institute, *The Performance of the 60/40 Portfolio* (2025).
+
+---
+
+## 10. Monte Carlo simulation (the stochastic layer — finplan-quant)
+
+Purpose: replace the deterministic ±2% "scenario range" (`.learn/errors.md` row 1) with a real probability cone and a stated success probability, and give the drawdown genuine sequence-of-returns risk — the gap §4 flags. **Until this engine ships, "probability" / "confidence interval" / "Monte Carlo" language stays banned (§8, glossary).**
+
+### 10.1 Return model — lognormal, moment-matched
+Annual gross return `G = 1 + r` is drawn from a lognormal, so a draw can never fall below −100%:
+```
+Given target arithmetic mean M = 1 + μ and volatility σ (variance V = σ²):
+  s² = ln(1 + V / M²)      [log-variance]
+  ν  = ln(M) − s²/2        [log-mean]
+  G  = exp( Normal(ν, s) )
+```
+Exact moment-matching: E[G] = exp(ν + s²/2) = M and Var[G] = (e^{s²} − 1)·e^{2ν+s²} = V. **Validated in WolframAlpha 2026-06-07:** μ=5%, σ=10% → Mean[G]=1.05, SD[G]=0.10 to machine precision.
+
+### 10.2 Parameters (sourced — Confidence: medium, educational not guarantees)
+| Phase | Mean μ | Volatility σ | Basis |
+|---|---|---|---|
+| Accumulation | user `annualReturn` (default 7%) | **0.16** | S&P 500 long-run annualized σ ≈ 18% (1926–2025), recent ≈ 17%; trimmed to 16% for a diversified equity-heavy index paired with the conservative 7% mean |
+| Retirement | `max(0.04, annualReturn×0.85)` (§4, ratified 2026-06-07) | **0.10** | 60/40 historical σ ≈ 9.5–11%, consistent with §4's reallocation |
+
+These miss fat tails, regime changes, and serial correlation — disclose, never imply otherwise.
+
+### 10.3 Algorithm
+- **Seeded** PRNG (mulberry32) seeded deterministically from the inputs → identical inputs give identical bands and success rate (reproducible, testable, no render flicker). Reproducibility is correctness for a sampled claim.
+- **N = 1,000 trials** (stable percentiles; MC standard error on a 50–95% rate at N=1000 ≈ ±1.5pp).
+- **Accumulation:** each year grow the balance by a sampled `G`, then add that year's contributions (stepped up by `contribIncrease`, stopping at `contribStopYear`).
+- **Drawdown:** each retirement year **first** apply a sampled `G`, **then** subtract the inflation-adjusted withdrawal — in that order, so a bad early sequence permanently impairs the portfolio (**sequence-of-returns risk**).
+- **Success** = balance > 0 through the entire `retDuration`. **Success probability** = fraction of the N trials that succeed.
+- **Percentile cone** = 10th / 50th / 90th percentile of balance across trials at each year. The median (p50) **sits below** the deterministic mean path (§3) due to lognormal skew — show both; do not reconcile them.
+
+### 10.4 Reference values
+| Quantity | Inputs | Value | Status |
+|---|---|---|---|
+| Moment-match (μ=5.95%, σ=10%) | — | Mean 1.0595, SD 0.10 | **LOCKED** (Wolfram 2026-06-07) |
+| Accumulation bands | $100k start; $12k/yr × (1.03)^(y−1); 25 yr; μ 7%, σ 16% | p10 ≈ $0.69M, **median ≈ $1.30M**, p90 ≈ $2.68M, mean ≈ $1.54M | REFERENCE (Wolfram 10k). Median **< mean** ($1.30M < $1.54M) and MC mean ≈ deterministic $1.574M (§5) ✓ |
+| Drawdown success rate | $1,000,000; $40,000 × (1.03)^(y−1); 30 yr; μ_ret 5.95%, σ_ret 10% | ≈ **73%** (Wolfram, 10k trials) | REFERENCE ground-truth — QA locks the seeded in-app value (N=1000, mulberry32) within ±~2pp |
+
+**FINDING — RESOLVED 2026-06-07 (Preston ratified "realistic real return").** §4's retirement multiplier moved `0.6 → 0.85` (~5.95% nominal / ~2.9% real). The textbook "$1M / 4% / 30-yr" plan now simulates at ~73% success — credible for full-COLA withdrawals with sequence-of-returns risk, and no longer the misleadingly-pessimistic 57% the old deterministic-depletion rate produced. The number is reported honestly; it was **not** tuned to hit a comforting target. This unlocks "probability" language (§10.5) once the engine ships.
+
+### 10.5 Honest labeling (extends §8, once shipped)
+Allowed: "probability," "X% of simulations succeed," "10th–90th percentile range" — always paired with the assumptions and an estimate disclaimer. Still banned: "guarantee," "ensures," and any implication the model captures crashes/fat tails it does not.
+
+### 10.6 Headline projection = the median (not the mean) — ratified 2026-06-07
+The user-facing **"Projected Portfolio," surplus/shortfall, progress-to-target, and additional-needed** all read the Monte Carlo **median** (`medianPortfolio`, `medianGap = medianPortfolio − requiredPortfolio`), matching the net-worth chart's median line and the success probability — one number, one story (Pattern 1). The deterministic `projectedPortfolio` (§3/§5) is the engine's mean compounding result and is **retained** (single-engine guard + LOCKED reference) but **not headlined**: returns are right-skewed, so the mean exceeds the median and headlining the mean overstates the typical outcome (`.learn/errors.md` row 13). The net-worth chart shows the median path + the 10th-percentile downside line; the explosive upper tail is reported via the success rate, not drawn.
 
 ---
 

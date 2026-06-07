@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useStore } from '@nanostores/react';
 import { clsx } from 'clsx';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { Step1_CurrentReality } from './Step1_CurrentReality';
 import { Step2_RetirementDesign } from './Step2_RetirementDesign';
 import { Step3_YourNumber } from './calculator/Step3_YourNumber';
@@ -50,12 +50,43 @@ const getPageTitle = (tabId: TabId): string => {
 export function NavigationTabs() {
   const [activeTab, setActiveTab] = useState<TabId>('welcome');
   const i = useStore(inputs);
+  const reduceMotion = useReducedMotion();
+
+  // Roving-tabindex focus targets per surface (desktop sidebar / mobile bar).
+  const desktopTabRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const mobileTabRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+
+  const desktopTabOrder = tabs.filter((t) => !t.isDivider).map((t) => t.id);
+  const mobileTabOrder = mobileNavTabs.map((t) => t.id);
 
   const handleNext = () => {
     const currentIndex = navOrder.indexOf(activeTab);
     if (currentIndex !== -1 && currentIndex < navOrder.length - 1) {
       setActiveTab(navOrder[currentIndex + 1]);
     }
+  };
+
+  // WAI-ARIA APG Tabs keyboard model: arrows move + activate (automatic activation),
+  // Home/End jump to ends, and focus follows the selection (focus management).
+  const handleTablistKeyDown = (
+    e: React.KeyboardEvent,
+    order: TabId[],
+    orientation: 'vertical' | 'horizontal',
+    refs: React.MutableRefObject<Record<string, HTMLButtonElement | null>>,
+  ) => {
+    const nextKey = orientation === 'vertical' ? 'ArrowDown' : 'ArrowRight';
+    const prevKey = orientation === 'vertical' ? 'ArrowUp' : 'ArrowLeft';
+    const idx = order.indexOf(activeTab);
+    let next: number | null = null;
+    if (e.key === nextKey) next = (idx + 1) % order.length;
+    else if (e.key === prevKey) next = (idx - 1 + order.length) % order.length;
+    else if (e.key === 'Home') next = 0;
+    else if (e.key === 'End') next = order.length - 1;
+    if (next === null) return;
+    e.preventDefault();
+    const nextId = order[next];
+    setActiveTab(nextId);
+    refs.current[nextId]?.focus();
   };
 
   const step1Complete = i.takeHomePay > 0;
@@ -110,50 +141,65 @@ export function NavigationTabs() {
 
         {/* ── Left Sidebar (desktop) ────────────────────────────────────────── */}
         <aside className="nav-sidebar w-64 flex-shrink-0 border-r border-white/5 bg-background-paper/30 backdrop-blur-md print:hidden">
-          <nav className="sticky top-0 h-screen overflow-y-auto p-6 space-y-1">
+          <nav aria-label="Primary" className="sticky top-0 h-screen overflow-y-auto p-6">
             <div className="mb-8 pb-6 border-b border-white/5">
               <h2 className="text-lg font-semibold text-text-primary tracking-tight">
                 Retirement Navigator
               </h2>
             </div>
 
-            {tabs.map((tab) => {
-              if (tab.isDivider) {
-                return <div key="divider" className="my-4 border-t border-white/5" />;
-              }
+            <div
+              role="tablist"
+              aria-label="Planning steps"
+              aria-orientation="vertical"
+              className="space-y-1"
+            >
+              {tabs.map((tab) => {
+                if (tab.isDivider) {
+                  return <div key="divider" role="presentation" className="my-4 border-t border-white/5" />;
+                }
 
-              const isActive = activeTab === tab.id;
-              const isComplete = getCompletionDot(tab.id);
+                const isActive = activeTab === tab.id;
+                const isComplete = getCompletionDot(tab.id);
 
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id as TabId)}
-                  className={clsx(
-                    'w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 relative group',
-                    isActive
-                      ? 'bg-accent-primary/20 text-accent-primary'
-                      : 'text-text-secondary hover:text-accent-primary'
-                  )}
-                >
-                  <span className="text-lg flex-shrink-0">{tab.icon}</span>
-                  <span className="text-left flex-1">{tab.label}</span>
-                  {isComplete && (
-                    <span
-                      className="w-2 h-2 rounded-full flex-shrink-0"
-                      style={{ backgroundColor: '#10b981', boxShadow: '0 0 6px rgba(16,185,129,0.6)' }}
-                      title="Step complete"
-                    />
-                  )}
-                  {!isActive && (
-                    <span className="absolute inset-0 rounded-lg bg-accent-primary/0 group-hover:bg-accent-primary/5 transition-all duration-200" />
-                  )}
-                  {isActive && (
-                    <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-accent-primary rounded-r-full" />
-                  )}
-                </button>
-              );
-            })}
+                return (
+                  <button
+                    key={tab.id}
+                    role="tab"
+                    id={`tab-d-${tab.id}`}
+                    aria-selected={isActive}
+                    aria-controls="tabpanel-main"
+                    tabIndex={isActive ? 0 : -1}
+                    ref={(el) => { desktopTabRefs.current[tab.id] = el; }}
+                    onClick={() => setActiveTab(tab.id as TabId)}
+                    onKeyDown={(e) => handleTablistKeyDown(e, desktopTabOrder, 'vertical', desktopTabRefs)}
+                    className={clsx(
+                      'w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 relative group',
+                      isActive
+                        ? 'bg-accent-primary/20 text-accent-primary'
+                        : 'text-text-secondary hover:text-accent-primary'
+                    )}
+                  >
+                    <span className="text-lg flex-shrink-0" aria-hidden="true">{tab.icon}</span>
+                    <span className="text-left flex-1">{tab.label}</span>
+                    {isComplete && (
+                      <span
+                        role="img"
+                        aria-label="Complete"
+                        className="w-2 h-2 rounded-full flex-shrink-0"
+                        style={{ backgroundColor: '#10b981', boxShadow: '0 0 6px rgba(16,185,129,0.6)' }}
+                      />
+                    )}
+                    {!isActive && (
+                      <span aria-hidden="true" className="absolute inset-0 rounded-lg bg-accent-primary/0 group-hover:bg-accent-primary/5 transition-all duration-200" />
+                    )}
+                    {isActive && (
+                      <span aria-hidden="true" className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-accent-primary rounded-r-full" />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
           </nav>
         </aside>
 
@@ -168,14 +214,20 @@ export function NavigationTabs() {
           </header>
 
           <div className="main-content-area relative min-h-[calc(100vh-72px)] p-8">
-            <div className="max-w-6xl mx-auto">
+            <div
+              id="tabpanel-main"
+              role="tabpanel"
+              aria-labelledby={`tab-d-${activeTab}`}
+              tabIndex={0}
+              className="max-w-6xl mx-auto focus:outline-none"
+            >
               <AnimatePresence mode="wait">
                 <motion.div
                   key={activeTab}
-                  initial={{ opacity: 0, x: 20 }}
+                  initial={reduceMotion ? false : { opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.3, ease: 'easeInOut' }}
+                  exit={reduceMotion ? { opacity: 1 } : { opacity: 0, x: -20 }}
+                  transition={reduceMotion ? { duration: 0 } : { duration: 0.3, ease: 'easeInOut' }}
                 >
                   {renderContent()}
                 </motion.div>
@@ -186,8 +238,11 @@ export function NavigationTabs() {
       </div>
 
       {/* ── Mobile Bottom Nav (≤639px) ─────────────────────────────────────── */}
-      <nav
+      <div
         className="mobile-bottom-nav print:hidden"
+        role="tablist"
+        aria-label="Planning steps"
+        aria-orientation="horizontal"
         style={{
           position: 'fixed',
           bottom: 0,
@@ -210,7 +265,15 @@ export function NavigationTabs() {
           return (
             <button
               key={tab.id}
+              role="tab"
+              id={`tab-m-${tab.id}`}
+              aria-selected={isActive}
+              aria-controls="tabpanel-main"
+              aria-label={tab.label}
+              tabIndex={isActive ? 0 : -1}
+              ref={(el) => { mobileTabRefs.current[tab.id] = el; }}
               onClick={() => setActiveTab(tab.id as TabId)}
+              onKeyDown={(e) => handleTablistKeyDown(e, mobileTabOrder, 'horizontal', mobileTabRefs)}
               style={{
                 flex: 1,
                 display: 'flex',
@@ -229,6 +292,7 @@ export function NavigationTabs() {
               {/* Active indicator — top bar */}
               {isActive && (
                 <div
+                  aria-hidden="true"
                   style={{
                     position: 'absolute',
                     top: 0,
@@ -244,6 +308,8 @@ export function NavigationTabs() {
               {/* Completion dot */}
               {isComplete && !isActive && (
                 <div
+                  role="img"
+                  aria-label="Complete"
                   style={{
                     position: 'absolute',
                     top: '6px',
@@ -256,12 +322,13 @@ export function NavigationTabs() {
                   }}
                 />
               )}
-              <span style={{ fontSize: '1.1rem', lineHeight: 1 }}>{tab.icon}</span>
+              <span aria-hidden="true" style={{ fontSize: '1.1rem', lineHeight: 1 }}>{tab.icon}</span>
               <span
+                aria-hidden="true"
                 style={{
                   fontSize: '0.6rem',
                   letterSpacing: '0.03em',
-                  color: isActive ? '#60a5fa' : '#475569',
+                  color: isActive ? '#60a5fa' : '#94a3b8',
                   fontWeight: isActive ? 600 : 400,
                   lineHeight: 1,
                 }}
@@ -271,7 +338,7 @@ export function NavigationTabs() {
             </button>
           );
         })}
-      </nav>
+      </div>
     </>
   );
 }

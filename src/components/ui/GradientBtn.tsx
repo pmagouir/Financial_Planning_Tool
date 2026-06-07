@@ -9,11 +9,11 @@ interface GradientBtnProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>,
 }
 
 const variantGradients = {
-  primary: 'bg-shiny-primary',
-  success: 'bg-shiny-success',
-  warning: 'bg-shiny-warning',
-  info: 'bg-shiny-info',
-  neutral: 'bg-shiny-neutral',
+  primary: 'bg-accent-primary',
+  success: 'bg-accent-success',
+  warning: 'bg-accent-warning',
+  info: 'bg-accent-primary',
+  neutral: 'bg-background-subtle',
 };
 
 export function GradientBtn({ 
@@ -30,8 +30,8 @@ export function GradientBtn({
         'px-6 py-4 text-lg font-bold rounded-xl',
         'text-white',
         variantGradients[variant],
-        'shadow-shiny-card',
-        'hover:-translate-y-1 hover:shadow-shiny-hover',
+        'shadow-card',
+        'hover:-translate-y-1 hover:shadow-card',
         'transition-all duration-200',
         'active:scale-95',
         fullWidth && 'w-full',

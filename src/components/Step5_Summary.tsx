@@ -6,6 +6,7 @@ import { MetricCard } from './ui/MetricCard';
 import {
   ComposedChart,
   Area,
+  Line,
   BarChart,
   Bar,
   XAxis,
@@ -48,8 +49,9 @@ interface TooltipPayloadEntry {
   name: string;
   payload: {
     year: number;
-    netWorth: number;
-    phase: string;
+    p10: number;
+    p50: number;
+    p90: number;
   };
 }
 
@@ -63,10 +65,9 @@ interface CustomTooltipProps {
 function NetWorthTooltip({ active, payload, label, requiredPortfolio }: CustomTooltipProps) {
   if (!active || !payload || payload.length === 0) return null;
 
-  const entry = payload[0];
-  const value = entry.value;
-  const phase = entry.payload?.phase ?? (entry.name === 'Accumulation' ? 'Pre-Retirement' : 'Retirement');
-  const diff = value - requiredPortfolio;
+  const row = payload[0].payload;
+  const median = row.p50;
+  const diff = median - requiredPortfolio;
   const isAbove = diff >= 0;
 
   return (
@@ -76,30 +77,23 @@ function NetWorthTooltip({ active, payload, label, requiredPortfolio }: CustomTo
         border: '1px solid #334155',
         borderRadius: '10px',
         padding: '12px 16px',
-        minWidth: '200px',
+        minWidth: '230px',
         boxShadow: '0 4px 24px rgba(0,0,0,0.5)',
       }}
     >
       <div style={{ color: '#94a3b8', fontSize: '11px', marginBottom: '6px', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
         Year {label}
       </div>
-      <div style={{ color: '#f8fafc', fontSize: '18px', fontWeight: 700, marginBottom: '4px' }}>
-        {formatCurrency(value)}
+      <div style={{ color: '#f8fafc', fontSize: '18px', fontWeight: 700 }}>
+        {formatCurrency(median)}
       </div>
-      <div style={{
-        display: 'inline-block',
-        fontSize: '11px',
-        fontWeight: 600,
-        padding: '2px 8px',
-        borderRadius: '9999px',
-        marginBottom: '8px',
-        backgroundColor: phase === 'Pre-Retirement' ? 'rgba(59,130,246,0.2)' : 'rgba(139,92,246,0.2)',
-        color: phase === 'Pre-Retirement' ? '#60a5fa' : '#a78bfa',
-      }}>
-        {phase === 'Pre-Retirement' ? 'Accumulation' : 'Withdrawal'}
+      <div style={{ fontSize: '11px', color: '#94a3b8', marginBottom: '8px' }}>median (typical)</div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '16px', fontSize: '12px' }}>
+        <span style={{ color: '#94a3b8' }}>10th–90th pct</span>
+        <span style={{ fontFamily: 'monospace', color: '#cbd5e1' }}>{formatCurrency(row.p10)} – {formatCurrency(row.p90)}</span>
       </div>
-      <div style={{ borderTop: '1px solid #334155', paddingTop: '8px', marginTop: '4px' }}>
-        <span style={{ fontSize: '11px', color: '#94a3b8' }}>vs Target: </span>
+      <div style={{ borderTop: '1px solid #334155', paddingTop: '8px', marginTop: '8px' }}>
+        <span style={{ fontSize: '11px', color: '#94a3b8' }}>median vs target: </span>
         <span style={{ fontSize: '12px', fontWeight: 700, color: isAbove ? '#22c55e' : '#ef4444' }}>
           {isAbove ? '+' : ''}{formatCurrency(diff)}
         </span>
@@ -141,24 +135,35 @@ export function Step5_Summary() {
 
   const monthlyNeedFuture = retMonthlySpend * res.inflationMult;
 
-  // ── Progress toward target ──
-  const progressPct = Math.min(100, (res.projectedPortfolio / Math.max(1, res.requiredPortfolio)) * 100);
-  const gapIsPositive = res.gap >= 0;
+  // ── Progress toward target ── (uses the MEDIAN projection — the headline number, matching
+  // the net-worth chart and success rate; not the deterministic mean. errors.md row 13.)
+  const progressPct = Math.min(100, (res.medianPortfolio / Math.max(1, res.requiredPortfolio)) * 100);
+  const gapIsPositive = res.medianGap >= 0;
 
-  // ── Chart data: split netWorthData into two connected series ──
-  const { accumulationData, withdrawalData } = useMemo(() => {
-    const all = res.netWorthData as { year: number; netWorth: number; phase: string }[];
-    const accum = all.filter((d) => d.phase === 'Pre-Retirement');
-    const withdrawal = all.filter((d) => d.phase === 'Retirement');
+  // Today's-dollars view (errors.md row 15): the engine works in nominal future dollars, but the
+  // headline figures are ALSO shown in today's purchasing power (÷ inflationMult) so "your number"
+  // doesn't shrink just because you retire sooner (less inflation baked in). Both are displayed.
+  const inflMult = res.inflationMult || 1;
+  const requiredToday = res.requiredPortfolio / inflMult;
+  const medianToday = res.medianPortfolio / inflMult;
+  const medianGapToday = res.medianGap / inflMult;
 
-    // Bridge point: last accumulation entry heads the withdrawal series so lines connect
-    const bridgePoint = accum.length > 0 ? accum[accum.length - 1] : null;
+  // ── Chart data: Monte Carlo net-worth band across the full lifecycle (canonical §10) ──
+  // Honest replacement for the old smooth deterministic line — the band shows the
+  // 10th–90th percentile, so depleting (sequence-of-returns) scenarios are visible.
+  // The outcome distribution is heavily right-skewed: over decades the 90th percentile
+  // compounds into the tens of millions, which dwarfs the median and the depletion downside.
+  // A retirement chart should answer "will it last," so we plot the MEDIAN path + the DOWNSIDE
+  // band (10th percentile → median). The explosive upside is reported in the tooltip + the
+  // success-probability banner, not drawn as a giant area.
+  const netWorthBand = useMemo(
+    () => res.mcNetWorthCone.map((p) => ({ year: p.year, p10: p.p10, p50: p.p50, p90: p.p90 })),
+    [res.mcNetWorthCone],
+  );
 
-    return {
-      accumulationData: accum,
-      withdrawalData: bridgePoint ? [bridgePoint, ...withdrawal] : withdrawal,
-    };
-  }, [res.netWorthData]);
+  // Scale to the median + target + downside (the decision-relevant range); the upside runs above.
+  const peakMedian = netWorthBand.reduce((m, p) => Math.max(m, p.p50), 0);
+  const nwYMax = Math.max(res.requiredPortfolio, peakMedian, 1) * 1.5;
 
   const retirementYear = i.retYear;
 
@@ -210,7 +215,7 @@ export function Step5_Summary() {
       <div className="print:hidden flex justify-end">
         <button
           onClick={handlePrint}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-shiny-primary text-white rounded-lg hover:opacity-90 transition-opacity font-medium shadow-shiny-card"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-accent-primary text-white rounded-lg hover:opacity-90 transition-opacity font-medium shadow-card"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
@@ -221,8 +226,8 @@ export function Step5_Summary() {
 
       {/* ── Header ── */}
       <div className="text-center space-y-2">
-        <h1 className="text-4xl font-bold text-shiny-text">Executive Summary</h1>
-        <p className="text-base text-shiny-muted">
+        <h1 className="text-4xl font-bold text-text-primary">Executive Summary</h1>
+        <p className="text-base text-text-secondary">
           Your complete retirement planning overview — as of {currentYear}
         </p>
       </div>
@@ -232,29 +237,29 @@ export function Step5_Summary() {
 
         {/* Required Portfolio */}
         <MetricCard variant="info">
-          <div className="uppercase text-xs tracking-widest text-text-muted mb-2">Required Portfolio</div>
+          <div className="uppercase text-xs tracking-widest text-text-secondary mb-2">Required Portfolio</div>
           <div className="text-3xl font-light tracking-tighter text-white leading-none">
-            {formatLarge(res.requiredPortfolio)}
+            {formatLarge(requiredToday)}
           </div>
-          <div className="text-xs text-shiny-muted mt-2">
-            To fund {i.retDuration} yrs at {formatPercent(res.withdrawalRate * 100)} withdrawal
+          <div className="text-xs text-text-secondary mt-2">
+            In today's $ · ≈{formatLarge(res.requiredPortfolio)} in {retirementYear}. Funds {formatCurrency(retMonthlySpend)}/mo for {i.retDuration} yrs at {formatPercent(res.withdrawalRate * 100)} — lower spending in Step 2 to lower this.
           </div>
         </MetricCard>
 
         {/* Projected Portfolio */}
         <MetricCard variant="success">
-          <div className="uppercase text-xs tracking-widest text-text-muted mb-2">Projected Portfolio</div>
+          <div className="uppercase text-xs tracking-widest text-text-secondary mb-2">Projected Portfolio</div>
           <div className="text-3xl font-light tracking-tighter text-white leading-none">
-            {formatLarge(res.projectedPortfolio)}
+            {formatLarge(medianToday)}
           </div>
-          <div className="text-xs text-shiny-muted mt-2">
-            By {retirementYear} at {formatPercent(i.annualReturn)} avg. return
+          <div className="text-xs text-text-secondary mt-2">
+            Median (typical) outcome, in today's $ · ≈{formatLarge(res.medianPortfolio)} in {retirementYear}
           </div>
         </MetricCard>
 
         {/* Gap */}
         <MetricCard variant={gapIsPositive ? 'success' : 'warning'}>
-          <div className="uppercase text-xs tracking-widest text-text-muted mb-2">
+          <div className="uppercase text-xs tracking-widest text-text-secondary mb-2">
             {gapIsPositive ? 'Surplus' : 'Shortfall'}
           </div>
           <div
@@ -264,44 +269,67 @@ export function Step5_Summary() {
             <span style={{ marginRight: '4px', fontSize: '22px' }}>
               {gapIsPositive ? '↑' : '↓'}
             </span>
-            {formatLarge(Math.abs(res.gap))}
+            {formatLarge(Math.abs(medianGapToday))}
           </div>
-          <div className="text-xs text-shiny-muted mt-2">
+          <div className="text-xs text-text-secondary mt-2">
             {gapIsPositive
-              ? 'You are on track — buffer above target'
-              : `Additional ${formatLarge(res.monthlyShortfall)}/mo needed`}
+              ? "Today's $ buffer above target"
+              : `Today's $ gap — add ${formatLarge(res.monthlyShortfall)}/mo to close it`}
           </div>
         </MetricCard>
 
         {/* Withdrawal Rate */}
         <MetricCard variant="primary">
-          <div className="uppercase text-xs tracking-widest text-text-muted mb-2">Withdrawal Rate</div>
+          <div className="uppercase text-xs tracking-widest text-text-secondary mb-2">Withdrawal Rate</div>
           <div className="text-3xl font-light tracking-tighter text-white leading-none">
             {formatPercent(res.withdrawalRate * 100)}
           </div>
-          <div className="text-xs text-shiny-muted mt-2">
+          <div className="text-xs text-text-secondary mt-2">
             Trinity Study ({i.retDuration} yr retirement)
           </div>
         </MetricCard>
 
       </div>
 
+      {/* ── Monte Carlo success probability (canonical §10) ── */}
+      <MetricCard variant={res.successProbability >= 0.8 ? 'success' : res.successProbability >= 0.6 ? 'warning' : 'info'}>
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4" role="status">
+          <div>
+            <div className="uppercase text-xs tracking-widest text-text-secondary mb-2">Plan Success Probability</div>
+            <div className="flex items-baseline gap-3">
+              <span
+                className="text-4xl font-light tracking-tighter leading-none"
+                style={{ fontFamily: 'monospace', color: res.successProbability >= 0.8 ? '#10b981' : res.successProbability >= 0.6 ? '#f59e0b' : '#ef4444' }}
+              >
+                {Math.round(res.successProbability * 100)}%
+              </span>
+              <span className="text-sm text-text-secondary">of 1,000 simulations fund all {i.retDuration} years</span>
+            </div>
+          </div>
+          <div className="text-xs text-text-secondary max-w-md md:text-right">
+            A Monte Carlo estimate with sequence-of-returns risk (§10). Returns are sampled, not
+            guaranteed — a probability, not a promise. Social Security grows with inflation; pensions
+            and other income are held flat (conservative). All figures pre-tax.
+          </div>
+        </div>
+      </MetricCard>
+
       {/* ── Inflation Impact ── */}
       <MetricCard variant="primary">
-        <h3 className="text-sm font-semibold text-shiny-text mb-4 uppercase tracking-widest">Inflation Impact</h3>
+        <h3 className="text-sm font-semibold text-text-primary mb-4 uppercase tracking-widest">Inflation Impact</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
-            <div className="text-xs text-shiny-muted mb-1">Monthly Need (Today's $)</div>
-            <div className="text-2xl font-bold text-shiny-text">{formatCurrency(retMonthlySpend)}</div>
+            <div className="text-xs text-text-secondary mb-1">Monthly Need (Today's $)</div>
+            <div className="text-2xl font-bold text-text-primary">{formatCurrency(retMonthlySpend)}</div>
           </div>
           <div>
-            <div className="text-xs text-shiny-muted mb-1">Monthly Need ({retirementYear} $)</div>
-            <div className="text-2xl font-bold text-shiny-text">{formatCurrency(monthlyNeedFuture)}</div>
+            <div className="text-xs text-text-secondary mb-1">Monthly Need ({retirementYear} $)</div>
+            <div className="text-2xl font-bold text-text-primary">{formatCurrency(monthlyNeedFuture)}</div>
           </div>
           <div>
-            <div className="text-xs text-shiny-muted mb-1">Inflation Multiplier</div>
-            <div className="text-2xl font-bold text-shiny-text">{res.inflationMult.toFixed(2)}x</div>
-            <div className="text-xs text-shiny-muted mt-1">
+            <div className="text-xs text-text-secondary mb-1">Inflation Multiplier</div>
+            <div className="text-2xl font-bold text-text-primary">{res.inflationMult.toFixed(2)}x</div>
+            <div className="text-xs text-text-secondary mt-1">
               {formatPercent(i.inflation)} avg. annual over {yearsAway} yrs
             </div>
           </div>
@@ -310,17 +338,17 @@ export function Step5_Summary() {
 
       {/* ── Progress Bar / Gap Indicator ── */}
       <FintechCard variant="info">
-        <h3 className="text-sm font-semibold text-shiny-text mb-4 uppercase tracking-widest">
+        <h3 className="text-sm font-semibold text-text-primary mb-4 uppercase tracking-widest">
           Progress Toward Target
         </h3>
 
         {/* Labels above bar */}
-        <div className="flex justify-between text-xs text-shiny-muted mb-2">
+        <div className="flex justify-between text-xs text-text-secondary mb-2">
           <span>
-            Projected: <span className="text-white font-semibold">{formatLarge(res.projectedPortfolio)}</span>
+            Projected (median, today's $): <span className="text-white font-semibold">{formatLarge(medianToday)}</span>
           </span>
           <span>
-            Target: <span className="text-white font-semibold">{formatLarge(res.requiredPortfolio)}</span>
+            Target: <span className="text-white font-semibold">{formatLarge(requiredToday)}</span>
           </span>
         </div>
 
@@ -373,25 +401,29 @@ export function Step5_Summary() {
             style={{ color: gapIsPositive ? '#22c55e' : '#f97316' }}
           >
             {gapIsPositive
-              ? `${formatLarge(res.gap)} surplus`
-              : `${formatLarge(Math.abs(res.gap))} shortfall`}
+              ? `${formatLarge(medianGapToday)} surplus`
+              : `${formatLarge(Math.abs(medianGapToday))} shortfall`}
           </span>
         </div>
       </FintechCard>
 
       {/* ── Net Worth Projection Chart ── */}
       <FintechCard variant="info">
-        <h3 className="text-sm font-semibold text-shiny-text mb-1 uppercase tracking-widest">
+        <h3 className="text-sm font-semibold text-text-primary mb-1 uppercase tracking-widest">
           Net Worth Projection
         </h3>
-        <p className="text-xs text-shiny-muted mb-6">
-          Portfolio growth through accumulation (blue) and drawdown during withdrawal (purple).
-          The amber line marks retirement; the red line is your target portfolio.
+        <p className="text-xs text-text-secondary mb-6">
+          1,000 Monte Carlo simulations. The solid filled line is the median (typical) path; the
+          dashed line is the 10th-percentile <strong>downside</strong> — where it dips toward zero, the weakest
+          scenarios have run out. The luckiest outcomes run far higher and are left off the chart
+          (see the success rate above) so the typical path and downside stay readable. Amber marks
+          retirement; red is your target. <strong>Shown in future dollars</strong> — the cards above
+          are in today's dollars (≈half the spending power at retirement).
         </p>
 
         <div style={{ height: '420px' }}>
           <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart margin={{ top: 10, right: 24, left: 10, bottom: 20 }}>
+            <ComposedChart data={netWorthBand} margin={{ top: 10, right: 24, left: 10, bottom: 20 }}>
               <defs>
                 <linearGradient id="gradientBlue" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.6} />
@@ -413,10 +445,12 @@ export function Step5_Summary() {
                 tick={{ fill: '#94a3b8', fontSize: 11 }}
                 tickLine={false}
                 axisLine={{ stroke: '#334155' }}
-                label={{ value: 'Year', position: 'insideBottom', offset: -10, fill: '#64748b', fontSize: 11 }}
+                label={{ value: 'Year', position: 'insideBottom', offset: -10, fill: '#94a3b8', fontSize: 11 }}
               />
 
               <YAxis
+                domain={[0, nwYMax]}
+                allowDataOverflow
                 tickFormatter={formatYAxis}
                 tick={{ fill: '#94a3b8', fontSize: 11 }}
                 tickLine={false}
@@ -471,46 +505,42 @@ export function Step5_Summary() {
                 }}
               />
 
-              {/* Accumulation area */}
+              {/* Median (typical) path — single clean filled area + line */}
               <Area
-                data={accumulationData}
                 type="monotone"
-                dataKey="netWorth"
-                fill="url(#gradientBlue)"
+                dataKey="p50"
                 stroke="#3b82f6"
                 strokeWidth={3}
-                name="Accumulation"
+                fill="url(#gradientBlue)"
+                name="Median (typical)"
                 dot={false}
                 activeDot={{ r: 5, fill: '#3b82f6', stroke: '#1e40af', strokeWidth: 2 }}
-                connectNulls
+                isAnimationActive={false}
               />
-
-              {/* Withdrawal area */}
-              <Area
-                data={withdrawalData}
+              {/* 10th-percentile downside floor — dashed line; dips to $0 where weak scenarios deplete */}
+              <Line
                 type="monotone"
-                dataKey="netWorth"
-                fill="url(#gradientPurple)"
-                stroke="#8b5cf6"
-                strokeWidth={3}
-                name="Withdrawal"
+                dataKey="p10"
+                stroke="#cbd5e1"
+                strokeWidth={2}
+                strokeDasharray="5 4"
+                name="10th percentile (downside)"
                 dot={false}
-                activeDot={{ r: 5, fill: '#8b5cf6', stroke: '#6d28d9', strokeWidth: 2 }}
-                connectNulls
+                isAnimationActive={false}
               />
             </ComposedChart>
           </ResponsiveContainer>
         </div>
 
         {/* Manual phase legend */}
-        <div className="mt-4 flex flex-wrap gap-6 text-xs text-shiny-muted">
+        <div className="mt-4 flex flex-wrap gap-6 text-xs text-text-secondary">
           <div className="flex items-center gap-2">
-            <div style={{ width: 14, height: 14, borderRadius: 3, background: '#3b82f6', opacity: 0.85 }} />
-            <span>Accumulation (Pre-Retirement)</span>
+            <div style={{ width: 20, height: 3, borderRadius: 2, background: '#3b82f6' }} />
+            <span>Median (typical) path</span>
           </div>
           <div className="flex items-center gap-2">
-            <div style={{ width: 14, height: 14, borderRadius: 3, background: '#8b5cf6', opacity: 0.85 }} />
-            <span>Withdrawal (Retirement)</span>
+            <div style={{ width: 20, height: 0, borderTop: '2px dashed #cbd5e1' }} />
+            <span>10th percentile (downside)</span>
           </div>
           <div className="flex items-center gap-2">
             <div style={{ width: 20, height: 2, background: '#f59e0b' }} />
@@ -528,10 +558,10 @@ export function Step5_Summary() {
 
         {/* Card A: Spending Comparison Bar Chart */}
         <FintechCard variant="primary">
-          <h3 className="text-sm font-semibold text-shiny-text mb-1 uppercase tracking-widest">
+          <h3 className="text-sm font-semibold text-text-primary mb-1 uppercase tracking-widest">
             Now vs. Retirement Spending
           </h3>
-          <p className="text-xs text-shiny-muted mb-5">Monthly by category</p>
+          <p className="text-xs text-text-secondary mb-5">Monthly by category</p>
 
           {spendingComparison.length > 0 ? (
             <div style={{ height: `${Math.max(200, spendingComparison.length * 52)}px` }}>
@@ -580,7 +610,7 @@ export function Step5_Summary() {
               </ResponsiveContainer>
             </div>
           ) : (
-            <div className="flex items-center justify-center h-40 text-shiny-muted text-sm">
+            <div className="flex items-center justify-center h-40 text-text-secondary text-sm">
               Enter spending data in Step 1 to see comparison
             </div>
           )}
@@ -588,10 +618,10 @@ export function Step5_Summary() {
 
         {/* Card B: Key Assumptions at a Glance */}
         <FintechCard variant="success">
-          <h3 className="text-sm font-semibold text-shiny-text mb-1 uppercase tracking-widest">
+          <h3 className="text-sm font-semibold text-text-primary mb-1 uppercase tracking-widest">
             Key Assumptions
           </h3>
-          <p className="text-xs text-shiny-muted mb-5">At a glance</p>
+          <p className="text-xs text-text-secondary mb-5">At a glance</p>
 
           <div className="grid grid-cols-2 gap-0">
             {[
@@ -615,8 +645,8 @@ export function Step5_Summary() {
                   backgroundColor: idx % 4 < 2 ? 'transparent' : 'rgba(255,255,255,0.02)',
                 }}
               >
-                <div className="text-xs text-shiny-muted leading-tight">{item.label}</div>
-                <div className="text-sm font-semibold text-shiny-text mt-0.5">{item.value}</div>
+                <div className="text-xs text-text-secondary leading-tight">{item.label}</div>
+                <div className="text-sm font-semibold text-text-primary mt-0.5">{item.value}</div>
               </div>
             ))}
           </div>
@@ -625,10 +655,10 @@ export function Step5_Summary() {
 
       {/* ── Retirement Income Sources ── */}
       <FintechCard variant="warning">
-        <h3 className="text-sm font-semibold text-shiny-text mb-1 uppercase tracking-widest">
+        <h3 className="text-sm font-semibold text-text-primary mb-1 uppercase tracking-widest">
           Retirement Income Sources
         </h3>
-        <p className="text-xs text-shiny-muted mb-5">
+        <p className="text-xs text-text-secondary mb-5">
           Annual income that reduces portfolio draw — reducing your required portfolio size
         </p>
 
@@ -636,16 +666,16 @@ export function Step5_Summary() {
           <table className="w-full text-sm">
             <thead>
               <tr style={{ borderBottom: '1px solid #334155' }}>
-                <th className="text-left py-3 px-4 text-xs font-semibold text-shiny-muted uppercase tracking-wider">
+                <th className="text-left py-3 px-4 text-xs font-semibold text-text-secondary uppercase tracking-wider">
                   Source
                 </th>
-                <th className="text-right py-3 px-4 text-xs font-semibold text-shiny-muted uppercase tracking-wider">
+                <th className="text-right py-3 px-4 text-xs font-semibold text-text-secondary uppercase tracking-wider">
                   Annual (Today's $)
                 </th>
-                <th className="text-right py-3 px-4 text-xs font-semibold text-shiny-muted uppercase tracking-wider">
+                <th className="text-right py-3 px-4 text-xs font-semibold text-text-secondary uppercase tracking-wider">
                   Annual ({retirementYear} $)
                 </th>
-                <th className="text-right py-3 px-4 text-xs font-semibold text-shiny-muted uppercase tracking-wider">
+                <th className="text-right py-3 px-4 text-xs font-semibold text-text-secondary uppercase tracking-wider">
                   Portfolio Offset
                 </th>
               </tr>
@@ -666,26 +696,26 @@ export function Step5_Summary() {
                       backgroundColor: idx % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.02)',
                     }}
                   >
-                    <td className="py-3 px-4 text-shiny-text">{row.label}</td>
-                    <td className="py-3 px-4 text-right font-medium text-shiny-text">
-                      {row.today > 0 ? formatCurrency(row.today) : <span className="text-shiny-muted">—</span>}
+                    <td className="py-3 px-4 text-text-primary">{row.label}</td>
+                    <td className="py-3 px-4 text-right font-medium text-text-primary">
+                      {row.today > 0 ? formatCurrency(row.today) : <span className="text-text-secondary">—</span>}
                     </td>
-                    <td className="py-3 px-4 text-right font-medium text-shiny-text">
-                      {future > 0 ? formatCurrency(future) : <span className="text-shiny-muted">—</span>}
+                    <td className="py-3 px-4 text-right font-medium text-text-primary">
+                      {future > 0 ? formatCurrency(future) : <span className="text-text-secondary">—</span>}
                     </td>
-                    <td className="py-3 px-4 text-right font-medium" style={{ color: offset > 0 ? '#22c55e' : '#64748b' }}>
-                      {offset > 0 ? formatLarge(offset) : <span className="text-shiny-muted">—</span>}
+                    <td className="py-3 px-4 text-right font-medium" style={{ color: offset > 0 ? '#22c55e' : '#94a3b8' }}>
+                      {offset > 0 ? formatLarge(offset) : <span className="text-text-secondary">—</span>}
                     </td>
                   </tr>
                 );
               })}
               {/* Total row */}
               <tr style={{ borderTop: '1px solid #334155', backgroundColor: 'rgba(255,255,255,0.04)' }}>
-                <td className="py-3 px-4 font-bold text-shiny-text">Total</td>
-                <td className="py-3 px-4 text-right font-bold text-shiny-text">
+                <td className="py-3 px-4 font-bold text-text-primary">Total</td>
+                <td className="py-3 px-4 text-right font-bold text-text-primary">
                   {formatCurrency(i.socialSecurity + i.pension + i.otherIncome)}
                 </td>
-                <td className="py-3 px-4 text-right font-bold text-shiny-text">
+                <td className="py-3 px-4 text-right font-bold text-text-primary">
                   {formatCurrency((i.socialSecurity + i.pension + i.otherIncome) * res.inflationMult)}
                 </td>
                 <td className="py-3 px-4 text-right font-bold" style={{ color: '#22c55e' }}>
@@ -705,7 +735,7 @@ export function Step5_Summary() {
           backgroundColor: 'rgba(255,255,255,0.04)',
           padding: '16px',
           fontSize: '12px',
-          color: '#64748b',
+          color: '#94a3b8',
           lineHeight: '1.6',
         }}
       >

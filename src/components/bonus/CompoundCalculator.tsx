@@ -84,14 +84,14 @@ export function CompoundCalculator() {
     <div className="space-y-8">
       {/* Quick Scenario Buttons */}
       <FintechCard variant="primary">
-        <h3 className="text-lg font-semibold text-shiny-text mb-4">Quick Scenarios</h3>
+        <h3 className="text-lg font-semibold text-text-primary mb-4">Quick Scenarios</h3>
         <div className="flex flex-wrap gap-4">
           <button
             onClick={() => handleScenario(0.05)}
             className={`px-6 py-3 rounded-lg font-medium transition-all ${
               rate === 0.05
-                ? 'bg-shiny-info text-white shadow-shiny-card'
-                : 'bg-shiny-surface text-shiny-text hover:bg-shiny-border'
+                ? 'bg-accent-primary text-white shadow-card'
+                : 'bg-background-paper text-text-primary hover:bg-background-subtle'
             }`}
           >
             Conservative (5%)
@@ -100,8 +100,8 @@ export function CompoundCalculator() {
             onClick={() => handleScenario(0.07)}
             className={`px-6 py-3 rounded-lg font-medium transition-all ${
               rate === 0.07
-                ? 'bg-shiny-primary text-white shadow-shiny-card'
-                : 'bg-shiny-surface text-shiny-text hover:bg-shiny-border'
+                ? 'bg-accent-primary text-white shadow-card'
+                : 'bg-background-paper text-text-primary hover:bg-background-subtle'
             }`}
           >
             Moderate (7%)
@@ -110,8 +110,8 @@ export function CompoundCalculator() {
             onClick={() => handleScenario(0.09)}
             className={`px-6 py-3 rounded-lg font-medium transition-all ${
               rate === 0.09
-                ? 'bg-shiny-success text-white shadow-shiny-card'
-                : 'bg-shiny-surface text-shiny-text hover:bg-shiny-border'
+                ? 'bg-accent-success text-white shadow-card'
+                : 'bg-background-paper text-text-primary hover:bg-background-subtle'
             }`}
           >
             Aggressive (9%)
@@ -122,7 +122,7 @@ export function CompoundCalculator() {
       {/* Inputs */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <FintechCard variant="info">
-          <h3 className="text-lg font-semibold text-shiny-text mb-4">Investment Inputs</h3>
+          <h3 className="text-lg font-semibold text-text-primary mb-4">Investment Inputs</h3>
           <div className="space-y-4">
             <MoneyInput
               label="Initial Investment"
@@ -140,7 +140,7 @@ export function CompoundCalculator() {
         </FintechCard>
 
         <FintechCard variant="primary">
-          <h3 className="text-lg font-semibold text-shiny-text mb-4">Growth Parameters</h3>
+          <h3 className="text-lg font-semibold text-text-primary mb-4">Growth Parameters</h3>
           <div className="space-y-4">
             <RangeSlider
               label="Annual Return Rate"
@@ -169,20 +169,20 @@ export function CompoundCalculator() {
       {/* Results Summary */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <FintechCard variant="info">
-          <div className="text-sm text-shiny-muted mb-2">Total Principal</div>
-          <div className="text-2xl font-bold text-shiny-text">
+          <div className="text-sm text-text-secondary mb-2">Total Principal</div>
+          <div className="text-2xl font-bold text-text-primary">
             {formatCurrency(finalPrincipal)}
           </div>
         </FintechCard>
         <FintechCard variant="success">
-          <div className="text-sm text-shiny-muted mb-2">Interest Earned</div>
-          <div className="text-2xl font-bold text-shiny-text">
+          <div className="text-sm text-text-secondary mb-2">Interest Earned</div>
+          <div className="text-2xl font-bold text-text-primary">
             {formatCurrency(finalInterest)}
           </div>
         </FintechCard>
         <FintechCard variant="primary">
-          <div className="text-sm text-shiny-muted mb-2">Final Value</div>
-          <div className="text-2xl font-bold text-shiny-text">
+          <div className="text-sm text-text-secondary mb-2">Final Value</div>
+          <div className="text-2xl font-bold text-text-primary">
             {formatCurrency(finalTotal)}
           </div>
         </FintechCard>
@@ -190,8 +190,8 @@ export function CompoundCalculator() {
 
       {/* Stacked Area Chart */}
       <FintechCard variant="primary">
-        <h3 className="text-lg font-semibold text-shiny-text mb-4">Growth Over Time</h3>
-        <p className="text-sm text-shiny-muted mb-6">
+        <h3 className="text-lg font-semibold text-text-primary mb-4">Growth Over Time</h3>
+        <p className="text-sm text-text-secondary mb-6">
           Visual breakdown of principal contributions vs. interest earned
         </p>
         <div className="h-96">
@@ -256,10 +256,10 @@ export function CompoundCalculator() {
 
       {/* Rule of 72 */}
       <FintechCard variant="info">
-        <h3 className="text-lg font-semibold text-shiny-text mb-2">Rule of 72</h3>
-        <p className="text-sm text-shiny-muted">
+        <h3 className="text-lg font-semibold text-text-primary mb-2">Rule of 72</h3>
+        <p className="text-sm text-text-secondary">
           Your investment will approximately double every{' '}
-          <span className="font-bold text-shiny-text">
+          <span className="font-bold text-text-primary">
             {(72 / (rate * 100)).toFixed(1)} years
           </span>{' '}
           at a {formatPercent(rate)} annual return rate.

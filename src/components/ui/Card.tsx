@@ -10,10 +10,10 @@ interface CardProps {
 }
 
 const variantClasses = {
-  primary: 'border-t-shiny-primary',
-  success: 'border-t-shiny-success',
-  warning: 'border-t-shiny-warning',
-  info: 'border-t-shiny-info',
+  primary: 'border-t-accent-primary',
+  success: 'border-t-accent-success',
+  warning: 'border-t-accent-warning',
+  info: 'border-t-accent-primary',
 };
 
 export function Card({ children, variant, color, className }: CardProps) {
@@ -32,7 +32,7 @@ export function Card({ children, variant, color, className }: CardProps) {
   return (
     <div
       className={clsx(
-        'rounded-xl border border-slate-200 bg-white shadow-shiny-card',
+        'rounded-xl border border-slate-200 bg-white shadow-card',
         'border-t-4',
         variantClasses[finalVariant],
         className

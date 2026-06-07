@@ -175,7 +175,7 @@ export function Welcome({ onStart }: WelcomeProps) {
                 borderRadius: '8px',
                 border: '1px solid rgba(255,255,255,0.08)',
                 background: 'rgba(255,255,255,0.03)',
-                color: '#64748b',
+                color: '#94a3b8',
                 fontSize: '0.875rem',
               }}
             >
@@ -222,7 +222,7 @@ export function Welcome({ onStart }: WelcomeProps) {
             <div
               style={{
                 fontSize: '0.7rem',
-                color: '#475569',
+                color: '#94a3b8',
                 marginTop: '4px',
                 letterSpacing: '0.04em',
                 textTransform: 'uppercase',
@@ -238,7 +238,7 @@ export function Welcome({ onStart }: WelcomeProps) {
       <div className="space-y-4">
         <div className="text-center space-y-1">
           <h2 className="text-xl font-semibold text-white">How it works</h2>
-          <p style={{ fontSize: '0.875rem', color: '#64748b' }}>
+          <p style={{ fontSize: '0.875rem', color: '#94a3b8' }}>
             A guided five-step process, start to finish.
           </p>
         </div>
@@ -329,7 +329,7 @@ export function Welcome({ onStart }: WelcomeProps) {
               <div
                 style={{
                   fontSize: '0.75rem',
-                  color: '#64748b',
+                  color: '#94a3b8',
                   lineHeight: 1.5,
                 }}
               >
@@ -365,7 +365,7 @@ export function Welcome({ onStart }: WelcomeProps) {
       <div className="space-y-4">
         <div className="text-center space-y-1">
           <h2 className="text-xl font-semibold text-white">The philosophy behind this tool</h2>
-          <p style={{ fontSize: '0.875rem', color: '#64748b' }}>
+          <p style={{ fontSize: '0.875rem', color: '#94a3b8' }}>
             Three frameworks. One coherent system.
           </p>
         </div>
@@ -407,7 +407,7 @@ export function Welcome({ onStart }: WelcomeProps) {
                   <div
                     style={{
                       fontSize: '0.75rem',
-                      color: '#475569',
+                      color: '#94a3b8',
                       fontStyle: 'italic',
                     }}
                   >
@@ -438,11 +438,11 @@ export function Welcome({ onStart }: WelcomeProps) {
           border: '1px solid rgba(255,255,255,0.07)',
           background: 'rgba(255,255,255,0.02)',
           padding: '16px 20px',
-          color: '#475569',
+          color: '#94a3b8',
           lineHeight: 1.65,
         }}
       >
-        <span style={{ color: '#64748b', fontWeight: 600 }}>Educational use only.</span>{' '}
+        <span style={{ color: '#94a3b8', fontWeight: 600 }}>Educational use only.</span>{' '}
         This tool provides estimates to help you think about retirement planning — it is not
         personalized financial advice. Results assume constant investment returns and do not account
         for taxes, fees, or market volatility. Consider consulting a Certified Financial Planner

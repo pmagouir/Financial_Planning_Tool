@@ -90,7 +90,7 @@ export function CompoundCalculator() {
               onClick={() => handleScenario(0.05)}
               className={`px-6 py-3 rounded-lg font-medium transition-all ${
                 rate === 0.05
-                  ? 'bg-shiny-info text-white shadow-shiny-card'
+                  ? 'bg-accent-primary text-white shadow-card'
                   : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
               }`}
             >
@@ -100,7 +100,7 @@ export function CompoundCalculator() {
               onClick={() => handleScenario(0.07)}
               className={`px-6 py-3 rounded-lg font-medium transition-all ${
                 rate === 0.07
-                  ? 'bg-shiny-primary text-white shadow-shiny-card'
+                  ? 'bg-accent-primary text-white shadow-card'
                   : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
               }`}
             >
@@ -110,7 +110,7 @@ export function CompoundCalculator() {
               onClick={() => handleScenario(0.09)}
               className={`px-6 py-3 rounded-lg font-medium transition-all ${
                 rate === 0.09
-                  ? 'bg-shiny-success text-white shadow-shiny-card'
+                  ? 'bg-accent-success text-white shadow-card'
                   : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
               }`}
             >

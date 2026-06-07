@@ -3,7 +3,6 @@ import { inputs, results } from '../stores/financialPlan';
 import { FintechCard } from './ui/FintechCard';
 import { MoneyInput } from './ui/MoneyInput';
 import { RangeSlider } from './ui/RangeSlider';
-import { useMemo } from 'react';
 import {
   ComposedChart,
   Line,
@@ -41,35 +40,8 @@ const formatYAxis = (value: number): string => {
 
 // ── Project a single portfolio scenario ──────────────────────────────────────
 
-function projectPortfolio(
-  annualReturn: number,         // decimal e.g. 0.07
-  currentPortfolio: number,
-  monthlyContrib: number,
-  contribIncrease: number,      // decimal e.g. 0.03
-  yearsToRetirement: number,
-  yearsContributing: number,
-): number[] {
-  const rMonthly = annualReturn / 12;
-  const values: number[] = [currentPortfolio];
-
-  for (let yearOffset = 1; yearOffset <= yearsToRetirement; yearOffset++) {
-    const totalMonths = yearOffset * 12;
-    let portfolio = currentPortfolio * Math.pow(1 + annualReturn, yearOffset);
-
-    const monthsContributing = Math.min(totalMonths, yearsContributing * 12);
-    if (monthsContributing > 0) {
-      for (let month = 0; month < monthsContributing; month++) {
-        const monthlyC = monthlyContrib * Math.pow(1 + contribIncrease / 12, month);
-        const monthsRemaining = totalMonths - month;
-        portfolio += rMonthly > 0
-          ? monthlyC * Math.pow(1 + rMonthly, monthsRemaining)
-          : monthlyC;
-      }
-    }
-    values.push(portfolio);
-  }
-  return values;
-}
+// Projection now lives in the store's single canonical engine (financialPlan.ts, canonical §3).
+// Step 4 reads res.coneSeries — it does not recompute a projection (errors.md row 2).
 
 // ── Custom Tooltip ────────────────────────────────────────────────────────────
 
@@ -118,13 +90,13 @@ function ConeTooltip({ active, label, payload, requiredPortfolio }: ConeTooltipP
       )}
       {median !== undefined && (
         <div style={{ display: 'flex', justifyContent: 'space-between', gap: '16px', marginBottom: '3px' }}>
-          <span style={{ color: '#3b82f6' }}>Median</span>
+          <span style={{ color: '#3b82f6' }}>Expected</span>
           <span style={{ fontWeight: 700, fontFamily: 'monospace', color: '#f8fafc' }}>{formatCurrency(median)}</span>
         </div>
       )}
       {pessimistic !== undefined && (
         <div style={{ display: 'flex', justifyContent: 'space-between', gap: '16px', marginBottom: '3px' }}>
-          <span style={{ color: '#f59e0b' }}>Pessimistic</span>
+          <span style={{ color: '#f59e0b' }}>Cautious</span>
           <span style={{ fontWeight: 700, fontFamily: 'monospace', color: '#f8fafc' }}>{formatCurrency(pessimistic)}</span>
         </div>
       )}
@@ -137,7 +109,7 @@ function ConeTooltip({ active, label, payload, requiredPortfolio }: ConeTooltipP
       {median !== undefined && (
         <div style={{ marginTop: '8px', borderTop: '1px solid #334155', paddingTop: '6px' }}>
           <span style={{ fontSize: '11px', color: '#64748b' }}>
-            Cone spread: {formatCurrency(Math.abs((optimistic ?? 0) - (pessimistic ?? 0)))}
+            Scenario spread: {formatCurrency(Math.abs((optimistic ?? 0) - (pessimistic ?? 0)))}
           </span>
         </div>
       )}
@@ -152,40 +124,19 @@ export function Step4_InvestmentPath({ onNext }: Step4Props) {
   const res = useStore(results);
 
   const baseReturn = i.annualReturn / 100;
-  const contribStopYear = i.contribStopYear > 0 ? i.contribStopYear : i.retYear;
-  const yearsContributing = Math.max(0, Math.min(res.yearsToRet, contribStopYear - CURRENT_YEAR));
 
   // ── Monte Carlo cone: 3 deterministic scenarios ───────────────────────────
   // Pessimistic = base − 2%, Median = base, Optimistic = base + 2%
-  const coneData = useMemo(() => {
-    const pessReturn = Math.max(0.01, baseReturn - 0.02);
-    const optimReturn = baseReturn + 0.02;
-
-    const pessValues = projectPortfolio(pessReturn, i.currentPortfolio, i.monthlyContrib, i.contribIncrease / 100, res.yearsToRet, yearsContributing);
-    const medValues  = projectPortfolio(baseReturn,  i.currentPortfolio, i.monthlyContrib, i.contribIncrease / 100, res.yearsToRet, yearsContributing);
-    const optValues  = projectPortfolio(optimReturn, i.currentPortfolio, i.monthlyContrib, i.contribIncrease / 100, res.yearsToRet, yearsContributing);
-
-    return Array.from({ length: res.yearsToRet + 1 }, (_, idx) => ({
-      year: CURRENT_YEAR + idx,
-      Pessimistic: pessValues[idx],
-      Median: medValues[idx],
-      Optimistic: optValues[idx],
-      // recharts Area "band" trick: render a stacked area from pessimistic baseline up to optimistic
-      // lower band = pessimistic (solid fill from 0 to pessimistic)
-      // upper band = optimistic - pessimistic (stacked on top = full cone fill)
-      coneBase: pessValues[idx],
-      coneBand: optValues[idx] - pessValues[idx],
-      Target: res.requiredPortfolio,
-    }));
-  }, [
-    baseReturn,
-    i.currentPortfolio,
-    i.monthlyContrib,
-    i.contribIncrease,
-    res.yearsToRet,
-    res.requiredPortfolio,
-    yearsContributing,
-  ]);
+  // Scenario cone — read straight from the single store engine (canonical §3); no local projection.
+  const coneData = res.coneSeries.map((p) => ({
+    year: p.year,
+    Pessimistic: p.cautious,
+    Median: p.expected,
+    Optimistic: p.optimistic,
+    coneBase: p.cautious,
+    coneBand: p.optimistic - p.cautious,
+    Target: res.requiredPortfolio,
+  }));
 
   // ── Gap/track status ──────────────────────────────────────────────────────
   const medianFinal = coneData[coneData.length - 1]?.Median ?? 0;
@@ -345,9 +296,9 @@ export function Step4_InvestmentPath({ onNext }: Step4Props) {
 
       {/* ── Monte Carlo Cone Chart ────────────────────────────────────────────── */}
       <FintechCard variant="info">
-        <h3 className="text-lg font-semibold text-shiny-text mb-1">Probability Cone</h3>
+        <h3 className="text-lg font-semibold text-shiny-text mb-1">Scenario Range</h3>
         <p className="text-sm text-shiny-muted mb-2">
-          Three return scenarios showing the range of outcomes. The shaded band is the uncertainty envelope.
+          Three deterministic return scenarios — at your rate, and ±2%. This is a range of projections, not a probability forecast.
         </p>
 
         {/* Scenario legend */}
@@ -365,8 +316,8 @@ export function Step4_InvestmentPath({ onNext }: Step4Props) {
         >
           {[
             { label: `Optimistic (${(optimReturn * 100).toFixed(1)}%)`, color: '#10b981' },
-            { label: `Median (${i.annualReturn.toFixed(1)}%)`, color: '#3b82f6' },
-            { label: `Pessimistic (${(pessReturn * 100).toFixed(1)}%)`, color: '#f59e0b' },
+            { label: `Expected (${i.annualReturn.toFixed(1)}%)`, color: '#3b82f6' },
+            { label: `Cautious (${(pessReturn * 100).toFixed(1)}%)`, color: '#f59e0b' },
             { label: 'Target', color: '#ef4444', dashed: true },
           ].map((item) => (
             <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -382,7 +333,7 @@ export function Step4_InvestmentPath({ onNext }: Step4Props) {
           ))}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <div style={{ width: '20px', height: '12px', borderRadius: '3px', background: 'rgba(59,130,246,0.12)', border: '1px solid rgba(59,130,246,0.2)', flexShrink: 0 }} />
-            <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Uncertainty band</span>
+            <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Scenario band</span>
           </div>
         </div>
 
@@ -519,13 +470,13 @@ export function Step4_InvestmentPath({ onNext }: Step4Props) {
           >
             {[
               {
-                label: 'Pessimistic outcome',
+                label: 'Cautious outcome',
                 value: coneData[coneData.length - 1]?.Pessimistic ?? 0,
                 rate: `${(pessReturn * 100).toFixed(1)}% return`,
                 onTrack: (coneData[coneData.length - 1]?.Pessimistic ?? 0) >= res.requiredPortfolio,
               },
               {
-                label: 'Median outcome',
+                label: 'Expected outcome',
                 value: coneData[coneData.length - 1]?.Median ?? 0,
                 rate: `${i.annualReturn.toFixed(1)}% return`,
                 onTrack: (coneData[coneData.length - 1]?.Median ?? 0) >= res.requiredPortfolio,

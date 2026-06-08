@@ -3,6 +3,7 @@ import { inputs, results } from '../../stores/financialPlan';
 import { FintechCard } from '../ui/FintechCard';
 import { MoneyInput } from '../ui/MoneyInput';
 import { RangeSlider } from '../ui/RangeSlider';
+import { CountUp } from '../ui/CountUp';
 import { useMemo } from 'react';
 
 const CURRENT_YEAR = new Date().getFullYear();
@@ -81,6 +82,7 @@ export function Step3_YourNumber({ onNext }: Step3Props) {
           >
             {/* Ambient glow orb behind the number */}
             <div
+              className="breathe"
               style={{
                 position: 'absolute',
                 top: '50%',
@@ -129,7 +131,7 @@ export function Step3_YourNumber({ onNext }: Step3Props) {
               }}
             >
               <span style={{ color: '#10b981' }}>
-                {formatLarge(res.requiredPortfolio)}
+                <CountUp value={res.requiredPortfolio} format={formatLarge} />
               </span>
             </div>
 

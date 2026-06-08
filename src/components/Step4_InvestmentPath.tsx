@@ -3,6 +3,7 @@ import { inputs, results } from '../stores/financialPlan';
 import { FintechCard } from './ui/FintechCard';
 import { MoneyInput } from './ui/MoneyInput';
 import { RangeSlider } from './ui/RangeSlider';
+import { CountUp } from './ui/CountUp';
 import {
   ComposedChart,
   Line,
@@ -341,7 +342,7 @@ export function Step4_InvestmentPath({ onNext }: Step4Props) {
             }}
           >
             <span style={{ fontSize: '2.25rem', fontWeight: 700, fontFamily: 'monospace', lineHeight: 1, color: successPct >= 80 ? '#10b981' : successPct >= 60 ? '#f59e0b' : '#ef4444' }}>
-              {successPct}%
+              <CountUp value={successPct} format={(n) => `${Math.round(n)}%`} />
             </span>
             <span className="text-sm text-text-secondary">
               of simulations fund your full {i.retDuration}-year retirement.{' '}

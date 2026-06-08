@@ -114,6 +114,14 @@ The final sweep wave: stood up the standing loop, made every number publicly tra
 
 All four sweep waves (0–4) are complete; the tool ships as a public resource with every figure validated, traceable, and open. Audit: `studio/audits/wave4-ship-as-resource_v1.md`.
 
+### Enhancement — Dynamic components (motion pass)
+Purposeful motion that guides the eye, on two reusable primitives, all reduced-motion-safe and never gating content (the row-10 discipline).
+
+- **`ui/CountUp.tsx`** — numbers count from 0 (and roll on change) with an ease-out. Safety: `prefers-reduced-motion` renders the target immediately, and a convergence `setTimeout` guarantees the final value even when `requestAnimationFrame` is throttled (background tab / headless) — the number is never stuck at $0. Wired to the *Your Number* hero (Step 3), the four Summary metric cards + the success % (Step 5), and the Step 4 success banner.
+- **`ui/Reveal.tsx`** — a gentle fade + 12px slide as a section scrolls into view (`whileInView`, `once`); reduced-motion → a plain, visible div. Wraps the Step 5 net-worth chart and income table.
+- **Progress bar** fills from 0 to its value via Framer (reduced-motion → set directly). **Glow orbs breathe** via a slow CSS opacity keyframe on Welcome + Step 3 (auto-neutralized by the existing reduced-motion reset).
+- Verified: count-ups converge to the correct values and content never gates (the smooth roll itself needs a real visible browser — rAF is throttled in headless, the documented limitation). Gate green: 44 tests, lint 0 warnings, build complete.
+
 ---
 
 ## Roadmap — What's Next

@@ -91,6 +91,17 @@
   }
 }
 
+/* Ambient "breathe" — a slow opacity pulse for the hero glow orbs. Purely decorative;
+   the reduced-motion reset below neutralizes it to a static glow (canonical §6, subtle motion). */
+@keyframes breathe {
+  0%, 100% { opacity: 0.6; }
+  50%      { opacity: 1; }
+}
+.breathe {
+  animation: breathe 9s ease-in-out infinite;
+  will-change: opacity;
+}
+
 /* Respect reduced-motion (canonical §6; WCAG 2.3.3). Content and navigation must
    never depend on an animation completing. Framer Motion is gated in NavigationTabs
    via useReducedMotion; this neutralizes CSS transitions/animations. */

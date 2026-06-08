@@ -82,6 +82,7 @@ export function Welcome({ onStart }: WelcomeProps) {
       >
         {/* Background glow */}
         <div
+          className="breathe"
           style={{
             position: 'absolute',
             inset: 0,

@@ -3,6 +3,9 @@ import { useStore } from '@nanostores/react';
 import { inputs, results } from '../stores/financialPlan';
 import { FintechCard } from './ui/FintechCard';
 import { MetricCard } from './ui/MetricCard';
+import { CountUp } from './ui/CountUp';
+import { Reveal } from './ui/Reveal';
+import { motion, useReducedMotion } from 'framer-motion';
 import {
   ComposedChart,
   Area,
@@ -111,6 +114,7 @@ interface Step5Props {
 export function Step5_Summary({ onEditPlan }: Step5Props) {
   const i = useStore(inputs);
   const res = useStore(results);
+  const reduce = useReducedMotion();
 
   const handlePrint = () => window.print();
 
@@ -278,7 +282,7 @@ export function Step5_Summary({ onEditPlan }: Step5Props) {
         <MetricCard variant="info">
           <div className="uppercase text-xs tracking-widest text-text-secondary mb-2">Required Portfolio</div>
           <div className="text-3xl font-light tracking-tighter text-white leading-none">
-            {formatLarge(requiredToday)}
+            <CountUp value={requiredToday} format={formatLarge} />
           </div>
           <div className="text-xs text-text-secondary mt-2">
             {res.requiredPortfolio === 0 ? (
@@ -293,7 +297,7 @@ export function Step5_Summary({ onEditPlan }: Step5Props) {
         <MetricCard variant="success">
           <div className="uppercase text-xs tracking-widest text-text-secondary mb-2">Projected Portfolio</div>
           <div className="text-3xl font-light tracking-tighter text-white leading-none">
-            {formatLarge(medianToday)}
+            <CountUp value={medianToday} format={formatLarge} />
           </div>
           <div className="text-xs text-text-secondary mt-2">
             Median (typical) outcome, in today's $ · ≈{formatLarge(res.medianPortfolio)} in {retirementYear}
@@ -312,7 +316,7 @@ export function Step5_Summary({ onEditPlan }: Step5Props) {
             <span style={{ marginRight: '4px', fontSize: '22px' }}>
               {gapIsPositive ? '↑' : '↓'}
             </span>
-            {formatLarge(Math.abs(medianGapToday))}
+            <CountUp value={Math.abs(medianGapToday)} format={formatLarge} />
           </div>
           <div className="text-xs text-text-secondary mt-2">
             {gapIsPositive
@@ -325,7 +329,7 @@ export function Step5_Summary({ onEditPlan }: Step5Props) {
         <MetricCard variant="primary">
           <div className="uppercase text-xs tracking-widest text-text-secondary mb-2">Withdrawal Rate</div>
           <div className="text-3xl font-light tracking-tighter text-white leading-none">
-            {formatPercent(res.withdrawalRate * 100)}
+            <CountUp value={res.withdrawalRate * 100} format={(n) => `${n.toFixed(1)}%`} />
           </div>
           <div className="text-xs text-text-secondary mt-2">
             Trinity Study ({i.retDuration} yr retirement)
@@ -344,7 +348,7 @@ export function Step5_Summary({ onEditPlan }: Step5Props) {
                 className="text-4xl font-light tracking-tighter leading-none"
                 style={{ fontFamily: 'monospace', color: res.successProbability >= 0.8 ? '#10b981' : res.successProbability >= 0.6 ? '#f59e0b' : '#ef4444' }}
               >
-                {Math.round(res.successProbability * 100)}%
+                <CountUp value={res.successProbability * 100} format={(n) => `${Math.round(n)}%`} />
               </span>
               <span className="text-sm text-text-secondary">of 1,000 simulations fund all {i.retDuration} years</span>
             </div>
@@ -407,15 +411,16 @@ export function Step5_Summary({ onEditPlan }: Step5Props) {
             position: 'relative',
           }}
         >
-          <div
+          <motion.div
+            initial={reduce ? false : { width: 0 }}
+            animate={{ width: `${progressPct}%` }}
+            transition={reduce ? { duration: 0 } : { duration: 0.9, ease: 'easeOut' }}
             style={{
               height: '100%',
-              width: `${progressPct}%`,
               borderRadius: '9999px',
               background: gapIsPositive
                 ? 'linear-gradient(90deg, #16a34a, #10b981)'
                 : 'linear-gradient(90deg, #2563eb, #3b82f6)',
-              transition: 'width 0.6s ease',
             }}
           />
           {/* Target marker at 100% */}
@@ -451,6 +456,7 @@ export function Step5_Summary({ onEditPlan }: Step5Props) {
       </FintechCard>
 
       {/* ── Net Worth Projection Chart ── */}
+      <Reveal>
       <FintechCard variant="info">
         <h3 className="text-sm font-semibold text-text-primary mb-1 uppercase tracking-widest">
           Net Worth Projection
@@ -595,6 +601,7 @@ export function Step5_Summary({ onEditPlan }: Step5Props) {
           </div>
         </div>
       </FintechCard>
+      </Reveal>
 
       {/* ── Two visual cards: Spending Comparison + Key Assumptions ── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -697,6 +704,7 @@ export function Step5_Summary({ onEditPlan }: Step5Props) {
       </div>
 
       {/* ── Retirement Income Sources ── */}
+      <Reveal>
       <FintechCard variant="warning">
         <h3 className="text-sm font-semibold text-text-primary mb-1 uppercase tracking-widest">
           Retirement Income Sources
@@ -776,6 +784,7 @@ export function Step5_Summary({ onEditPlan }: Step5Props) {
           erosion; this offset is a simplified, retirement-year snapshot. All figures are pre-tax.
         </p>
       </FintechCard>
+      </Reveal>
 
       {/* ── Disclaimer ── */}
       <div

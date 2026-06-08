@@ -26,6 +26,7 @@
 - Positive and negative values are always visually distinct (success green / danger red) AND carry a text or icon signal — never color alone (canonical §7).
 - Every projection screen states the assumptions behind it in plain language.
 - Attribute methodology: "Based on the Trinity Study (Bengen, 1994)" and similar.
+- Attribute the three frameworks consistently and completely — **Ramit Sethi · JL Collins · Morgan Housel** (never drop one, never mix author names with a methodology name in the same list). The Trinity Study is cited where the withdrawal math appears (Step 3 / Step 5), not in the hero list of thinkers. (errors.md row 26.)
 
 ---
 

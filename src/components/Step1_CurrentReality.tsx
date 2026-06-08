@@ -223,7 +223,7 @@ export function Step1_CurrentReality({ onNext }: Step1Props) {
               />
               <span
                 className="text-xs uppercase tracking-widest"
-                style={{ color: 'rgba(255,255,255,0.45)' }}
+                style={{ color: '#94a3b8' }}
               >
                 Fixed Costs
               </span>
@@ -231,12 +231,12 @@ export function Step1_CurrentReality({ onNext }: Step1Props) {
             <div className="font-mono text-2xl font-semibold text-white">
               {formatCurrency(res.currentFixed)}
             </div>
-            <div className="text-sm mt-0.5" style={{ color: 'rgba(255,255,255,0.45)' }}>
+            <div className="text-sm mt-0.5" style={{ color: '#94a3b8' }}>
               {fixedPercent.toFixed(1)}% of income
             </div>
             <div
               className="text-xs italic mt-1"
-              style={{ color: 'rgba(255,255,255,0.3)' }}
+              style={{ color: '#94a3b8' }}
             >
               Ramit's target: 50–60%
             </div>
@@ -257,7 +257,7 @@ export function Step1_CurrentReality({ onNext }: Step1Props) {
               />
               <span
                 className="text-xs uppercase tracking-widest"
-                style={{ color: 'rgba(255,255,255,0.45)' }}
+                style={{ color: '#94a3b8' }}
               >
                 Investing
               </span>
@@ -265,12 +265,12 @@ export function Step1_CurrentReality({ onNext }: Step1Props) {
             <div className="font-mono text-2xl font-semibold text-white">
               {formatCurrency(res.currentInvest)}
             </div>
-            <div className="text-sm mt-0.5" style={{ color: 'rgba(255,255,255,0.45)' }}>
+            <div className="text-sm mt-0.5" style={{ color: '#94a3b8' }}>
               {investPercent.toFixed(1)}% of income
             </div>
             <div
               className="text-xs italic mt-1"
-              style={{ color: 'rgba(255,255,255,0.3)' }}
+              style={{ color: '#94a3b8' }}
             >
               Ramit's target: ≥ 20%
             </div>
@@ -291,7 +291,7 @@ export function Step1_CurrentReality({ onNext }: Step1Props) {
               />
               <span
                 className="text-xs uppercase tracking-widest"
-                style={{ color: 'rgba(255,255,255,0.45)' }}
+                style={{ color: '#94a3b8' }}
               >
                 Guilt-Free Spending
               </span>
@@ -299,12 +299,12 @@ export function Step1_CurrentReality({ onNext }: Step1Props) {
             <div className="font-mono text-2xl font-semibold text-white">
               {formatCurrency(res.currentGuiltFree)}
             </div>
-            <div className="text-sm mt-0.5" style={{ color: 'rgba(255,255,255,0.45)' }}>
+            <div className="text-sm mt-0.5" style={{ color: '#94a3b8' }}>
               {guiltFreePercent.toFixed(1)}% of income
             </div>
             <div
               className="text-xs italic mt-1"
-              style={{ color: 'rgba(255,255,255,0.3)' }}
+              style={{ color: '#94a3b8' }}
             >
               Your money, your choice
             </div>
@@ -330,7 +330,7 @@ export function Step1_CurrentReality({ onNext }: Step1Props) {
         {/* Unallocated reminder */}
         {takeHome > 0 && res.totalAllocated <= takeHome && (takeHome - res.totalAllocated) > 0 && (
           <div className="mt-3">
-            <span className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>
+            <span className="text-xs" style={{ color: '#94a3b8' }}>
               {formatCurrency(takeHome - res.totalAllocated)} unallocated — consider increasing investments
             </span>
           </div>
@@ -341,7 +341,7 @@ export function Step1_CurrentReality({ onNext }: Step1Props) {
           className="mt-4 pt-3"
           style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
         >
-          <span className="text-xs italic" style={{ color: 'rgba(255,255,255,0.2)' }}>
+          <span className="text-xs italic" style={{ color: '#94a3b8' }}>
             Based on Ramit Sethi's Conscious Spending Plan (I Will Teach You To Be Rich)
           </span>
         </div>
@@ -368,7 +368,7 @@ export function Step1_CurrentReality({ onNext }: Step1Props) {
                 <div>
                   <h3 className="text-lg font-semibold text-text-primary">Fixed Costs</h3>
                   <p className="text-sm text-text-secondary">
-                    Essential expenses that stay relatively constant
+                    Essential monthly expenses that stay relatively constant
                   </p>
                 </div>
                 <div className="text-right">
@@ -396,6 +396,7 @@ export function Step1_CurrentReality({ onNext }: Step1Props) {
                   />
                   <MoneyInput
                     label="Property Tax"
+                    helperText="Monthly — your annual bill ÷ 12"
                     value={i.propTax}
                     onChange={(value) => inputs.setKey('propTax', value)}
                   />
@@ -460,16 +461,19 @@ export function Step1_CurrentReality({ onNext }: Step1Props) {
                   />
                   <MoneyInput
                     label="Health Insurance"
+                    helperText="Monthly premium — your share after any employer contribution"
                     value={i.healthIns}
                     onChange={(value) => inputs.setKey('healthIns', value)}
                   />
                   <MoneyInput
                     label="Other Insurance"
+                    helperText="Life, disability, or umbrella, billed monthly"
                     value={i.otherIns}
                     onChange={(value) => inputs.setKey('otherIns', value)}
                   />
                   <MoneyInput
                     label="Debt Minimums"
+                    helperText="Monthly minimum payments on loans or cards"
                     value={i.debtMin}
                     onChange={(value) => inputs.setKey('debtMin', value)}
                   />
@@ -480,6 +484,7 @@ export function Step1_CurrentReality({ onNext }: Step1Props) {
                   />
                   <MoneyInput
                     label="Banking Fees"
+                    helperText="Monthly account, card, or ATM fees"
                     value={i.banking}
                     onChange={(value) => inputs.setKey('banking', value)}
                   />
@@ -523,31 +528,37 @@ export function Step1_CurrentReality({ onNext }: Step1Props) {
               />
               <MoneyInput
                 label="IRA"
+                helperText="Monthly into a Roth or traditional IRA"
                 value={i.ira}
                 onChange={(value) => inputs.setKey('ira', value)}
               />
               <MoneyInput
                 label="HSA"
+                helperText="Monthly into a health savings account (triple tax-advantaged)"
                 value={i.hsa}
                 onChange={(value) => inputs.setKey('hsa', value)}
               />
               <MoneyInput
                 label="Taxable Brokerage"
+                helperText="Monthly into a regular, taxable brokerage account"
                 value={i.taxable}
                 onChange={(value) => inputs.setKey('taxable', value)}
               />
               <MoneyInput
                 label="Emergency Fund"
+                helperText="Monthly, until you've saved 3–6 months of expenses"
                 value={i.emergency}
                 onChange={(value) => inputs.setKey('emergency', value)}
               />
               <MoneyInput
                 label="529 Education"
+                helperText="Monthly into a 529 college-savings plan"
                 value={i.edu529}
                 onChange={(value) => inputs.setKey('edu529', value)}
               />
               <MoneyInput
                 label="Life Insurance"
+                helperText="Monthly premium, if it builds cash value (whole/universal)"
                 value={i.lifeIns}
                 onChange={(value) => inputs.setKey('lifeIns', value)}
               />
@@ -615,6 +626,7 @@ export function Step1_CurrentReality({ onNext }: Step1Props) {
               />
               <MoneyInput
                 label="Personal Development"
+                helperText="Courses, books, or coaching"
                 value={i.dev}
                 onChange={(value) => inputs.setKey('dev', value)}
               />
@@ -630,11 +642,13 @@ export function Step1_CurrentReality({ onNext }: Step1Props) {
               />
               <MoneyInput
                 label="Subscriptions"
+                helperText="Streaming, apps, and memberships"
                 value={i.subscriptions}
                 onChange={(value) => inputs.setKey('subscriptions', value)}
               />
               <MoneyInput
                 label="Miscellaneous"
+                helperText="Anything that didn't fit the categories above"
                 value={i.misc}
                 onChange={(value) => inputs.setKey('misc', value)}
               />

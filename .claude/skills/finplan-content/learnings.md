@@ -1,0 +1,5 @@
+# Learnings — finplan-content
+# Append-only, date-stamped. Propose 1–3 lines after any failure or edge case; human approves; roll stable patterns into SKILL.md.
+
+- 2026-06-08 — Built in Wave 3. The Wave-3 content pass found the "why" gap concentrated in Step 1: housing/transport/other-fixed and every Guilt-Free input shipped with a `label` but no `helperText`, so a first-timer met a wall of bare money fields. The fix is one short "why" per field, not a paragraph — the card layout punishes long helpers (F7). Inventory with `grep -n "helperText\|label=" src/components` before drafting.
+- 2026-06-08 — Attribution and caveat are a paired move, not separate. Where Step 5 surfaces the income "Portfolio Offset," the same spot needs both the source framing AND the row-9 caveat (SS keeps pace with inflation; pensions held flat; pre-tax). Content writes the caveat in plain words; CFP confirms it matches canonical §2. A green number with no caveat is a false-rigor defect even when the math is right.

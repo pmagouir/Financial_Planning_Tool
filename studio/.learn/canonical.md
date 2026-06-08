@@ -108,6 +108,12 @@ The palette is already specified in `tailwind.config.mjs`, but the project runs 
 | `accent.success` | `#10b981` | Emerald — positive values, on track |
 | `accent.warning` | `#f59e0b` | Amber — approaching limits |
 | `accent.danger` | `#ef4444` | Red — over budget, shortfall |
+| `accent.retire` (violet) | `#8b5cf6` | **Secondary / data-viz accent — RATIFIED 2026-06-08 (designer, Wave 3).** The retirement / future-phase series and the Guilt-Free bucket, used consistently across Welcome, Step 1, Step 2, Step 5. It is the app's established "future you" hue, distinct from the four functional accents. **Charts and large accents only:** 4.22:1 on bg / 3.45:1 on cards passes AA for large text (≥3:1) but FAILS AA for normal text (§7). |
+| `accent.retire.text` (violet) | `#a78bfa` | The AA-safe body-size violet — 6.56:1 on bg / 5.38:1 on cards. Use this, **not** `#8b5cf6`, whenever violet carries normal-size text. |
+
+`#cbd5e1` (Slate 300) is an acceptable chart-axis / legend / secondary-label mid-tone (12.02:1 on bg, 9.85:1 on cards — passes §7); it sits between `text.primary` and `text.secondary` and is documented, not a drift violation. The off-canonical status hexes `#22c55e` (use `accent.success` `#10b981`) and `#f97316` (use `accent.warning` `#f59e0b` or `accent.danger` `#ef4444`) are NOT canonical — they pass contrast but break §6 and must be swapped on the standard glass cards.
+
+**Lighter accent tints — RATIFIED 2026-06-08 (designer, Wave 3).** A lighter tint of an accent (`#34d399` emerald-400, `#fbbf24` amber-400, `#93c5fd`/`#60a5fa` blue-300/400, `#6ee7b7` emerald-300) is permitted **only** as text on a *same-hue tinted panel* (e.g. a green number on a `rgba(16,185,129,0.07)` panel), where the base accent would under-contrast against the tint. On the standard `#1e293b` glass cards, use the base accent. This is why `#34d399`/`#fbbf24` are correct on Step 4's tinted On-Track / Action panels but `#22c55e` is wrong on Step 5's glass MetricCards.
 
 Type: Inter (sans). All financial numbers render in monospace (UI/UX standing rule). Motion is subtle; respect `prefers-reduced-motion`.
 
@@ -121,10 +127,13 @@ Ratios computed by the WCAG relative-luminance formula 2026-06-06. AA thresholds
 | `#94a3b8` secondary | 6.96:1 | 5.71:1 | Pass AA (both). Smallest safe body text. |
 | `#10b981` / `#f59e0b` accents | 7.04 / 8.31:1 | — | Pass AA. |
 | `#3b82f6` / `#ef4444` accents | 4.85 / 4.74:1 | — | Pass AA normal (margin is thin — do not darken). |
+| `#8b5cf6` violet | 4.22:1 | 3.45:1 | Pass AA **large text only** (≥3:1). **FAIL AA normal text.** Charts / large accents — for body-size violet use `#a78bfa`. |
+| `#a78bfa` violet (light) | 6.56:1 | 5.38:1 | Pass AA (both). The body-size violet. |
 | `#64748b` muted | 3.75:1 | 3.07:1 | **FAIL AA for body text.** Large text only. |
 | `#475569` | 2.36:1 | — | **FAIL all.** Banned for text. Borders/decoration only. |
+| `#334155` (Slate 700) | 1.72:1 | — | **FAIL all.** Banned for text (it is `background.subtle`). Borders/decoration only. (Caught carrying text on Welcome, Wave 3 — errors.md row 18.) |
 
-Rules: body text uses `#94a3b8` or lighter. `#64748b` is permitted only for large text. `#475569` and below never carry text. Status must never be conveyed by color alone — pair every red/green/amber signal with text or an icon.
+Rules: body text uses `#94a3b8` or lighter. `#64748b` is permitted only for large text. `#475569` and `#334155` and below never carry text. Body-size violet uses `#a78bfa`, not `#8b5cf6`. White at reduced opacity (`rgba(255,255,255,α)`) is text only when the blended ratio clears §7 — `α≤0.45` over the dark bg computes below AA (≈4.2:1 and down), so use `#94a3b8` instead. Status must never be conveyed by color alone — pair every red/green/amber signal with text or an icon.
 
 ## 8. Honest-labeling rules (credibility)
 

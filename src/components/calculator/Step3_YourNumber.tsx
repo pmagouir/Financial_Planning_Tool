@@ -39,17 +39,9 @@ export function Step3_YourNumber({ onNext }: Step3Props) {
   const i = useStore(inputs);
   const res = useStore(results);
 
-  const monthlyNeedToday = useMemo(() => {
-    return (
-      i.retHousing + i.retTransport + i.retGroceries + i.retHealth +
-      i.retChild + i.retIns + i.retDebt + i.retEnt + i.retDining +
-      i.retPersonal + i.retMisc
-    );
-  }, [
-    i.retHousing, i.retTransport, i.retGroceries, i.retHealth,
-    i.retChild, i.retIns, i.retDebt, i.retEnt, i.retDining,
-    i.retPersonal, i.retMisc,
-  ]);
+  // Read the single engine (Pattern 1): annualRetSpend is the 11 retirement sliders × 12.
+  // Don't re-sum them here — Step 4 and Step 5 read this same store value, so they can't drift.
+  const monthlyNeedToday = res.annualRetSpend / 12;
 
   const withdrawalRateExplanation = useMemo(() => {
     if (i.retDuration >= 35) return 'Extra conservative rate for retirements lasting 35+ years';
@@ -58,7 +50,7 @@ export function Step3_YourNumber({ onNext }: Step3Props) {
     return 'Short duration rate for retirements under 15 years';
   }, [i.retDuration]);
 
-  const hasRetirementData = monthlyNeedToday > 0;
+  const hasRetirementData = res.planReady; // single engine predicate (Pattern 1), = annualRetSpend > 0
 
   // Multiplier label: 1 / withdrawalRate rounded to nearest whole
   const multiplierLabel = res.withdrawalRate > 0 ? Math.round(1 / res.withdrawalRate) : 25;
@@ -427,7 +419,9 @@ export function Step3_YourNumber({ onNext }: Step3Props) {
               />
               {i.withdrawalRate === 0 && (
                 <p className="mt-2 text-xs text-text-secondary italic">
-                  Auto-calculated from your retirement duration. Adjust the slider to override.
+                  Auto-set from your retirement duration: longer retirements use a lower, safer rate
+                  (3.5% at 35+ years, up to 5% under 15). Crossing a bracket, like 34 to 35 years, steps
+                  the rate and can move your number. Drag the slider to override.
                 </p>
               )}
             </div>

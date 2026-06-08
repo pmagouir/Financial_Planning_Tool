@@ -19,7 +19,10 @@ export function CompoundCalculator() {
   // Calculate compound interest projection
   const projectionData = useMemo(() => {
     const data = [];
-    const monthlyRate = rate / 12;
+    // Effective monthly rate, so a stated "7%" is a true 7% annual ((1+m)^12 = 1+rate) —
+    // the same convention as the main plan engine (canonical §3). This tab is a simplified,
+    // standalone illustration; the authoritative projection of your plan is Step 4.
+    const monthlyRate = Math.pow(1 + rate, 1 / 12) - 1;
 
     let currentBalance = initial;
     let totalPrincipal = initial;
@@ -169,19 +172,19 @@ export function CompoundCalculator() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <FintechCard variant="info">
           <div className="text-sm text-text-secondary mb-2">Total Principal</div>
-          <div className="text-2xl font-bold text-text-primary">
+          <div className="text-2xl font-bold text-text-primary font-mono">
             {formatCurrency(finalPrincipal)}
           </div>
         </FintechCard>
         <FintechCard variant="success">
           <div className="text-sm text-text-secondary mb-2">Interest Earned</div>
-          <div className="text-2xl font-bold text-text-primary">
+          <div className="text-2xl font-bold text-text-primary font-mono">
             {formatCurrency(finalInterest)}
           </div>
         </FintechCard>
         <FintechCard variant="primary">
           <div className="text-sm text-text-secondary mb-2">Final Value</div>
-          <div className="text-2xl font-bold text-text-primary">
+          <div className="text-2xl font-bold text-text-primary font-mono">
             {formatCurrency(finalTotal)}
           </div>
         </FintechCard>
@@ -258,12 +261,28 @@ export function CompoundCalculator() {
         <h3 className="text-lg font-semibold text-text-primary mb-2">Rule of 72</h3>
         <p className="text-sm text-text-secondary">
           Your investment will approximately double every{' '}
-          <span className="font-bold text-text-primary">
-            {(72 / (rate * 100)).toFixed(1)} years
+          <span className="font-bold text-text-primary font-mono">
+            {rate > 0 ? `${(72 / (rate * 100)).toFixed(1)} years` : '—'}
           </span>{' '}
           at a {formatPercent(rate)} annual return rate.
         </p>
       </FintechCard>
+
+      {/* Educational disclaimer (canonical §8 — every projection is a labeled estimate) */}
+      <div
+        className="rounded-lg text-sm"
+        style={{
+          border: '1px solid rgba(255,255,255,0.07)',
+          background: 'rgba(255,255,255,0.02)',
+          padding: '14px 18px',
+          color: '#94a3b8',
+          lineHeight: 1.6,
+        }}
+      >
+        A simplified illustration: it assumes the same return every year, which real markets never
+        deliver. Treat the result as an estimate. For the actual projection of your retirement plan,
+        use Step 4 — it runs 1,000 market simulations on your real numbers.
+      </div>
     </div>
   );
 }

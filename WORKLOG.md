@@ -91,6 +91,17 @@ The `studio/` agentic system (BRAIN five-agent pattern) now drives improvement w
 
 Audit: `studio/audits/wave2-long-tail_v1.md`. Defect ledger: `studio/.learn/errors.md` (rows 7, 8, 16 → FIXED).
 
+### Wave 3 — Per-screen audit + education
+Built the last bench agent and ran the full per-screen pass.
+
+- **`finplan-content` agent.** The Phase 3 "explains" agent — SKILL.md + verification.md + failure_modes.md + learnings.md + evals. Owns `glossary.md`; encodes a 7-point Content Floor (the "why," attribution, glossary-locked language, honest framing validated by CFP, Sethi non-judgmental, preston-writing voice, a next move on every scary number).
+- **Audited all 7 screens** (4 parallel auditor agents running the 4-lens framework + the full 17-row regression scan), then a single orchestrator live pass. Welcome, Step 1–4, Step 5 (re-audit), and both bonus tools — reports in `studio/audits/`.
+- **Closed errors.md rows 18–26.** Contrast recurrence (Welcome `#334155` 1.72→6.96:1 + Step 1 white-alpha; row 18); "Discretionary"→"Guilt-Free Spending" glossary (19); off-canonical hexes `#22c55e`/`#f97316`→canonical + violet ratified into §6 (20); the Step 5 income-table COLA/pre-tax caveat — the surviving Step-5 cold-audit Critical (21); Step 3/5 Pattern-1 recompute → read the single engine (22); Step 4 dual-success reconciliation (23); CompoundCalc effective-monthly + estimate disclaimer + monospace + rule-of-72 guard (24); the content "why" gap on ~25 inputs across Step 1/2 (25); Welcome attribution (26).
+- **Canonical §6/§7 extended** (designer): the violet `#8b5cf6` (chart/large) and `#a78bfa` (body-safe) with measured ratios, the lighter-tint-on-tinted-panel rule, and `#334155` banned as text.
+- **Tests 41 → 44** (two contrast guards + one off-canonical-hex guard). Lint 0 errors, tsc strict-clean, build green. Every screen live-verified (forced reduced-motion render to inspect navigated screens under the documented headless-rAF throttle, then reverted). Every screen clears the lenses with **zero Critical**.
+
+Audit: `studio/audits/wave3-per-screen-education_v1.md`. Defect ledger: rows 18–26 → FIXED.
+
 ---
 
 ## Roadmap — What's Next

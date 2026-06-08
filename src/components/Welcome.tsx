@@ -107,7 +107,7 @@ export function Welcome({ onStart }: WelcomeProps) {
             position: 'relative',
           }}
         >
-          Based on the Trinity Study · JL Collins · Ramit Sethi
+          Ramit Sethi · JL Collins · Morgan Housel
         </div>
 
         {/* Main headline */}
@@ -183,7 +183,7 @@ export function Welcome({ onStart }: WelcomeProps) {
               Select Step 1 in the sidebar to begin
             </div>
           )}
-          <div style={{ fontSize: '0.75rem', color: '#334155' }}>
+          <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
             or select a step in the sidebar
           </div>
         </div>
@@ -447,8 +447,8 @@ export function Welcome({ onStart }: WelcomeProps) {
         personalized financial advice. Results assume constant investment returns and do not account
         for taxes, fees, or market volatility. Consider consulting a Certified Financial Planner
         (CFP) before making major financial decisions.{' '}
-        <span style={{ color: '#334155' }}>
-          Your data stays private — everything is calculated locally in your browser.
+        <span style={{ color: '#94a3b8' }}>
+          Your data stays private. Everything is calculated locally in your browser.
         </span>
       </div>
     </div>

@@ -60,3 +60,17 @@ describe('row 4 — dead-token layer', () => {
     }
   });
 });
+
+// ── Wave 3 token hygiene (errors.md row 20 — Pattern 3, canonical drift) ──
+// The per-screen pass found off-canonical status hexes that pass contrast but break §6.
+// #22c55e → accent.success #10b981; #f97316 → accent.warning #f59e0b. The violet #8b5cf6 is
+// now CANONICAL (§6, ratified Wave 3) as the retirement/data-viz accent, so it is not banned —
+// but it is large/chart-only; body-size violet uses #a78bfa.
+describe('row 20 — off-canonical status hexes', () => {
+  it('#22c55e and #f97316 never return anywhere in src/ (use #10b981 / #f59e0b — canonical §6)', () => {
+    const offenders = allSourceFiles(SRC)
+      .filter((f) => !f.endsWith('design-system.test.ts')) // this file names the pattern
+      .filter((f) => /#22c55e|#f97316/i.test(readFileSync(f, 'utf8')));
+    expect(offenders).toEqual([]);
+  });
+});

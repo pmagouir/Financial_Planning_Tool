@@ -73,17 +73,17 @@ export function Step2_RetirementDesign({ onNext }: Step2Props) {
     Math.max(currentValue * 2, 10000);
 
   const categories = [
-    { key: 'housing', label: 'Housing', isFixed: true },
-    { key: 'transport', label: 'Transport', isFixed: true },
-    { key: 'groceries', label: 'Groceries', isFixed: true },
-    { key: 'health', label: 'Healthcare', isFixed: true },
-    { key: 'child', label: 'Childcare', isFixed: true },
-    { key: 'ins', label: 'Insurance', isFixed: true },
-    { key: 'debt', label: 'Debt Payments', isFixed: true },
-    { key: 'ent', label: 'Entertainment', isFixed: false },
-    { key: 'dining', label: 'Dining Out', isFixed: false },
-    { key: 'personal', label: 'Personal', isFixed: false },
-    { key: 'misc', label: 'Misc', isFixed: false },
+    { key: 'housing', label: 'Housing', isFixed: true, why: 'Often steady; drops if you retire mortgage-free' },
+    { key: 'transport', label: 'Transport', isFixed: true, why: 'Usually lower without a daily commute' },
+    { key: 'groceries', label: 'Groceries', isFixed: true, why: 'Roughly the same as today' },
+    { key: 'health', label: 'Healthcare', isFixed: true, why: 'Tends to rise with age' },
+    { key: 'child', label: 'Childcare', isFixed: true, why: 'Usually near zero once kids are grown' },
+    { key: 'ins', label: 'Insurance', isFixed: true, why: 'Often slightly higher in retirement' },
+    { key: 'debt', label: 'Debt Payments', isFixed: true, why: 'Most debt is paid off by retirement' },
+    { key: 'ent', label: 'Entertainment', isFixed: false, why: 'More free time often means a bit more' },
+    { key: 'dining', label: 'Dining Out', isFixed: false, why: 'Often a little lower than today' },
+    { key: 'personal', label: 'Personal', isFixed: false, why: 'Roughly the same as today' },
+    { key: 'misc', label: 'Misc', isFixed: false, why: 'Usually trends down a little' },
   ];
 
   // ── Per-category chart data (only rows with any value) ─────────────────────
@@ -196,7 +196,7 @@ export function Step2_RetirementDesign({ onNext }: Step2Props) {
             >
               {[
                 { label: 'Current Monthly', value: formatCurrency(res.totalAllocated), color: '#3b82f6' },
-                { label: 'Retirement Monthly', value: formatCurrency(retMonthlySpend), color: '#8b5cf6' },
+                { label: 'Retirement Monthly', value: formatCurrency(retMonthlySpend), color: '#a78bfa' },
                 {
                   label: deltaPositive ? 'Increase' : 'Decrease',
                   value: `${deltaPositive ? '+' : ''}${formatCurrency(delta)}`,
@@ -281,6 +281,7 @@ export function Step2_RetirementDesign({ onNext }: Step2Props) {
                   </div>
                   <RangeSlider
                     aria-label={`${category.label} — monthly spending in retirement`}
+                    helperText={category.why}
                     value={retirement}
                     onChange={(value) => handleSliderChange(category.key, value)}
                     min={0}
@@ -294,11 +295,11 @@ export function Step2_RetirementDesign({ onNext }: Step2Props) {
         </div>
       </FintechCard>
 
-      {/* ── Discretionary Sliders ───────────────────────────────────────────── */}
+      {/* ── Guilt-Free Sliders ──────────────────────────────────────────────── */}
       <FintechCard variant="primary">
-        <h3 className="text-lg font-semibold text-text-primary mb-2">Discretionary Spending in Retirement</h3>
+        <h3 className="text-lg font-semibold text-text-primary mb-2">Guilt-Free Spending in Retirement</h3>
         <p className="text-sm text-text-secondary mb-6">
-          Lifestyle spending: entertainment, dining, personal care, miscellaneous.
+          The fun part — entertainment, dining, personal care, and the rest. Spend here on what you love.
         </p>
         <div className="space-y-6">
           {categories
@@ -334,6 +335,7 @@ export function Step2_RetirementDesign({ onNext }: Step2Props) {
                   </div>
                   <RangeSlider
                     aria-label={`${category.label} — monthly spending in retirement`}
+                    helperText={category.why}
                     value={retirement}
                     onChange={(value) => handleSliderChange(category.key, value)}
                     min={0}

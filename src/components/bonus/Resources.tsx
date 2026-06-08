@@ -117,11 +117,13 @@ export function Resources() {
                 href={book.link}
                 target="_blank"
                 rel="noopener noreferrer"
+                aria-label={`View ${book.title} by ${book.author} on Amazon (opens in a new tab)`}
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-md font-medium text-sm bg-background-paper text-text-primary hover:bg-background-subtle transition-colors mt-auto"
               >
                 View on Amazon
                 <svg
                   className="w-4 h-4"
+                  aria-hidden="true"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"

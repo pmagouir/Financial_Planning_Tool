@@ -94,7 +94,7 @@ function NetWorthTooltip({ active, payload, label, requiredPortfolio }: CustomTo
       </div>
       <div style={{ borderTop: '1px solid #334155', paddingTop: '8px', marginTop: '8px' }}>
         <span style={{ fontSize: '11px', color: '#94a3b8' }}>median vs target: </span>
-        <span style={{ fontSize: '12px', fontWeight: 700, color: isAbove ? '#22c55e' : '#ef4444' }}>
+        <span style={{ fontSize: '12px', fontWeight: 700, color: isAbove ? '#10b981' : '#ef4444' }}>
           {isAbove ? '+' : ''}{formatCurrency(diff)}
         </span>
       </div>
@@ -132,10 +132,9 @@ export function Step5_Summary({ onEditPlan }: Step5Props) {
     misc: i.retMisc,
   };
 
-  const retMonthlySpend =
-    retSpending.housing + retSpending.transport + retSpending.groceries +
-    retSpending.health + retSpending.child + retSpending.ins + retSpending.debt +
-    retSpending.ent + retSpending.dining + retSpending.personal + retSpending.misc;
+  // Single engine (Pattern 1): annualRetSpend already sums the 11 retirement sliders × 12.
+  // Read it rather than re-summing here, so Step 3 / Step 4 / Step 5 can never disagree.
+  const retMonthlySpend = res.annualRetSpend / 12;
 
   const monthlyNeedFuture = retMonthlySpend * res.inflationMult;
 
@@ -308,7 +307,7 @@ export function Step5_Summary({ onEditPlan }: Step5Props) {
           </div>
           <div
             className="text-3xl font-light tracking-tighter leading-none"
-            style={{ color: gapIsPositive ? '#22c55e' : '#f97316' }}
+            style={{ color: gapIsPositive ? '#10b981' : '#f59e0b' }}
           >
             <span style={{ marginRight: '4px', fontSize: '22px' }}>
               {gapIsPositive ? '↑' : '↓'}
@@ -414,7 +413,7 @@ export function Step5_Summary({ onEditPlan }: Step5Props) {
               width: `${progressPct}%`,
               borderRadius: '9999px',
               background: gapIsPositive
-                ? 'linear-gradient(90deg, #16a34a, #22c55e)'
+                ? 'linear-gradient(90deg, #16a34a, #10b981)'
                 : 'linear-gradient(90deg, #2563eb, #3b82f6)',
               transition: 'width 0.6s ease',
             }}
@@ -437,12 +436,12 @@ export function Step5_Summary({ onEditPlan }: Step5Props) {
 
         {/* Percentage and gap label below bar */}
         <div className="flex justify-between items-center mt-2">
-          <span className="text-xs" style={{ color: gapIsPositive ? '#22c55e' : '#60a5fa' }}>
+          <span className="text-xs" style={{ color: gapIsPositive ? '#10b981' : '#60a5fa' }}>
             {progressPct.toFixed(1)}% of target reached
           </span>
           <span
             className="text-sm font-bold"
-            style={{ color: gapIsPositive ? '#22c55e' : '#f97316' }}
+            style={{ color: gapIsPositive ? '#10b981' : '#f59e0b' }}
           >
             {gapIsPositive
               ? `${formatLarge(medianGapToday)} surplus`
@@ -605,7 +604,7 @@ export function Step5_Summary({ onEditPlan }: Step5Props) {
           <h3 className="text-sm font-semibold text-text-primary mb-1 uppercase tracking-widest">
             Now vs. Retirement Spending
           </h3>
-          <p className="text-xs text-text-secondary mb-5">Monthly by category</p>
+          <p className="text-xs text-text-secondary mb-5">Your main categories, monthly</p>
 
           {spendingComparison.length > 0 ? (
             <div style={{ height: `${Math.max(200, spendingComparison.length * 52)}px` }}>
@@ -747,7 +746,7 @@ export function Step5_Summary({ onEditPlan }: Step5Props) {
                     <td className="py-3 px-4 text-right font-medium text-text-primary">
                       {future > 0 ? formatCurrency(future) : <span className="text-text-secondary">—</span>}
                     </td>
-                    <td className="py-3 px-4 text-right font-medium" style={{ color: offset > 0 ? '#22c55e' : '#94a3b8' }}>
+                    <td className="py-3 px-4 text-right font-medium" style={{ color: offset > 0 ? '#10b981' : '#94a3b8' }}>
                       {offset > 0 ? formatLarge(offset) : <span className="text-text-secondary">—</span>}
                     </td>
                   </tr>
@@ -762,13 +761,20 @@ export function Step5_Summary({ onEditPlan }: Step5Props) {
                 <td className="py-3 px-4 text-right font-bold text-text-primary">
                   {formatCurrency((i.socialSecurity + i.pension + i.otherIncome) * res.inflationMult)}
                 </td>
-                <td className="py-3 px-4 text-right font-bold" style={{ color: '#22c55e' }}>
+                <td className="py-3 px-4 text-right font-bold" style={{ color: '#10b981' }}>
                   {formatLarge((i.socialSecurity + i.pension + i.otherIncome) * res.inflationMult / res.withdrawalRate)}
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
+        <p className="mt-4 text-xs text-text-secondary leading-relaxed">
+          How this is treated: Social Security keeps pace with inflation through its cost-of-living
+          adjustment, so it holds its value. Pension and other income are shown at their {retirementYear} value
+          but are not inflation-adjusted after that — most pensions have no cost-of-living raise, so their
+          real spending power erodes through retirement. The success probability above already reflects that
+          erosion; this offset is a simplified, retirement-year snapshot. All figures are pre-tax.
+        </p>
       </FintechCard>
 
       {/* ── Disclaimer ── */}

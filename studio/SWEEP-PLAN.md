@@ -49,8 +49,15 @@ Row 7 (guard the `monthlyContrib` auto-overwrite), row 8 (verify resolved + clos
 
 **Audit:** `studio/audits/wave2-long-tail_v1.md` — **8.4/10, 0 Critical, 0 regressions** (16 errors.md rows scanned, none re-opened; row-7 ordering traced against the nanostores re-entrancy queue; suite run independently). The two "revise" items (gap-solver "approximate" label + tighter test bound; passive-income-covered card copy) and a Pattern-1 polish (`planReady` centralized on the engine) were addressed same-day and re-verified (live + green gate). Deferred to their owning agents: a contribution re-sync affordance (product), the Step5/Step4 pointer wording (content), and the `#cbd5e1` palette drift (designer).
 
-### Wave 3 — Per-screen audit + education  (build `finplan-content`)
+### Wave 3 — Per-screen audit + education  (build `finplan-content`)  ✅ **COMPLETE 2026-06-08**
 Auditor full pass on every screen; content adds the "why" behind each input, tooltips, attribution, and the Resources page; QA expands coverage. Every screen clears the lenses with zero Critical.
+
+**Delivered:**
+- **`finplan-content` built** — the Phase 3 "explains" agent (SKILL.md + verification.md + failure_modes.md + learnings.md + evals/io_pairs.md), modeled on the a11y skill. Owns `glossary.md`; encodes the 7-point Content Floor (the "why," attribution, glossary-locked language, honest framing with CFP, Sethi-non-judgmental, preston-writing voice, the next move).
+- **Per-screen audit pass** — all 7 screens audited (4 parallel auditor agents): Welcome 6.5, Step 1 5.5, Step 2 7, Step 3 6.5, Step 4 7.5, Step 5 7 (re-audit, up from 6), Bonus 6/8.5. Audits in `studio/audits/`. The orchestrator owned the single live pass.
+- **Fixes (errors.md rows 18–26, all FIXED + guarded/live-verified):** contrast recurrence — Welcome `#334155` (1.72→6.96:1) + Step 1 white-alpha (row 18); "Discretionary"→"Guilt-Free Spending" glossary (row 19); off-canonical hexes `#22c55e`/`#f97316`→canonical + violet ratified into §6 (row 20); Step 5 income-table caveat, the surviving step5_v1 Critical (row 21); Step 3/5 Pattern-1 recompute → read the engine (row 22); Step 4 dual-success reconciliation (row 23); CompoundCalc effective-monthly + estimate disclaimer (row 24); the content "why" gap on ~25 inputs (row 25); Welcome attribution (row 26).
+- **Canonical** — §6/§7 extended (designer): violet `#8b5cf6` (chart/large) + `#a78bfa` (body) + the lighter-tint rule + the `#334155`-banned-as-text row, all with computed ratios.
+- **QA** — 41 → 44 tests (contrast `#334155`/white-alpha guard ×2 + off-canonical-hex guard). Lint 0 errors, tsc strict-clean, build green. All 7 screens live-verified (the forced reduced-motion path used to inspect navigated screens under the documented headless-rAF throttle, then reverted).
 
 ### Wave 4 — Ship as a resource  (build `finplan-scout`, `-analyst`, `-director`)
 Stand up the standing loop (weekly scout sweep → analyst prioritization → director briefing). Add a public methodology page (every formula + source), a bundle-size pass (code-split Recharts, 590 kB today), final WCAG AA sign-off, and a green CI gate. Public-trust statement: every figure validated, open source, no data leaves the browser.
@@ -58,13 +65,13 @@ Stand up the standing loop (weekly scout sweep → analyst prioritization → di
 ## Per-screen audit matrix
 | Screen | Audited? | Known open items |
 |---|---|---|
-| Welcome | no | lens pass pending |
-| Step 1 — Current Reality | no | dead tokens, a11y |
-| Step 2 — Retirement Design | no | dead tokens, a11y, slider ARIA |
-| Step 3 — Your Number | no | a11y, labeling |
-| Step 4 — Investment Path | partial (single-engine v1) | tokens ✅, a11y ✅, real MC cone ✅ (W1), zero-target guard ✅ (W2); open: full lens pass |
-| Step 5 — Summary | **yes (cold audit v1)** | row 9 caveat ✅, contrast ✅, dead tokens ✅ (W0/1), zero-target bug ✅ (row 16, W2); open: full re-audit |
-| Bonus — CompoundCalculator / Resources | no | dedupe orphans ✅ (W2 — 4 triplication orphans + 3 dead UI components deleted), a11y pending |
+| Welcome | **yes (v1, W3)** | `#334155` contrast ✅, attribution ✅ (rows 18, 26); open: decorative step-number violet on small badges (residual, large-accent spirit) |
+| Step 1 — Current Reality | **yes (v1, W3)** | white-alpha contrast ✅, the "why" on foot-gun/account inputs ✅ (rows 18, 25); open: helper on remaining self-evident guilt-free items (deliberately skipped per F5/F7) |
+| Step 2 — Retirement Design | **yes (v1, W3)** | "Guilt-Free" glossary ✅, violet-as-text ✅, per-slider "why" ✅ (rows 19, 20, 25); zero Critical |
+| Step 3 — Your Number | **yes (v1, W3)** | Pattern-1 recompute ✅, WR bracket-cliff hint ✅ (row 22); zero Critical |
+| Step 4 — Investment Path | **yes (v1, W3)** | tokens ✅, a11y ✅, real MC cone ✅ (W1), zero-target ✅ (W2), dual-success reconciliation ✅ (row 23); zero Critical |
+| Step 5 — Summary | **yes (v2, W3 re-audit)** | income-table caveat ✅ (row 21, the surviving v1 Critical), status hexes→canonical ✅ (row 20), Pattern-1 recompute ✅ (row 22), chart relabel ✅; zero Critical |
+| Bonus — CompoundCalculator / Resources | **yes (v1, W3)** | effective-monthly + estimate disclaimer + monospace + rule-of-72 guard ✅ (row 24); Resources link aria-labels ✅; zero Critical |
 
 ## Sequencing rules
 - Tokens (designer) land before any UI/a11y polish — otherwise work piles onto the broken layer.

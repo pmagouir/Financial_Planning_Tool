@@ -96,3 +96,27 @@ describe('row 10 — reduced motion', () => {
     expect(nav).toMatch(/initial=\{reduceMotion \? false/);
   });
 });
+
+// ── Wave 3 contrast hardening (errors.md rows 18, 19 — Pattern 4) ──
+// The Wave 0 floor scanned the named hexes #475569/#64748b. The per-screen pass found two
+// fresh ways the same defect slipped in: #334155 used as text (Welcome) and sub-AA white-alpha
+// (Step 1). These guards lock both. #334155/#475569 stay legal as background/border/stroke.
+describe('rows 18–19 — contrast hardening (Wave 3 per-screen pass)', () => {
+  it('no live component uses #334155 or #475569 as a TEXT color (§7: 1.72 / 2.36:1)', () => {
+    // \bcolor: matches the standalone text property only — not backgroundColor/borderColor,
+    // where #334155 is a legitimate background/border token.
+    const offenders = liveComponentFiles(join(SRC, 'components')).filter((f) =>
+      /\bcolor:\s*['"]#(?:334155|475569)\b/i.test(readFileSync(f, 'utf8')),
+    );
+    expect(offenders).toEqual([]);
+  });
+
+  it('no live component uses sub-AA white-alpha (α < 0.5) as a TEXT color (§7)', () => {
+    // rgba(255,255,255,α) with α below ~0.5 computes below AA on the #0f172a bg. \bcolor:
+    // excludes backgroundColor (striped rows legitimately use rgba white at 0.02–0.06).
+    const offenders = liveComponentFiles(join(SRC, 'components')).filter((f) =>
+      /\bcolor:\s*['"]rgba\(\s*255\s*,\s*255\s*,\s*255\s*,\s*0?\.[0-4]\d*\s*\)/i.test(readFileSync(f, 'utf8')),
+    );
+    expect(offenders).toEqual([]);
+  });
+});

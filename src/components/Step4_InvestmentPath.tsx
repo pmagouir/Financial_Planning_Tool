@@ -298,6 +298,11 @@ export function Step4_InvestmentPath({ onNext }: Step4Props) {
               <span className="text-slate-400 text-base ml-2">Even the 10th-percentile outcome clears the target.</span>
             )}
           </p>
+          {successPct < 80 && (
+            <p className="text-sm text-slate-400 mt-3">
+              Your balance clears the target at retirement, yet only {successPct}% of simulations fund all {i.retDuration} years. The order of returns in early retirement is why a clearing balance can still fall short. A later retirement or a larger buffer would raise it.
+            </p>
+          )}
         </div>
       )}
 
@@ -340,7 +345,7 @@ export function Step4_InvestmentPath({ onNext }: Step4Props) {
             </span>
             <span className="text-sm text-text-secondary">
               of simulations fund your full {i.retDuration}-year retirement.{' '}
-              {successPct >= 80 ? 'Strong footing.' : successPct >= 60 ? 'Workable — closing the gap below would strengthen it.' : 'Fragile — more contributions or a later retirement would help.'}
+              {successPct >= 80 ? 'Strong footing.' : successPct >= 60 ? 'Workable — more contributions or a later retirement would strengthen it.' : 'Fragile — more contributions or a later retirement would help.'}
             </span>
           </div>
         )}

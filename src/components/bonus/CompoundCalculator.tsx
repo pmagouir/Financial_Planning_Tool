@@ -20,8 +20,7 @@ export function CompoundCalculator() {
   const projectionData = useMemo(() => {
     const data = [];
     const monthlyRate = rate / 12;
-    const totalMonths = years * 12;
-    
+
     let currentBalance = initial;
     let totalPrincipal = initial;
     let totalInterest = 0;

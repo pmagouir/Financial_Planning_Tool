@@ -104,7 +104,11 @@ function NetWorthTooltip({ active, payload, label, requiredPortfolio }: CustomTo
 
 // ─── Component ─────────────────────────────────────────────────────────────────
 
-export function Step5_Summary() {
+interface Step5Props {
+  onEditPlan?: () => void;
+}
+
+export function Step5_Summary({ onEditPlan }: Step5Props) {
   const i = useStore(inputs);
   const res = useStore(results);
 
@@ -208,6 +212,42 @@ export function Step5_Summary() {
   const currentYear = new Date().getFullYear();
   const yearsAway = Math.max(0, retirementYear - currentYear);
 
+  // Zero-target guard (errors.md row 16): with no retirement spend entered, requiredPortfolio is
+  // $0 and every headline below collapses to a falsely reassuring "$0 / 100% / Surplus / 100%
+  // success." There is nothing to summarize until the user has set what they'll spend in
+  // retirement — so show a prompt instead of fake good news. `planReady` comes from the engine
+  // (single source, Pattern 1) and is `annualRetSpend > 0`; note requiredPortfolio can legitimately
+  // be $0 when passive income fully covers spending — a real funded state, not an empty one (handled below).
+  const planReady = res.planReady;
+  if (!planReady) {
+    return (
+      <div className="space-y-8">
+        <div className="text-center space-y-2">
+          <h1 className="text-4xl font-bold text-text-primary">Executive Summary</h1>
+        </div>
+        <FintechCard variant="info">
+          <div className="mx-auto max-w-xl px-6 py-12 text-center space-y-4" role="status">
+            <h2 className="text-2xl font-semibold text-text-primary">Your summary isn&apos;t ready yet</h2>
+            <p className="text-base text-text-secondary">
+              Add your current spending in <span className="font-semibold text-white">Step 1</span> and design your
+              retirement lifestyle in <span className="font-semibold text-white">Step 2</span>. Once you&apos;ve set
+              what you&apos;ll spend in retirement, your required portfolio, projection, success probability, and
+              progress all appear here.
+            </p>
+            {onEditPlan && (
+              <button
+                onClick={onEditPlan}
+                className="inline-flex items-center gap-2 rounded-lg bg-accent-primary px-5 py-2.5 font-medium text-white shadow-card transition-opacity hover:opacity-90"
+              >
+                Start with Step 1 →
+              </button>
+            )}
+          </div>
+        </FintechCard>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8 print-container">
 
@@ -242,7 +282,11 @@ export function Step5_Summary() {
             {formatLarge(requiredToday)}
           </div>
           <div className="text-xs text-text-secondary mt-2">
-            In today's $ · ≈{formatLarge(res.requiredPortfolio)} in {retirementYear}. Funds {formatCurrency(retMonthlySpend)}/mo for {i.retDuration} yrs at {formatPercent(res.withdrawalRate * 100)} — lower spending in Step 2 to lower this.
+            {res.requiredPortfolio === 0 ? (
+              <>Your guaranteed income (Social Security / pension) fully covers your {formatCurrency(retMonthlySpend)}/mo retirement spending — no investment portfolio required.</>
+            ) : (
+              <>In today&apos;s $ · ≈{formatLarge(res.requiredPortfolio)} in {retirementYear}. Funds {formatCurrency(retMonthlySpend)}/mo for {i.retDuration} yrs at {formatPercent(res.withdrawalRate * 100)} — lower spending in Step 2 to lower this.</>
+            )}
           </div>
         </MetricCard>
 
@@ -590,7 +634,7 @@ export function Step5_Summary() {
                     width={80}
                   />
                   <Tooltip
-                    formatter={(value: number, name: string) => [formatCurrency(value), name]}
+                    formatter={(value, name) => [formatCurrency(Number(value)), name]}
                     contentStyle={{
                       backgroundColor: '#0f172a',
                       border: '1px solid #334155',

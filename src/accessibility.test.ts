@@ -11,16 +11,9 @@ import { join } from 'node:path';
 const SRC = join(process.cwd(), 'src');
 const read = (rel: string) => readFileSync(join(SRC, rel), 'utf8');
 
-// Live component tree only — orphans (Wave 2 deletion) are excluded, matching eslint.config.js.
-const ORPHAN = [
-  'components/tools/',
-  'components/calculator/CompoundInterest',
-  'components/calculator/Resources',
-  'components/pages/',
-  'components/ui/GradientBtn',
-  'components/ui/GradientText',
-  'components/ui/NavigationButton',
-];
+// Wave 2 deleted all orphan/dead-code, so every .tsx under components/ is now a live
+// component and the contrast scan covers the whole tree (no exclusions).
+const ORPHAN: string[] = [];
 
 function liveComponentFiles(dir: string): string[] {
   const out: string[] = [];

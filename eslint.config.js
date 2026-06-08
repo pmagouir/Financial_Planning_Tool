@@ -7,20 +7,9 @@ import prettier from 'eslint-config-prettier';
 // eslint-plugin-jsx-a11y runs as `error` so a regression fails CI, not the eye.
 export default [
   {
-    // Build output, generated types, and Wave-2 orphan/dead-code (scheduled for deletion;
-    // not in the live tree — see studio/SWEEP-PLAN.md Wave 2). Don't gate on code we're removing.
-    ignores: [
-      'dist/**',
-      '.astro/**',
-      'node_modules/**',
-      'src/components/tools/**',
-      'src/components/calculator/CompoundInterest.tsx',
-      'src/components/calculator/Resources.tsx',
-      'src/components/pages/**',
-      'src/components/ui/GradientBtn.tsx',
-      'src/components/ui/GradientText.tsx',
-      'src/components/ui/NavigationButton.tsx',
-    ],
+    // Build output and generated types. The orphan/dead-code that used to be ignored here
+    // was deleted in Wave 2 (studio/SWEEP-PLAN.md), so the whole live src/ tree is now gated.
+    ignores: ['dist/**', '.astro/**', 'node_modules/**'],
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
@@ -33,12 +22,9 @@ export default [
     rules: {
       // TS handles undefined references; core no-undef false-positives on browser/React globals.
       'no-undef': 'off',
-      // Pre-existing TS-hygiene cleanup is Wave 2; warn so it never blocks the a11y gate.
+      // TS-hygiene: warn (not error) so it never blocks the a11y gate.
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/no-unused-vars': 'warn',
-      // financialPlan.ts:143 dead `r==g` branch is errors.md row 8 (engine, owned by the
-      // Engineer); surface it without blocking the accessibility gate.
-      'no-useless-assignment': 'warn',
     },
   },
   prettier,

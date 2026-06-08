@@ -1,7 +1,6 @@
 import { useStore } from '@nanostores/react';
 import { inputs, results } from '../stores/financialPlan';
 import { FintechCard } from './ui/FintechCard';
-import { MetricCard } from './ui/MetricCard';
 import { MoneyInput } from './ui/MoneyInput';
 
 // Budget Ribbon Component - HUD Style Trading Ticker

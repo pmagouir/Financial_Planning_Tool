@@ -22,3 +22,6 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# scheduled-tasks local lock (transient, machine-local)
+.claude/scheduled_tasks.lock

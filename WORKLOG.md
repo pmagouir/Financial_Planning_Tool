@@ -78,6 +78,21 @@ A running record of major development sessions, what was built, and what's next.
 
 ---
 
+## Session 2 — Agentic Studio Sweep (Waves 0–2)
+
+The `studio/` agentic system (BRAIN five-agent pattern) now drives improvement wave-by-wave against `studio/.learn/errors.md` and `studio/SWEEP-PLAN.md`. Waves 0–1 shipped in `a6f2c41` (the `@theme` token system + WCAG accessibility floor; a real seeded Monte Carlo engine with success probability, sequence-of-returns risk, and COLA-aware drawdown).
+
+### Wave 2 — Close the long tail
+- **Row 7 — `monthlyContrib` overwrite guard.** Added `hasModifiedContrib` (mirrors `hasModifiedRetirement`). Step 4's contribution input flags manual intent *before* writing the value, so the synchronous smart-default subscriber can no longer clobber a hand-entered contribution when the user revisits Step 1. The seed still works until the user takes control. Verified end-to-end in the browser.
+- **Row 8 — dead `r == g` branch.** Verified it was already removed by the single-engine rewrite (git: added `a967ceb`, removed `72414b6`); locked closed with a continuity/monotonicity property test; removed the stale eslint rule and the dead `withdrawalRate` initial value it had been masking.
+- **Row 16 (new) — zero-target state.** With no retirement spend entered, the Summary used to read "$0 / 100% of target / Surplus" and Step 4 read "✓ on track" against a $0 target. Now gated on `planReady = annualRetSpend > 0`: Step 5 shows a "Your summary isn't ready yet" prompt with a "Start with Step 1 →" CTA; Step 4 shows a "No target set yet" panel with a neutral outcome strip. Verified in the browser.
+- **Orphan/dead-code cleanup.** Deleted 7 orphan files (triplicated CompoundCalculator ×2, Resources ×2, plus `GradientBtn`/`GradientText`/`NavigationButton`) and 2 empty dirs; cleaned the eslint + accessibility-test ignore lists; fixed 2 pre-existing Recharts formatter type errors so `tsc` is now strict-clean across the tree.
+- **Tests.** 30 → 41 (the rows-8/7/16 regressions plus drawdown, gap-solver, and smart-default edge cases). Lint 0 errors; production build green.
+
+Audit: `studio/audits/wave2-long-tail_v1.md`. Defect ledger: `studio/.learn/errors.md` (rows 7, 8, 16 → FIXED).
+
+---
+
 ## Roadmap — What's Next
 
 ### Product Features
@@ -85,14 +100,14 @@ A running record of major development sessions, what was built, and what's next.
 - [ ] Asset allocation guidance by age/risk tolerance
 - [ ] Social Security benefit estimator integration
 - [ ] Retire at 55 vs 65 scenario comparison
-- [ ] True Monte Carlo simulation (1,000 random paths vs 3 deterministic)
+- [x] True Monte Carlo simulation (1,000 seeded paths, success probability + sequence-of-returns risk) — Wave 1
 - [ ] Debt payoff module (avalanche vs snowball)
 - [ ] Emergency fund calculator
 - [ ] Mobile layout polish pass (375px minimum)
 
 ### Engineering Foundations
-- [ ] Vitest unit tests for all financial calculations
+- [x] Vitest unit tests for the financial engine — 41 tests, WolframAlpha-locked reference values + a regression per `errors.md` row (Waves 0–2; expand as features land)
 - [ ] GitHub Actions CI/CD pipeline (lint, type-check, test, build)
-- [ ] Bundle size analysis (Recharts is heavy — consider code splitting)
+- [ ] Bundle size analysis (Recharts is heavy — 597 kB chunk; code-split in Wave 4)
 - [ ] JSDoc on all exported store functions
-- [ ] Accessibility audit (WCAG AA)
+- [x] Accessibility floor (WCAG 2.2 AA contrast, label binding, APG tabs/sliders, reduced-motion, jsx-a11y gate) — Wave 0; full per-screen lens pass ongoing

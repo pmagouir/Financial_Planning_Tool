@@ -54,10 +54,9 @@ interface ConeTooltipProps {
   active?: boolean;
   label?: number;
   payload?: TooltipPayloadEntry[];
-  requiredPortfolio: number;
 }
 
-function ConeTooltip({ active, label, payload, requiredPortfolio }: ConeTooltipProps) {
+function ConeTooltip({ active, label, payload }: ConeTooltipProps) {
   if (!active || !payload || payload.length === 0) return null;
 
   const get = (name: string) => payload.find((p) => p.name === name)?.value;
@@ -145,6 +144,10 @@ export function Step4_InvestmentPath({ onNext }: Step4Props) {
   const medianGapToday = res.medianGap / (res.inflationMult || 1);
 
   const hasData = i.currentPortfolio > 0 || i.monthlyContrib > 0;
+  // Zero-target guard (errors.md row 16): without a retirement-spend target, requiredPortfolio
+  // is $0, so every "on track" verdict below is vacuously true (everything clears $0). Read the
+  // single `planReady` predicate from the engine (Pattern 1) — until then, prompt rather than reassure.
+  const planReady = res.planReady;
 
   return (
     <div className="space-y-8">
@@ -167,7 +170,13 @@ export function Step4_InvestmentPath({ onNext }: Step4Props) {
             label="Monthly Investment Contribution"
             helperText="How much you'll invest each month going forward"
             value={i.monthlyContrib}
-            onChange={(value) => inputs.setKey('monthlyContrib', value)}
+            onChange={(value) => {
+              // Row 7: flag manual intent BEFORE writing the value. The Step 1 smart-default
+              // subscriber fires synchronously on the setKey below; setting the flag first means
+              // it sees hasModifiedContrib and won't clobber this hand-entered contribution.
+              inputs.setKey('hasModifiedContrib', true);
+              inputs.setKey('monthlyContrib', value);
+            }}
           />
           <div className="mt-4">
             <RangeSlider
@@ -243,7 +252,7 @@ export function Step4_InvestmentPath({ onNext }: Step4Props) {
       </FintechCard>
 
       {/* ── Gap Panel ────────────────────────────────────────────────────────── */}
-      {hasData && res.medianGap < 0 && (
+      {hasData && planReady && res.medianGap < 0 && (
         <div
           style={{
             borderRadius: '16px',
@@ -267,11 +276,12 @@ export function Step4_InvestmentPath({ onNext }: Step4Props) {
           >
             <div className="text-sm text-slate-400 mb-1">Additional monthly investment needed:</div>
             <div className="text-3xl font-bold text-white">{formatCurrency(res.monthlyShortfall)}<span className="text-lg font-normal text-slate-400">/mo</span></div>
+            <div className="text-xs text-slate-400 mt-2">Approximate — a starting point. Because real returns vary, the typical (median) outcome may need a bit more.</div>
           </div>
         </div>
       )}
 
-      {hasData && res.medianGap >= 0 && (
+      {hasData && planReady && res.medianGap >= 0 && (
         <div
           style={{
             borderRadius: '16px',
@@ -287,6 +297,25 @@ export function Step4_InvestmentPath({ onNext }: Step4Props) {
             {onTrackP10 && (
               <span className="text-slate-400 text-base ml-2">Even the 10th-percentile outcome clears the target.</span>
             )}
+          </p>
+        </div>
+      )}
+
+      {/* No target yet: savings entered but no retirement spend set — don't render an "on track" verdict against a $0 target (errors.md row 16). */}
+      {hasData && !planReady && (
+        <div
+          style={{
+            borderRadius: '16px',
+            border: '1px solid rgba(59,130,246,0.3)',
+            background: 'rgba(59,130,246,0.07)',
+            padding: '28px 32px',
+          }}
+        >
+          <h2 className="text-2xl font-bold text-white mb-2">No target set yet</h2>
+          <p className="text-lg text-slate-300">
+            You&apos;ve entered your savings, but you haven&apos;t set what you&apos;ll spend in retirement.
+            Design your retirement spending in{' '}
+            <span style={{ color: '#3b82f6', fontWeight: 700 }}>Step 2</span> to see whether you&apos;re on track.
           </p>
         </div>
       )}
@@ -379,11 +408,7 @@ export function Step4_InvestmentPath({ onNext }: Step4Props) {
                 width={72}
               />
 
-              <Tooltip
-                content={
-                  <ConeTooltip requiredPortfolio={res.requiredPortfolio} />
-                }
-              />
+              <Tooltip content={<ConeTooltip />} />
 
               {/* Hide default legend — we have the custom one above */}
               <Legend wrapperStyle={{ display: 'none' }} />
@@ -520,7 +545,7 @@ export function Step4_InvestmentPath({ onNext }: Step4Props) {
                   style={{
                     fontSize: '1rem',
                     fontWeight: 700,
-                    color: item.onTrack ? '#10b981' : '#f59e0b',
+                    color: !planReady ? '#cbd5e1' : item.onTrack ? '#10b981' : '#f59e0b',
                     fontVariantNumeric: 'tabular-nums',
                     marginBottom: '3px',
                   }}
@@ -530,16 +555,18 @@ export function Step4_InvestmentPath({ onNext }: Step4Props) {
                     : `$${(item.value / 1_000).toFixed(0)}K`}
                 </div>
                 <div style={{ fontSize: '0.65rem', color: '#94a3b8' }}>{item.rate}</div>
-                <div
-                  style={{
-                    marginTop: '4px',
-                    fontSize: '0.65rem',
-                    fontWeight: 600,
-                    color: item.onTrack ? '#10b981' : '#f59e0b',
-                  }}
-                >
-                  {item.onTrack ? '✓ on track' : '✗ shortfall'}
-                </div>
+                {planReady && (
+                  <div
+                    style={{
+                      marginTop: '4px',
+                      fontSize: '0.65rem',
+                      fontWeight: 600,
+                      color: item.onTrack ? '#10b981' : '#f59e0b',
+                    }}
+                  >
+                    {item.onTrack ? '✓ on track' : '✗ shortfall'}
+                  </div>
+                )}
               </div>
             ))}
           </div>

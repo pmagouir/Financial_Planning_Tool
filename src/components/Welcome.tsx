@@ -67,7 +67,7 @@ const pillars = [
 const stats = [
   { value: '4%', label: 'Proven since 1994' },
   { value: '25x', label: 'Portfolio multiplier' },
-  { value: '$0 data', label: 'Runs in-browser' },
+  { value: '0', label: 'Data leaves your browser' },
   { value: '5 Steps', label: 'Start to finish' },
 ];
 

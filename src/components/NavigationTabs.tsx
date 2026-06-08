@@ -111,7 +111,7 @@ export function NavigationTabs() {
       case 'step2': return <Step2_RetirementDesign onNext={handleNext} />;
       case 'step3': return <Step3_YourNumber onNext={handleNext} />;
       case 'step4': return <Step4_InvestmentPath onNext={handleNext} />;
-      case 'summary': return <Step5_Summary />;
+      case 'summary': return <Step5_Summary onEditPlan={() => setActiveTab('step1')} />;
       case 'compound': return <CompoundCalculator />;
       case 'resources': return <Resources />;
       default: return <Welcome />;

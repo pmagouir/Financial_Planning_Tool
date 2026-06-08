@@ -163,7 +163,7 @@ export function Step2_RetirementDesign({ onNext }: Step2Props) {
                     width={82}
                   />
                   <Tooltip
-                    formatter={(value: number, name: string) => [formatCurrency(value), name]}
+                    formatter={(value, name) => [formatCurrency(Number(value)), name]}
                     contentStyle={{
                       backgroundColor: '#0f172a',
                       border: '1px solid #334155',

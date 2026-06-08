@@ -89,6 +89,73 @@ describe('errors.md regression suite', () => {
     inputs.setKey('currentPortfolio', 123456);
     expect(localStorage.getItem('finplan:currentPortfolio')).toBe('123456');
   });
+
+  it('row 8 (no special-case r==g branch): projectedPortfolio is continuous & monotonic as g crosses r', () => {
+    // The dead `r == g` branch (old financialPlan.ts:132-151, where the if/else ran identical
+    // loops and the promised closed form was never implemented) was removed by the single-engine
+    // rewrite (commit 72414b6). projectAccumulation now uses ONE month-by-month loop with no
+    // branch on r vs g. This is a property test, not a value test, because the defect was the
+    // existence of a divergent branch: a re-introduced special-case at g==r would surface as a
+    // discontinuity (a jump) or a break in monotonicity right at the boundary.
+    inputs.setKey('currentPortfolio', 100000);
+    inputs.setKey('monthlyContrib', 1000);
+    inputs.setKey('annualReturn', 7); // r = 7%
+    inputs.setKey('retYear', CURRENT_YEAR + 25);
+    inputs.setKey('contribStopYear', 0);
+
+    inputs.setKey('contribIncrease', 6.99);
+    const below = results.get().projectedPortfolio;
+    inputs.setKey('contribIncrease', 7.0); // g == r exactly — the old branch's trigger
+    const atRG = results.get().projectedPortfolio;
+    inputs.setKey('contribIncrease', 7.01);
+    const above = results.get().projectedPortfolio;
+
+    expect(Number.isFinite(atRG)).toBe(true);
+    // Strictly increasing in contribution growth, with no jump at g==r…
+    expect(below).toBeLessThan(atRG);
+    expect(atRG).toBeLessThan(above);
+    // …and continuous: the g==r value sits on the line between its neighbors (a special-case
+    // formula would deflect it off this near-linear local segment). Tolerance 1% ≫ float noise,
+    // ≪ any plausible wrong-closed-form deflection.
+    const midpoint = (below + above) / 2;
+    expect(Math.abs(atRG - midpoint) / atRG).toBeLessThan(0.01);
+  });
+
+  it('row 7 (monthlyContrib guard): a hand-entered contribution survives a later Step 1 investment change', () => {
+    // Half 1 — the smart default still seeds: with no manual override, the Step 1 investment
+    // sum syncs into monthlyContrib (proves the row-7 guard did not over-gate the seed).
+    inputs.setKey('k401', 1000);
+    expect(inputs.get().monthlyContrib).toBe(1000);
+
+    // User hand-enters a different contribution in Step 4. The UI sets the flag BEFORE the value
+    // (so the synchronous subscriber sees intent and skips the sync) — mirror that order here.
+    inputs.setKey('hasModifiedContrib', true);
+    inputs.setKey('monthlyContrib', 2500);
+    expect(inputs.get().monthlyContrib).toBe(2500);
+
+    // Half 2 — the guard holds: revisiting Step 1 and bumping an investment must NOT clobber
+    // the hand-entered value. Before the fix this re-synced monthlyContrib to the new total.
+    inputs.setKey('k401', 1500); // totalInvest changes to 1500
+    expect(inputs.get().monthlyContrib).toBe(2500); // intent wins
+  });
+
+  it('row 16 (zero-target trigger): an unentered plan has no target, so the UI must not show "funded"', () => {
+    // Default state: retirement-spend sliders all $0 (the smart-default seed from an empty Step 1)
+    // and SS $18k. annualRetSpend === 0 → requiredPortfolio === 0. This is the exact state Step 4
+    // and Step 5 must detect (planReady = res.annualRetSpend > 0) and render a prompt for, instead
+    // of the falsely reassuring "$0 / 100% of target / Surplus / 100% success." We lock the engine
+    // trigger here; the prompt rendering itself is confirmed in Claude_Preview (recorded in the audit).
+    const r0 = results.get();
+    expect(r0.annualRetSpend).toBe(0);
+    expect(r0.requiredPortfolio).toBe(0);
+
+    // Entering any retirement spending flips it to a real, fundable target (planReady → true).
+    inputs.setKey('hasModifiedRetirement', true);
+    inputs.setKey('retHousing', 3000);
+    const r1 = results.get();
+    expect(r1.annualRetSpend).toBeGreaterThan(0);
+    expect(r1.requiredPortfolio).toBeGreaterThan(0);
+  });
 });
 
 // ── Edge cases ──
@@ -226,5 +293,123 @@ describe('Monte Carlo (canonical §10)', () => {
     expect(reqA).toBeCloseTo(reqB, 2);
     // …but the flat pension erodes over 35 years, so it funds less → strictly lower success.
     expect(successPension).toBeLessThan(successSS);
+  });
+});
+
+// ── Edge-case expansion (Wave 2): drawdown, gap solver, smart defaults ──
+describe('drawdown (canonical §4) edge cases', () => {
+  it('netWorthData spans the full lifecycle and never goes negative', () => {
+    inputs.setKey('hasModifiedRetirement', true);
+    inputs.setKey('currentPortfolio', 200000);
+    inputs.setKey('monthlyContrib', 1000);
+    inputs.setKey('annualReturn', 7);
+    inputs.setKey('inflation', 3);
+    inputs.setKey('retYear', CURRENT_YEAR + 20);
+    inputs.setKey('retDuration', 30);
+    inputs.setKey('socialSecurity', 0);
+    inputs.setKey('retHousing', 4000); // $48k/yr need
+    const r = results.get();
+    // length = (yearsToRet + 1) accumulation points + retDuration drawdown points
+    expect(r.netWorthData.length).toBe(20 + 1 + 30);
+    expect(r.netWorthData.every((d) => d.netWorth >= 0)).toBe(true);
+    // the series ends in the final retirement year
+    expect(r.netWorthData[r.netWorthData.length - 1].year).toBe(CURRENT_YEAR + 20 + 30);
+  });
+
+  it('a high net need depletes the deterministic portfolio to exactly 0 (floored, never negative)', () => {
+    inputs.setKey('hasModifiedRetirement', true);
+    inputs.setKey('currentPortfolio', 100000);
+    inputs.setKey('monthlyContrib', 0);
+    inputs.setKey('annualReturn', 7);
+    inputs.setKey('inflation', 3);
+    inputs.setKey('retYear', CURRENT_YEAR); // retire now, no accumulation
+    inputs.setKey('retDuration', 30);
+    inputs.setKey('socialSecurity', 0);
+    inputs.setKey('retHousing', 5000); // $60k/yr drawn on a $100k portfolio → depletes fast
+    const retPhase = results.get().netWorthData.filter((d) => d.phase === 'Retirement');
+    expect(retPhase.every((d) => d.netWorth >= 0)).toBe(true); // floored, never negative
+    expect(retPhase[retPhase.length - 1].netWorth).toBe(0); // fully depleted by the end
+  });
+});
+
+describe('gap solver (canonical §3 D) edge cases', () => {
+  it('is zero when the median already clears the target (a surplus needs no top-up)', () => {
+    inputs.setKey('hasModifiedRetirement', true);
+    inputs.setKey('currentPortfolio', 2_000_000);
+    inputs.setKey('monthlyContrib', 1000);
+    inputs.setKey('retYear', CURRENT_YEAR + 25);
+    inputs.setKey('retHousing', 2000); // modest need
+    const r = results.get();
+    expect(r.medianGap).toBeGreaterThan(0); // surplus
+    expect(r.monthlyShortfall).toBe(0); // nothing to add
+  });
+
+  it('is zero when there is no time left to contribute (yearsContributing 0)', () => {
+    inputs.setKey('hasModifiedRetirement', true);
+    inputs.setKey('currentPortfolio', 0);
+    inputs.setKey('monthlyContrib', 1000);
+    inputs.setKey('retYear', CURRENT_YEAR); // retire now → can't contribute
+    inputs.setKey('retHousing', 4000);
+    expect(results.get().monthlyShortfall).toBe(0);
+  });
+
+  it('adding the prescribed monthlyShortfall materially closes the median gap', () => {
+    inputs.setKey('hasModifiedRetirement', true);
+    inputs.setKey('currentPortfolio', 50000);
+    inputs.setKey('monthlyContrib', 500);
+    inputs.setKey('annualReturn', 7);
+    inputs.setKey('contribIncrease', 3);
+    inputs.setKey('inflation', 3);
+    inputs.setKey('retYear', CURRENT_YEAR + 25);
+    inputs.setKey('retDuration', 30);
+    inputs.setKey('socialSecurity', 18000);
+    inputs.setKey('retHousing', 5000); // large need → genuine shortfall
+    const before = results.get();
+    expect(before.medianGap).toBeLessThan(0);
+    const add = before.monthlyShortfall;
+    expect(add).toBeGreaterThan(0);
+    // Apply the prescribed top-up and re-evaluate the same plan.
+    inputs.setKey('monthlyContrib', 500 + add);
+    const after = results.get();
+    expect(after.medianPortfolio).toBeGreaterThan(before.medianPortfolio);
+    // The seeded MC closes ~90% of the median gap here (residual ≈0.103). The solver under-closes
+    // slightly: it sizes the top-up off the DETERMINISTIC factor while the median grows slower
+    // (lognormal skew). Bound at 15% residual — well above the real ~10%, but tight enough to fail
+    // a ~2× solver regression (which would leave ~55% of the gap), unlike the prior loose 50%.
+    const closureRatio = Math.abs(after.medianGap) / Math.abs(before.medianGap);
+    expect(closureRatio).toBeLessThan(0.15);
+  });
+
+  it('a larger shortfall prescribes a larger monthly top-up (monotonic)', () => {
+    inputs.setKey('hasModifiedRetirement', true);
+    inputs.setKey('currentPortfolio', 50000);
+    inputs.setKey('monthlyContrib', 500);
+    inputs.setKey('annualReturn', 7);
+    inputs.setKey('retYear', CURRENT_YEAR + 25);
+    inputs.setKey('socialSecurity', 18000);
+    inputs.setKey('retHousing', 4000);
+    const small = results.get().monthlyShortfall;
+    inputs.setKey('retHousing', 6000); // bigger need → bigger gap
+    const big = results.get().monthlyShortfall;
+    expect(big).toBeGreaterThan(small);
+  });
+});
+
+describe('smart defaults (canonical §2 seeding) edge cases', () => {
+  it('seeds retirement spend from Step 1 at the documented ratios while unmodified', () => {
+    inputs.setKey('rent', 2000); // housing component
+    inputs.setKey('healthIns', 500);
+    inputs.setKey('dining', 400);
+    const r = inputs.get();
+    expect(r.retHousing).toBe(2000); // housing = rent (+ other components 0), full ratio
+    expect(r.retHealth).toBe(Math.round(500 * 1.3)); // 1.3× health
+    expect(r.retDining).toBe(Math.round(400 * 0.7)); // 0.7× dining
+  });
+
+  it('stops seeding once the user has modified the retirement sliders (hasModifiedRetirement)', () => {
+    inputs.setKey('hasModifiedRetirement', true);
+    inputs.setKey('retHousing', 9999); // user-set
+    inputs.setKey('rent', 2000); // would seed retHousing=2000, but the guard blocks the overwrite
+    expect(inputs.get().retHousing).toBe(9999); // user's value preserved
   });
 });

@@ -18,7 +18,8 @@ export interface FinancialInputs {
   retHousing: number; retTransport: number; retGroceries: number; retHealth: number;
   retChild: number; retIns: number; retDebt: number;
   retEnt: number; retDining: number; retPersonal: number; retMisc: number;
-  hasModifiedRetirement: boolean;
+  hasModifiedRetirement: boolean; // user customized retirement-spend sliders → stop seeding them
+  hasModifiedContrib: boolean;    // user hand-entered monthlyContrib → stop syncing it to Step 1 (row 7)
   // Assumptions
   retYear: number; retDuration: number; inflation: number;
   socialSecurity: number; pension: number; otherIncome: number;
@@ -41,6 +42,7 @@ const DEFAULTS: FinancialInputs = {
   retChild: 0, retIns: 0, retDebt: 0,
   retEnt: 0, retDining: 0, retPersonal: 0, retMisc: 0,
   hasModifiedRetirement: false,
+  hasModifiedContrib: false,
   retYear: 2049, retDuration: 25, inflation: 3.0,
   socialSecurity: 18000, pension: 0, otherIncome: 0,
   currentPortfolio: 0, monthlyContrib: 0,
@@ -85,10 +87,11 @@ inputs.subscribe((val) => {
   inputs.setKey('retPersonal', personal);
   inputs.setKey('retMisc', Math.round(misc * 0.8));
 
-  // Sync monthly contribution with total investments (including employer match).
-  // NOTE (errors.md row 7): this can overwrite a Step 4 hand-entry; gating is a separate spec.
+  // Seed monthly contribution from total investments (incl. employer match) — but ONLY until
+  // the user takes manual control. errors.md row 7: a value hand-entered in Step 4 sets
+  // hasModifiedContrib, after which this sync never clobbers it again. Defaults seed; intent wins.
   const totalInvest = val.k401 + val.employerMatch + val.ira + val.hsa + val.taxable + val.emergency + val.edu529 + val.lifeIns;
-  if (totalInvest > 0) {
+  if (totalInvest > 0 && !val.hasModifiedContrib) {
     inputs.setKey('monthlyContrib', totalInvest);
   }
 });
@@ -245,8 +248,9 @@ export const results = computed(inputs, (i) => {
   const yearsToRet = Math.max(0, i.retYear - currentYear);
   const inflationMult = Math.pow(1 + i.inflation / 100, yearsToRet);
 
-  // A. Withdrawal rate (Trinity Study — canonical §1)
-  let withdrawalRate = 0.04;
+  // A. Withdrawal rate (Trinity Study — canonical §1). Every branch below (incl. the final
+  // else) assigns, so no dead initial value — the bracket fully determines the rate.
+  let withdrawalRate: number;
   if (i.withdrawalRate > 0) {
     withdrawalRate = i.withdrawalRate / 100;
   } else if (i.retDuration >= 35) {
@@ -348,6 +352,9 @@ export const results = computed(inputs, (i) => {
   return {
     inflationMult, withdrawalRate, yearsToRet,
     annualRetSpend, futureAnnualNeed,
+    // Has the user entered a retirement-spend target yet? The single source of the "is the plan
+    // ready to summarize?" predicate, so Step 4 and Step 5 don't each recompute it (Pattern 1).
+    planReady: annualRetSpend > 0,
     requiredPortfolio, projectedPortfolio, gap,
     monthlyShortfall,
     currentFixed, currentInvest, currentGuiltFree, totalAllocated,

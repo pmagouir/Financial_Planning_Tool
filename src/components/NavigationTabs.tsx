@@ -1,18 +1,23 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, lazy, Suspense } from 'react';
 import { useStore } from '@nanostores/react';
 import { clsx } from 'clsx';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { Step1_CurrentReality } from './Step1_CurrentReality';
-import { Step2_RetirementDesign } from './Step2_RetirementDesign';
 import { Step3_YourNumber } from './calculator/Step3_YourNumber';
-import { Step4_InvestmentPath } from './Step4_InvestmentPath';
-import { Step5_Summary } from './Step5_Summary';
-import { CompoundCalculator } from './bonus/CompoundCalculator';
 import { Resources } from './bonus/Resources';
+import { Methodology } from './Methodology';
 import { Welcome } from './Welcome';
 import { inputs } from '../stores/financialPlan';
 
-type TabId = 'welcome' | 'step1' | 'step2' | 'step3' | 'step4' | 'summary' | 'compound' | 'resources' | 'divider';
+// Recharts is the heaviest dependency (~370 kB). The four chart-bearing screens are
+// lazy-loaded so Recharts splits into on-demand chunks and the initial load
+// (Welcome / Step 1 / Step 3 / Methodology — none of which chart) stays light.
+const Step2_RetirementDesign = lazy(() => import('./Step2_RetirementDesign').then((m) => ({ default: m.Step2_RetirementDesign })));
+const Step4_InvestmentPath = lazy(() => import('./Step4_InvestmentPath').then((m) => ({ default: m.Step4_InvestmentPath })));
+const Step5_Summary = lazy(() => import('./Step5_Summary').then((m) => ({ default: m.Step5_Summary })));
+const CompoundCalculator = lazy(() => import('./bonus/CompoundCalculator').then((m) => ({ default: m.CompoundCalculator })));
+
+type TabId = 'welcome' | 'step1' | 'step2' | 'step3' | 'step4' | 'summary' | 'compound' | 'resources' | 'methodology' | 'divider';
 
 interface Tab {
   id: TabId;
@@ -33,6 +38,7 @@ const tabs: Tab[] = [
   { id: 'divider', label: '', shortLabel: '', icon: '', isDivider: true },
   { id: 'compound', label: 'Bonus: Compound Calc', shortLabel: 'Compound', icon: '🧮', isBonus: true },
   { id: 'resources', label: 'Bonus: Resources', shortLabel: 'Resources', icon: '📚', isBonus: true },
+  { id: 'methodology', label: 'Methodology', shortLabel: 'Method', icon: '📐', isBonus: true },
 ];
 
 // Core nav tabs shown in the bottom mobile nav (no divider/bonus)
@@ -114,6 +120,7 @@ export function NavigationTabs() {
       case 'summary': return <Step5_Summary onEditPlan={() => setActiveTab('step1')} />;
       case 'compound': return <CompoundCalculator />;
       case 'resources': return <Resources />;
+      case 'methodology': return <Methodology />;
       default: return <Welcome />;
     }
   };
@@ -229,7 +236,15 @@ export function NavigationTabs() {
                   exit={reduceMotion ? { opacity: 1 } : { opacity: 0, x: -20 }}
                   transition={reduceMotion ? { duration: 0 } : { duration: 0.3, ease: 'easeInOut' }}
                 >
-                  {renderContent()}
+                  <Suspense
+                    fallback={
+                      <div className="py-20 text-center text-sm text-text-secondary" role="status">
+                        Loading…
+                      </div>
+                    }
+                  >
+                    {renderContent()}
+                  </Suspense>
                 </motion.div>
               </AnimatePresence>
             </div>

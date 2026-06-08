@@ -1,9 +1,16 @@
 name: CI
 
+# The studio gate, mirrored in CI: lint (zero warnings) → test → build (type-checks + bundles).
+# Runs on every push and PR so no defect reaches main without clearing the same bar the
+# local Definition of Done requires.
+
 on:
   push:
-    branches: [main]
   pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   verify:
@@ -13,11 +20,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: npm
       - name: Install dependencies
-        run: npm install
-      - name: Lint
+        run: npm ci
+      - name: Lint (eslint — zero warnings)
         run: npm run lint
-      - name: Test (Vitest)
+      - name: Test (Vitest — financial engine + a11y + design-system guards)
         run: npm test
-      - name: Build
+      - name: Build (Astro — type-checks and bundles)
         run: npm run build

@@ -102,6 +102,18 @@ Built the last bench agent and ran the full per-screen pass.
 
 Audit: `studio/audits/wave3-per-screen-education_v1.md`. Defect ledger: rows 18–26 → FIXED.
 
+### Wave 4 — Ship as a resource
+The final sweep wave: stood up the standing loop, made every number publicly traceable, and trimmed the bundle.
+
+- **The standing loop is built.** `finplan-scout` (scans the field → dated `backlog/`), `finplan-analyst` (scores impact × rigor × effort → gated `specs/`), `finplan-director` (compiles a BLUF briefing + Definition-of-Done → `briefings/`), plus `briefings/TEMPLATE.md`. Each is a full 5-file skill in the house format. The BRAIN five-agent pattern is now complete end to end: Scout → Analyst → bench → Auditor → Director → Preston. Eleven finplan agents total.
+- **Public methodology page** (`src/components/Methodology.tsx`, a bonus tab). Every formula and source from canonical §1–§10 in plain language: the withdrawal brackets, the Number with the COLA/pre-tax/today's-dollars treatment, the projection, the Monte Carlo, the drawdown, an explicit "what this tool does not model" (taxes, fat tails), the WolframAlpha-locked reference values, and the full bibliography. Live-verified accessible (body 17.06:1, no banned colors).
+- **Recharts code-split** (errors.md row 28). Lazy-loaded the four chart-bearing screens — `NavigationTabs` dropped **601 → 188 kB** (gzip 177 → 59), and the 328 kB Recharts core now loads on demand. The initial load (Welcome / Step 1 / Step 3 / Methodology) no longer pays for charting.
+- **CI hardened** (row 29). `npm ci` + strict lint (`--max-warnings 0`) + test + build on every push/PR, with a concurrency guard; removed the one pre-existing `as any`; added a CI badge.
+- **README de-staled** (row 27). The old `×0.6` drawdown and `±2%` cone (which contradicted the live engine and the new methodology page) corrected to canonical; added the Trust & Methodology section.
+- **Gate:** 44 tests green, lint 0 warnings (strict), tsc strict-clean, build green. Methodology + lazy mount live-verified. errors.md rows 27–29 → FIXED.
+
+All four sweep waves (0–4) are complete; the tool ships as a public resource with every figure validated, traceable, and open. Audit: `studio/audits/wave4-ship-as-resource_v1.md`.
+
 ---
 
 ## Roadmap — What's Next

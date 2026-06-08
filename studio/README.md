@@ -7,19 +7,19 @@ The agents are skills in `.claude/skills/finplan-*`. They never call each other.
 ## Roster
 
 **Spine**
-- `finplan-scout` — *scans*. Sweeps finance research, WCAG, framework releases, and the live tool → a dated backlog. (planned, Phase 3)
-- `finplan-analyst` — *scores*. Ranks the backlog by impact × rigor × effort, writes one improvement spec per accepted item, routes to a builder. (planned, Phase 3)
+- `finplan-scout` — *scans*. Sweeps finance research, WCAG, framework releases, and the live tool → a dated backlog. (built, Phase 3)
+- `finplan-analyst` — *scores*. Ranks the backlog by impact × rigor × effort, writes one improvement spec per accepted item, routes to a builder. (built, Phase 3)
 - `finplan-qa` — *tests*. Vitest suite, reference-value validation against canonical, one regression test per `errors.md` row. **(built, Phase 1)**
 - `finplan-auditor` — *critiques*. Multi-lens adversarial review before ship; specializes `adversarial-audit-cowork`. **(built, Phase 1)**
-- `finplan-director` — *reports up*. Weekly briefing + Definition-of-Done to Preston. (planned, Phase 3)
+- `finplan-director` — *reports up*. Weekly briefing + Definition-of-Done to Preston. (built, Phase 3)
 
 **Bench (the Builder, fanned out)**
-- `finplan-quant` — *models*. Monte Carlo, sequence-of-returns, tax-aware withdrawals, glide path. (planned, Phase 2)
+- `finplan-quant` — *models*. Monte Carlo, sequence-of-returns, tax-aware withdrawals, glide path. (built, Phase 2)
 - `finplan-cfp` — *validates*. Formula correctness, citations, withdrawal methodology, honest labeling. **(built, Phase 1)**
 - `finplan-engineer` — *implements*. Single-engine refactor, persistence, dead-code purge, token wiring, CI/CD. **(built, Phase 1)**
-- `finplan-designer` — *designs*. Token system, component consolidation, motion, responsive. (planned, Phase 3)
-- `finplan-a11y` — *ensures access*. WCAG AA, ARIA, label binding, keyboard/focus, contrast. (planned, Phase 2)
-- `finplan-content` — *explains*. Resources, tooltips, the "why," attribution. (planned, Phase 3)
+- `finplan-designer` — *designs*. Token system, component consolidation, motion, responsive. (built, Phase 3)
+- `finplan-a11y` — *ensures access*. WCAG AA, ARIA, label binding, keyboard/focus, contrast. (built, Phase 2)
+- `finplan-content` — *explains*. Resources, tooltips, the "why," attribution. (built, Phase 3)
 
 ## The pipeline (file-mediated handoff)
 
@@ -55,9 +55,11 @@ A `PostToolUse` hook runs `.verification/check_gates.sh` on writes under `specs/
 ## Build status
 
 - **Phase 0 — complete.** Workspace, `.learn/` (canonical seeded + validated, errors seeded), gate hook.
-- **Phase 1 — in progress.** `finplan-cfp`, `finplan-engineer`, `finplan-qa`, `finplan-auditor`. Closes the credibility, correctness, and data-loss defects (`errors.md` rows 1–3, 7–9).
-- **Phase 2 — planned.** `finplan-quant`, `finplan-a11y`.
-- **Phase 3 — planned.** `finplan-scout`, `finplan-analyst`, `finplan-designer`, `finplan-content`, `finplan-director` (the standing loop).
+- **Phase 1 — complete.** `finplan-cfp`, `finplan-engineer`, `finplan-qa`, `finplan-auditor`. Closed the credibility, correctness, and data-loss defects (`errors.md` rows 1–3, 7–9).
+- **Phase 2 — complete.** `finplan-quant`, `finplan-a11y` (Waves 0–1: real Monte Carlo + the WCAG AA floor).
+- **Phase 3 — complete (2026-06-08).** `finplan-designer` (Wave 0), `finplan-content` (Wave 3), `finplan-scout` / `finplan-analyst` / `finplan-director` (Wave 4). **The full eleven-agent roster is built and the standing loop is live.**
+
+The four sweep waves (0–4) are complete: tokens + accessibility floor, real Monte Carlo, the long-tail close, the per-screen audit + education pass, and ship-as-a-resource (public methodology page, Recharts code-split, hardened CI). See `studio/SWEEP-PLAN.md`.
 
 ---
 

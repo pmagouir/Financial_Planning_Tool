@@ -60,12 +60,12 @@ export function Step2_RetirementDesign({ onNext }: Step2Props) {
 
   // Handle slider change
   const handleSliderChange = (category: string, value: number) => {
-    const keyMap: Record<string, string> = {
+    const keyMap: Record<string, 'retHousing' | 'retTransport' | 'retGroceries' | 'retHealth' | 'retChild' | 'retIns' | 'retDebt' | 'retEnt' | 'retDining' | 'retPersonal' | 'retMisc'> = {
       housing: 'retHousing', transport: 'retTransport', groceries: 'retGroceries',
       health: 'retHealth', child: 'retChild', ins: 'retIns', debt: 'retDebt',
       ent: 'retEnt', dining: 'retDining', personal: 'retPersonal', misc: 'retMisc',
     };
-    inputs.setKey(keyMap[category] as any, value);
+    inputs.setKey(keyMap[category], value);
     inputs.setKey('hasModifiedRetirement', true);
   };
 

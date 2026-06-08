@@ -17,14 +17,15 @@ The tool ships as a public resource when every screen meets that bar, CI is gree
 - `errors.md`: rows **1 (relabel), 2 (single engine), 3 (persistence) FIXED + tested**. Rows 4–9 open; row 8 likely resolved by the store rewrite (verify + close); the Step 5 cold audit added a new zero-target-state bug (log as row 10).
 - Scorecard movement (directional, honest): testing 0→3, rigor 6→7, eng 4→5. a11y still 2, modeling still 4, UI/UX consistency still gated on the dead-token layer.
 
-## Agents still to build
-| Agent | Verb | Unlocks |
+## Agents — full roster built ✅ (as of Wave 4, 2026-06-08)
+The full BRAIN five-agent bench + spine now exists in `.claude/skills/finplan-*`:
+| Agent | Verb | Built |
 |---|---|---|
-| `finplan-designer` | designs | the `@theme` token system, component consolidation, motion, the "beautiful" axis |
-| `finplan-a11y` | ensures access | WCAG AA across every screen (the worst dimension, 2/10) |
-| `finplan-quant` | models | real Monte Carlo + sequence-of-returns + tax/COLA (the "rigorous/innovative" axis) |
-| `finplan-content` | explains | the "why" behind each input, tooltips, attribution, Resources |
-| `finplan-scout` / `-analyst` / `-director` | scan / score / report | the standing weekly improvement loop |
+| `finplan-cfp` / `-engineer` / `-qa` / `-auditor` | validate / implement / test / critique | Phase 1 |
+| `finplan-quant` / `-a11y` | model / ensure access | Phase 2 (Waves 0–1) |
+| `finplan-designer` | designs | Phase 3 (Wave 0) |
+| `finplan-content` | explains | Phase 3 (Wave 3) |
+| `finplan-scout` / `-analyst` / `-director` | scan / score / report | Phase 3 (Wave 4) — the standing loop |
 
 ## The waves
 
@@ -59,8 +60,17 @@ Auditor full pass on every screen; content adds the "why" behind each input, too
 - **Canonical** — §6/§7 extended (designer): violet `#8b5cf6` (chart/large) + `#a78bfa` (body) + the lighter-tint rule + the `#334155`-banned-as-text row, all with computed ratios.
 - **QA** — 41 → 44 tests (contrast `#334155`/white-alpha guard ×2 + off-canonical-hex guard). Lint 0 errors, tsc strict-clean, build green. All 7 screens live-verified (the forced reduced-motion path used to inspect navigated screens under the documented headless-rAF throttle, then reverted).
 
-### Wave 4 — Ship as a resource  (build `finplan-scout`, `-analyst`, `-director`)
+### Wave 4 — Ship as a resource  (build `finplan-scout`, `-analyst`, `-director`)  ✅ **COMPLETE 2026-06-08**
 Stand up the standing loop (weekly scout sweep → analyst prioritization → director briefing). Add a public methodology page (every formula + source), a bundle-size pass (code-split Recharts, 590 kB today), final WCAG AA sign-off, and a green CI gate. Public-trust statement: every figure validated, open source, no data leaves the browser.
+
+**Delivered:**
+- **The standing loop is built.** `finplan-scout` (scans → `backlog/`), `finplan-analyst` (scores → `specs/`), `finplan-director` (briefs → `briefings/`) — each a full 5-file skill in the house format, plus the `briefings/TEMPLATE.md`. The BRAIN five-agent spine is now complete end to end: Scout → Analyst → bench → Auditor → Director → Preston.
+- **Public methodology page** (`src/components/Methodology.tsx`, wired as a bonus tab) — every formula and source from canonical §1–§10 in plain language: withdrawal brackets, the Number + COLA/pre-tax/today's-$, the projection, the Monte Carlo, the drawdown, what the tool does NOT model, the Wolfram-locked reference values, the full bibliography, and the open-by-design trust footer. Live-verified accessible (body 17.06:1, no banned colors).
+- **Bundle pass** (row 28) — lazy-loaded the four chart-bearing screens: NavigationTabs **601 → 188 kB** (gzip 177 → 59); Recharts (CartesianChart 328 kB) now loads on demand. The >500 kB warning is gone.
+- **CI hardened** (row 29) — `npm ci` + strict lint (`--max-warnings 0`) + test + build on every push/PR, with a concurrency guard; the one pre-existing `any` removed; a CI badge on the README.
+- **README de-staled** (row 27) — the old `×0.6` drawdown and `±2%` cone (which contradicted the engine + methodology page) corrected to canonical; Trust & Methodology section added.
+- **Trust statement** — "every figure validated, open source, no data leaves the browser" lives on the README, the in-app footer, and the methodology page.
+- **Gate:** 44 tests green, lint 0 warnings (strict), tsc strict-clean, build green. errors.md rows 27–29 FIXED.
 
 ## Per-screen audit matrix
 | Screen | Audited? | Known open items |

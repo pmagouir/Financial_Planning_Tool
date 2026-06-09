@@ -1,4 +1,6 @@
 import { FintechCard } from './ui/FintechCard';
+import { Reveal } from './ui/Reveal';
+import { CountUp } from './ui/CountUp';
 
 interface WelcomeProps {
   onStart?: () => void;
@@ -65,10 +67,10 @@ const pillars = [
 ];
 
 const stats = [
-  { value: '4%', label: 'Proven since 1994' },
-  { value: '25x', label: 'Portfolio multiplier' },
-  { value: '0', label: 'Data leaves your browser' },
-  { value: '5 Steps', label: 'Start to finish' },
+  { count: 4, format: (n: number) => `${Math.round(n)}%`, label: 'Proven since 1994' },
+  { count: 25, format: (n: number) => `${Math.round(n)}x`, label: 'Portfolio multiplier' },
+  { count: 0, format: (n: number) => `${Math.round(n)}`, label: 'Data leaves your browser' },
+  { count: 5, format: (n: number) => `${Math.round(n)} Steps`, label: 'Start to finish' },
 ];
 
 export function Welcome({ onStart }: WelcomeProps) {
@@ -94,6 +96,7 @@ export function Welcome({ onStart }: WelcomeProps) {
         />
 
         {/* Eyebrow label */}
+        <Reveal>
         <div
           style={{
             display: 'inline-block',
@@ -110,8 +113,10 @@ export function Welcome({ onStart }: WelcomeProps) {
         >
           Ramit Sethi · JL Collins · Morgan Housel
         </div>
+        </Reveal>
 
         {/* Main headline */}
+        <Reveal delay={0.08}>
         <h1
           className="text-5xl font-bold text-white tracking-tight leading-tight"
           style={{ position: 'relative' }}
@@ -120,8 +125,10 @@ export function Welcome({ onStart }: WelcomeProps) {
           <br />
           <span style={{ color: '#3b82f6' }}>Retirement Number.</span>
         </h1>
+        </Reveal>
 
         {/* Sub-headline */}
+        <Reveal delay={0.16}>
         <p
           className="text-lg max-w-xl mx-auto leading-relaxed"
           style={{ color: '#94a3b8', position: 'relative' }}
@@ -130,8 +137,10 @@ export function Welcome({ onStart }: WelcomeProps) {
           <br />
           Built on battle-tested financial research.
         </p>
+        </Reveal>
 
         {/* CTA Button */}
+        <Reveal delay={0.24}>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', position: 'relative' }}>
           {onStart ? (
             <button
@@ -188,9 +197,11 @@ export function Welcome({ onStart }: WelcomeProps) {
             or select a step in the sidebar
           </div>
         </div>
+        </Reveal>
       </div>
 
       {/* ── Stats Strip ──────────────────────────────────────────────────────── */}
+      <Reveal>
       <div
         style={{
           display: 'flex',
@@ -203,7 +214,7 @@ export function Welcome({ onStart }: WelcomeProps) {
       >
         {stats.map((stat, idx) => (
           <div
-            key={stat.value}
+            key={stat.label}
             style={{
               flex: 1,
               padding: '20px 24px',
@@ -218,7 +229,7 @@ export function Welcome({ onStart }: WelcomeProps) {
               className="text-2xl font-bold text-white"
               style={{ fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.02em' }}
             >
-              {stat.value}
+              <CountUp value={stat.count} format={stat.format} />
             </div>
             <div
               style={{
@@ -234,8 +245,10 @@ export function Welcome({ onStart }: WelcomeProps) {
           </div>
         ))}
       </div>
+      </Reveal>
 
       {/* ── How It Works — Numbered Step Flow ────────────────────────────────── */}
+      <Reveal>
       <div className="space-y-4">
         <div className="text-center space-y-1">
           <h2 className="text-xl font-semibold text-white">How it works</h2>
@@ -361,6 +374,7 @@ export function Welcome({ onStart }: WelcomeProps) {
           }
         `}</style>
       </div>
+      </Reveal>
 
       {/* ── Three Pillars Section ─────────────────────────────────────────────── */}
       <div className="space-y-4">
@@ -372,8 +386,9 @@ export function Welcome({ onStart }: WelcomeProps) {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {pillars.map((pillar) => (
-            <FintechCard key={pillar.pill}>
+          {pillars.map((pillar, idx) => (
+            <Reveal key={pillar.pill} delay={idx * 0.1}>
+            <FintechCard>
               <div
                 style={{
                   borderLeft: `3px solid ${pillar.pillColor}`,
@@ -428,6 +443,7 @@ export function Welcome({ onStart }: WelcomeProps) {
                 </p>
               </div>
             </FintechCard>
+            </Reveal>
           ))}
         </div>
       </div>

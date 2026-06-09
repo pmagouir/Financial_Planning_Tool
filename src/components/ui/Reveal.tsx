@@ -8,12 +8,14 @@ interface RevealProps {
   className?: string;
 }
 
-// A gentle fade + slide-up as the element scrolls into view. Subtle by charter (a planning
-// tool, not a marketing page): 12px of travel, 0.45s, once.
+// A gentle slide-up as the element scrolls into view. Subtle by charter (a planning tool,
+// not a marketing page): 14px of travel, 0.5s, once.
 //
-// Reduced-motion → a plain div, fully visible, no transform (errors.md row 10: content and
-// layout never depend on an animation finishing). `once: true` so it never re-triggers, and
-// the small viewport margin reveals slightly before the element is fully on screen.
+// errors.md row 10 — content must NEVER depend on an animation frame. So this animates the
+// TRANSFORM only and holds opacity at 1 throughout. If requestAnimationFrame is throttled
+// (background tab / headless) and the slide never runs, the content simply rests 14px lower —
+// fully visible, full contrast — rather than stuck invisible. prefers-reduced-motion → a plain
+// div, no motion at all.
 export function Reveal({ children, delay = 0, className }: RevealProps) {
   const reduce = useReducedMotion();
 
@@ -24,10 +26,10 @@ export function Reveal({ children, delay = 0, className }: RevealProps) {
   return (
     <motion.div
       className={className}
-      initial={{ opacity: 0, y: 12 }}
-      whileInView={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 1, y: 14 }}
+      whileInView={{ y: 0 }}
       viewport={{ once: true, margin: '-40px' }}
-      transition={{ duration: 0.45, ease: 'easeOut', delay }}
+      transition={{ duration: 0.5, ease: 'easeOut', delay }}
     >
       {children}
     </motion.div>

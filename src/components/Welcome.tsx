@@ -46,6 +46,7 @@ const pillars = [
     pillColor: '#3b82f6',
     author: 'Ramit Sethi',
     book: 'I Will Teach You To Be Rich',
+    url: 'https://www.iwillteachyoutoberich.com',
     insight:
       "Spend extravagantly on what you love. Cut mercilessly on what you don't. Automate the rest.",
   },
@@ -54,6 +55,7 @@ const pillars = [
     pillColor: '#10b981',
     author: 'JL Collins',
     book: 'The Simple Path to Wealth',
+    url: 'https://jlcollinsnh.com',
     insight:
       'Low-cost index funds + time + consistency beats clever strategies every time.',
   },
@@ -62,6 +64,7 @@ const pillars = [
     pillColor: '#8b5cf6',
     author: 'Morgan Housel',
     book: 'The Psychology of Money',
+    url: 'https://www.morganhousel.com',
     insight:
       'Wealth is more about behavior than intelligence. Enough-ness matters.',
   },
@@ -423,9 +426,17 @@ export function Welcome({ onStart }: WelcomeProps) {
 
                 {/* Author + book */}
                 <div className="space-y-1 mb-4">
-                  <div className="font-semibold text-white" style={{ fontSize: '0.9rem' }}>
+                  <a
+                    href={pillar.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`${pillar.author}'s website (opens in a new tab)`}
+                    className="inline-flex items-center gap-1 font-semibold text-white hover:underline"
+                    style={{ fontSize: '0.9rem' }}
+                  >
                     {pillar.author}
-                  </div>
+                    <span aria-hidden="true" style={{ color: pillar.pillColor, fontSize: '0.8rem' }}>↗</span>
+                  </a>
                   <div
                     style={{
                       fontSize: '0.75rem',

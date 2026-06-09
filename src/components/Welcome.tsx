@@ -1,6 +1,7 @@
 import { FintechCard } from './ui/FintechCard';
 import { Reveal } from './ui/Reveal';
 import { CountUp } from './ui/CountUp';
+import { TryItDemo } from './TryItDemo';
 
 interface WelcomeProps {
   onStart?: () => void;
@@ -199,6 +200,11 @@ export function Welcome({ onStart }: WelcomeProps) {
         </div>
         </Reveal>
       </div>
+
+      {/* ── Try It — live interactive demo ───────────────────────────────────── */}
+      <Reveal>
+        <TryItDemo />
+      </Reveal>
 
       {/* ── Stats Strip ──────────────────────────────────────────────────────── */}
       <Reveal>

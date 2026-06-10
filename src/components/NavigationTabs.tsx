@@ -44,6 +44,9 @@ const tabs: Tab[] = [
 // Core nav tabs shown in the bottom mobile nav (no divider/bonus)
 const mobileNavTabs = tabs.filter((t) => !t.isDivider && !t.isBonus);
 
+// Bonus pages — reached on desktop via the sidebar, on mobile via the header overflow menu.
+const bonusTabs = tabs.filter((t) => t.isBonus);
+
 // Navigation order for "Next Step" flow
 const navOrder: TabId[] = ['welcome', 'step1', 'step2', 'step3', 'step4', 'summary'];
 
@@ -55,6 +58,9 @@ const getPageTitle = (tabId: TabId): string => {
 
 export function NavigationTabs() {
   const [activeTab, setActiveTab] = useState<TabId>('welcome');
+  // Mobile-only overflow menu: the bottom nav holds the 6 core steps, so the bonus pages
+  // (which the desktop sidebar lists) reach the phone through this header menu instead.
+  const [menuOpen, setMenuOpen] = useState(false);
   const i = useStore(inputs);
   const reduceMotion = useReducedMotion();
 
@@ -115,7 +121,7 @@ export function NavigationTabs() {
       case 'welcome': return <Welcome onStart={handleNext} />;
       case 'step1': return <Step1_CurrentReality onNext={handleNext} />;
       case 'step2': return <Step2_RetirementDesign onNext={handleNext} />;
-      case 'step3': return <Step3_YourNumber onNext={handleNext} />;
+      case 'step3': return <Step3_YourNumber onNext={handleNext} onEditPlan={() => setActiveTab('step1')} />;
       case 'step4': return <Step4_InvestmentPath onNext={handleNext} />;
       case 'summary': return <Step5_Summary onEditPlan={() => setActiveTab('step1')} />;
       case 'compound': return <CompoundCalculator />;
@@ -129,11 +135,12 @@ export function NavigationTabs() {
     <>
       {/* ── Responsive layout ──────────────────────────────────────────────── */}
       <style>{`
-        /* Mobile: hide sidebar, show bottom nav, add bottom padding */
+        /* Mobile: hide sidebar, show bottom nav, tighten padding, clear the bottom bar */
         @media (max-width: 639px) {
           .nav-sidebar { display: none !important; }
           .mobile-bottom-nav { display: flex !important; }
-          .main-content-area { padding-bottom: 72px !important; }
+          /* Reclaim horizontal space (was p-8 = 32px) and leave room for the 64px bottom nav */
+          .main-content-area { padding: 20px 16px 88px !important; }
           .main-top-header .px-8 { padding-left: 16px !important; padding-right: 16px !important; }
           .main-top-header h1 { font-size: 1.25rem !important; }
         }
@@ -213,10 +220,60 @@ export function NavigationTabs() {
         {/* ── Main Content ──────────────────────────────────────────────────── */}
         <main className="flex-1 min-w-0">
           <header className="main-top-header sticky top-0 z-10 border-b border-white/5 bg-background/50 backdrop-blur-sm print:hidden">
-            <div className="px-8 py-4 max-w-6xl mx-auto">
-              <h1 className="text-3xl font-light text-white tracking-tight">
+            <div className="px-8 py-4 max-w-6xl mx-auto flex items-center justify-between gap-3">
+              <h1 className="text-3xl font-light text-white tracking-tight truncate min-w-0">
                 {getPageTitle(activeTab)}
               </h1>
+
+              {/* Mobile-only overflow menu — bonus pages live in the sidebar on desktop (sm:hidden) */}
+              <div className="relative shrink-0 sm:hidden">
+                <button
+                  type="button"
+                  aria-haspopup="true"
+                  aria-expanded={menuOpen}
+                  aria-label="More pages"
+                  onClick={() => setMenuOpen((o) => !o)}
+                  onKeyDown={(e) => { if (e.key === 'Escape') setMenuOpen(false); }}
+                  className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm font-medium text-text-secondary active:bg-white/10"
+                >
+                  <span aria-hidden="true" className="text-base leading-none">⋯</span>
+                  More
+                </button>
+
+                {menuOpen && (
+                  <>
+                    {/* tap-away backdrop */}
+                    <div
+                      className="fixed inset-0 z-40"
+                      aria-hidden="true"
+                      onClick={() => setMenuOpen(false)}
+                    />
+                    <div
+                      role="menu"
+                      aria-label="More pages"
+                      className="absolute right-0 mt-2 w-60 z-50 rounded-xl border border-white/10 bg-background-paper shadow-card overflow-hidden"
+                    >
+                      {bonusTabs.map((tab) => (
+                        <button
+                          key={tab.id}
+                          type="button"
+                          role="menuitem"
+                          onClick={() => { setActiveTab(tab.id as TabId); setMenuOpen(false); }}
+                          className={clsx(
+                            'w-full flex items-center gap-3 px-4 py-3 text-sm text-left transition-colors',
+                            activeTab === tab.id
+                              ? 'bg-accent-primary/15 text-accent-primary'
+                              : 'text-text-secondary hover:bg-white/5 hover:text-accent-primary',
+                          )}
+                        >
+                          <span aria-hidden="true" className="text-lg">{tab.icon}</span>
+                          <span>{tab.label.replace('Bonus: ', '')}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
           </header>
 

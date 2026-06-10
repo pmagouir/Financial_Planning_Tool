@@ -16,6 +16,10 @@
 | **safe withdrawal rate** | "interest rate," "the return you live on" | It is a withdrawal rate from principal + growth, not an interest rate. |
 | **on track** / **gap to close** | "behind," "failing," "you're losing" | Non-judgmental, action-oriented framing for the shortfall. |
 | **educational, not personalized financial advice** | "our advice," "we recommend you invest" | Compliance + the tool's stance. Coach, not advisor. |
+| **a 1-in-10 rough market** / **a 1-in-10 strong market** (percentile in a parenthetical) | bare "10th percentile" / "90th percentile" as the only label | Plain odds read human; bare percentiles read clinical-doom to a first-timer (canonical §10.7). The percentile stays available in parentheses for precision. |
+| **the healthy zone (75–90%)** | "passing," "safe," any zone claim without the range | Professional planning practice (MoneyGuidePro Confidence Zone). Above 90% may signal over-saving (Kitces) — say so; below it, name the lift (contributions or a later retirement). |
+| **"9 in 10 outcomes stay funded through {year}"** / **"funds all {N} years even in a 1-in-10 rough market"** | "you'll run out of money in {year}" | Capability framing (Fidelity-style): exact statements derived from `p10DepletionYear` (canonical §10.7) — frame the downside by what it funds, never as a doom date. |
+| **short of target** (amber, text-carried) | "✗ shortfall" stamp | A percentile snapshot below target is a flag for attention; a red ✗ reads as a verdict (canonical §10.7, errors.md row 23 family). |
 
 ---
 
@@ -26,7 +30,7 @@
 - Positive and negative values are always visually distinct (success green / danger red) AND carry a text or icon signal — never color alone (canonical §7).
 - Every projection screen states the assumptions behind it in plain language.
 - Attribute methodology: "Based on the Trinity Study (Bengen, 1994)" and similar.
-- Attribute the three frameworks consistently and completely — **Ramit Sethi · JL Collins · Morgan Housel** (never drop one, never mix author names with a methodology name in the same list). The Trinity Study is cited where the withdrawal math appears (Step 3 / Step 5), not in the hero list of thinkers. (errors.md row 26.)
+- **Author names never appear as a bare list or byline** — a name-only strip (the old hero eyebrow "Ramit Sethi · JL Collins · Morgan Housel") reads as authorship or endorsement of the site, which is false. Names appear ONLY inside attributed constructions: "Based on…", "Inspired by…", or author + book citations (Welcome pillars, Resources, Methodology). When the three ARE attributed together, name all three consistently (never drop one, never mix author names with a methodology name in the same list — errors.md row 26). The Welcome pillars section carries the independence line ("no affiliation with, or endorsement from, the authors"). The Trinity Study is cited where the withdrawal math appears (Step 3 / Step 5). (errors.md rows 26, 34.)
 
 ---
 

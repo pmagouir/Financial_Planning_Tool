@@ -5,9 +5,9 @@ import { persistentMap } from '@nanostores/persistent';
 export interface FinancialInputs {
   takeHomePay: number;
   // Fixed
-  rent: number; propTax: number; utilities: number; internet: number;
-  carPayment: number; carIns: number; gas: number; carMaint: number;
-  groceries: number; healthIns: number; otherIns: number; debtMin: number; childcare: number; banking: number;
+  rent: number; propTax: number; utilities: number; internet: number; phone: number;
+  carPayment: number; carIns: number; gas: number; carMaint: number; metro: number;
+  groceries: number; household: number; healthIns: number; otherIns: number; debtMin: number; childcare: number; banking: number;
   // Investments
   k401: number; employerMatch: number; ira: number; hsa: number; taxable: number; emergency: number; edu529: number; lifeIns: number;
   // Guilt-Free
@@ -31,9 +31,9 @@ export interface FinancialInputs {
 
 const DEFAULTS: FinancialInputs = {
   takeHomePay: 5000,
-  rent: 0, propTax: 0, utilities: 0, internet: 0,
-  carPayment: 0, carIns: 0, gas: 0, carMaint: 0,
-  groceries: 0, healthIns: 0, otherIns: 0, debtMin: 0, childcare: 0, banking: 0,
+  rent: 0, propTax: 0, utilities: 0, internet: 0, phone: 0,
+  carPayment: 0, carIns: 0, gas: 0, carMaint: 0, metro: 0,
+  groceries: 0, household: 0, healthIns: 0, otherIns: 0, debtMin: 0, childcare: 0, banking: 0,
   k401: 0, employerMatch: 0, ira: 0, hsa: 0, taxable: 0, emergency: 0, edu529: 0, lifeIns: 0,
   dining: 0, ent: 0, travel: 0, hobbies: 0,
   personal: 0, clothes: 0, gifts: 0, dev: 0,
@@ -63,9 +63,9 @@ export const inputs = persistentMap<FinancialInputs>('finplan:', DEFAULTS, {
 inputs.subscribe((val) => {
   if (val.hasModifiedRetirement) return;
 
-  const housing = val.rent + val.propTax + val.utilities + val.internet;
-  const transport = val.carPayment + val.carIns + val.gas + val.carMaint;
-  const food = val.groceries;
+  const housing = val.rent + val.propTax + val.utilities + val.internet + val.phone;
+  const transport = val.carPayment + val.carIns + val.gas + val.carMaint + val.metro;
+  const food = val.groceries + val.household;
   const health = val.healthIns;
   const child = val.childcare;
   const ins = val.otherIns;
@@ -179,6 +179,8 @@ interface MonteCarloResult {
   cone: PercentilePoint[];             // accumulation percentile bands (Step 4)
   medianPortfolio: number;             // p50 balance at retirement
   netWorthCone: PercentilePoint[];     // FULL lifecycle bands incl. drawdown (Step 5 — shows depletion)
+  p75AtRetirement: number;             // upside cue: "1 in 4 outcomes reach retirement above this" (§10.7)
+  p10DepletionYear: number | null;     // first retirement year the p10 path hits $0; null = downside funds the whole plan (§10.7)
 }
 
 // One seeded Monte Carlo over the full lifecycle: stochastic accumulation, then
@@ -234,11 +236,21 @@ function runMonteCarlo(
   const retCone: PercentilePoint[] = [];
   for (let y = 1; y <= retDuration; y++) retCone.push(band(retByYear[y], retYearAbs + y));
 
+  // §10.7 display quantities. Upside cue: the 75th percentile at retirement ("1 in 4 outcomes
+  // end above this"). Capability statement: the first retirement year the p10 path is exhausted —
+  // because a depleted path stays at $0, p10 > 0 at a year means fewer than 10% of trials have
+  // run out by then, so "9 in 10 stay funded through {year − 1}" is exact.
+  const finalAccumSorted = accumByYear[yearsToRet].slice().sort((a, b) => a - b);
+  const p75AtRetirement = pct(finalAccumSorted, 0.75);
+  const p10DepletionYear = retCone.find((p) => p.p10 <= 0)?.year ?? null;
+
   return {
     successProbability: successes / MC_TRIALS,
     cone,
     medianPortfolio: cone.length ? cone[cone.length - 1].p50 : currentPortfolio,
     netWorthCone: [...cone, ...retCone],
+    p75AtRetirement,
+    p10DepletionYear,
   };
 }
 
@@ -316,7 +328,7 @@ export const results = computed(inputs, (i) => {
 
   // F. Spending breakdown for the budget ribbon.
   // employerMatch is shown in the investments total but excluded from budget allocation (not take-home pay).
-  const currentFixed = i.rent + i.propTax + i.utilities + i.internet + i.carPayment + i.carIns + i.gas + i.carMaint + i.groceries + i.healthIns + i.otherIns + i.debtMin + i.childcare + i.banking;
+  const currentFixed = i.rent + i.propTax + i.utilities + i.internet + i.phone + i.carPayment + i.carIns + i.gas + i.carMaint + i.metro + i.groceries + i.household + i.healthIns + i.otherIns + i.debtMin + i.childcare + i.banking;
   const currentInvest = i.k401 + i.employerMatch + i.ira + i.hsa + i.taxable + i.emergency + i.edu529 + i.lifeIns;
   const currentInvestForBudget = i.k401 + i.ira + i.hsa + i.taxable + i.emergency + i.edu529 + i.lifeIns;
   const currentGuiltFree = i.dining + i.ent + i.travel + i.hobbies + i.personal + i.clothes + i.gifts + i.dev + i.tech + i.homeImp + i.subscriptions + i.misc;
@@ -330,6 +342,13 @@ export const results = computed(inputs, (i) => {
     r, i.currentPortfolio, i.monthlyContrib, g, yearsToRet, yearsContributing,
     retirementReturnRate, i.retDuration, inflatingNet, flatIncome, i.inflation / 100, currentYear,
   );
+
+  // H. Starter-habit illustration (Step 3 education): what a $100/month automatic investment,
+  // started now and held to retirement, grows to — at the user's own return assumption, computed
+  // by the SAME canonical engine (no step-up, no principal). Lives here, not in the component
+  // (Pattern 1), so it can never diverge from the projection it teaches about.
+  const starterSeries = projectAccumulation(r, 0, 100, 0, yearsToRet, yearsToRet);
+  const starter100FV = starterSeries[starterSeries.length - 1];
 
   // ── Headline projection = the MC MEDIAN (the typical outcome the user should plan around).
   // Every user-facing "projected / surplus / progress / additional-needed" number reads from
@@ -359,11 +378,15 @@ export const results = computed(inputs, (i) => {
     monthlyShortfall,
     currentFixed, currentInvest, currentGuiltFree, totalAllocated,
     netWorthData, yearsContributing,
+    starter100FV,
     // Monte Carlo (canonical §10) — the median is the headline projection
     successProbability: mc.successProbability,
     mcCone: mc.cone,
     medianPortfolio: mc.medianPortfolio,
     medianGap,
     mcNetWorthCone: mc.netWorthCone,
+    // §10.7 confidence-zone display quantities
+    p75AtRetirement: mc.p75AtRetirement,
+    p10DepletionYear: mc.p10DepletionYear,
   };
 });

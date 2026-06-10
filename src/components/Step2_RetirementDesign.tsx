@@ -2,6 +2,7 @@ import { useStore } from '@nanostores/react';
 import { inputs, results } from '../stores/financialPlan';
 import { FintechCard } from './ui/FintechCard';
 import { RangeSlider } from './ui/RangeSlider';
+import { Button } from './ui/Button';
 import {
   BarChart,
   Bar,
@@ -31,9 +32,9 @@ export function Step2_RetirementDesign({ onNext }: Step2Props) {
 
   // ── Current values (from Step 1) ───────────────────────────────────────────
   const currentValues: Record<string, number> = {
-    housing: i.rent + i.propTax + i.utilities + i.internet,
-    transport: i.carPayment + i.carIns + i.gas + i.carMaint,
-    groceries: i.groceries,
+    housing: i.rent + i.propTax + i.utilities + i.internet + i.phone,
+    transport: i.carPayment + i.carIns + i.gas + i.carMaint + i.metro,
+    groceries: i.groceries + i.household,
     health: i.healthIns,
     child: i.childcare,
     ins: i.otherIns,
@@ -267,9 +268,9 @@ export function Step2_RetirementDesign({ onNext }: Step2Props) {
 
               return (
                 <div key={category.key}>
-                  <div className="flex items-center justify-between text-sm mb-2">
+                  <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 text-sm mb-2">
                     <span className="font-medium text-text-primary">{category.label}</span>
-                    <div className="flex items-center gap-3">
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5">
                       <span className="text-text-secondary text-xs">Today: {formatCurrency(current)}</span>
                       <span className="font-bold text-text-primary">{formatCurrency(retirement)}</span>
                       {pctLabel && (
@@ -321,9 +322,9 @@ export function Step2_RetirementDesign({ onNext }: Step2Props) {
 
               return (
                 <div key={category.key}>
-                  <div className="flex items-center justify-between text-sm mb-2">
+                  <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 text-sm mb-2">
                     <span className="font-medium text-text-primary">{category.label}</span>
-                    <div className="flex items-center gap-3">
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5">
                       <span className="text-text-secondary text-xs">Today: {formatCurrency(current)}</span>
                       <span className="font-bold text-text-primary">{formatCurrency(retirement)}</span>
                       {pctLabel && (
@@ -352,12 +353,10 @@ export function Step2_RetirementDesign({ onNext }: Step2Props) {
       {/* Next Step */}
       {onNext && (
         <div className="flex justify-end">
-          <button
-            onClick={onNext}
-            className="mt-2 flex items-center gap-2 px-6 py-3 bg-accent-primary text-white rounded-lg font-medium hover:bg-accent-primary/90 transition-colors"
-          >
-            Next Step <span>→</span>
-          </button>
+          <Button onClick={onNext} className="group mt-2">
+            Next Step
+            <span aria-hidden="true" className="transition-transform duration-200 group-hover:translate-x-0.5">→</span>
+          </Button>
         </div>
       )}
     </div>

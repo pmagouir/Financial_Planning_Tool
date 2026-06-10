@@ -3,6 +3,7 @@ import { useStore } from '@nanostores/react';
 import { inputs, results } from '../stores/financialPlan';
 import { FintechCard } from './ui/FintechCard';
 import { MetricCard } from './ui/MetricCard';
+import { Button } from './ui/Button';
 import { CountUp } from './ui/CountUp';
 import { Reveal } from './ui/Reveal';
 import { motion, useReducedMotion } from 'framer-motion';
@@ -119,8 +120,8 @@ export function Step5_Summary({ onEditPlan }: Step5Props) {
   const handlePrint = () => window.print();
 
   // ── Spending breakdown ──
-  const currentHousing = i.rent + i.propTax + i.utilities + i.internet;
-  const currentTransport = i.carPayment + i.carIns + i.gas + i.carMaint;
+  const currentHousing = i.rent + i.propTax + i.utilities + i.internet + i.phone;
+  const currentTransport = i.carPayment + i.carIns + i.gas + i.carMaint + i.metro;
 
   const retSpending = {
     housing: i.retHousing,
@@ -154,6 +155,19 @@ export function Step5_Summary({ onEditPlan }: Step5Props) {
   const requiredToday = res.requiredPortfolio / inflMult;
   const medianToday = res.medianPortfolio / inflMult;
   const medianGapToday = res.medianGap / inflMult;
+  const p75Today = res.p75AtRetirement / inflMult;
+
+  // Confidence-zone verdict (canonical §10.7): 75–90% is the healthy zone professional planning
+  // practice targets. Full teaching lives on Step 4 and the Methodology page; this is the verdict.
+  const successPct = Math.round(res.successProbability * 100);
+  const zoneVerdict =
+    successPct >= 90
+      ? 'Above the 75–90% healthy zone planners target — sturdy, and possibly room to enjoy more today'
+      : successPct >= 75
+        ? 'Inside the 75–90% healthy zone planners target'
+        : successPct >= 60
+          ? 'Below the 75–90% healthy zone planners target'
+          : 'Well below the 75–90% healthy zone planners target';
 
   // ── Chart data: Monte Carlo net-worth band across the full lifecycle (canonical §10) ──
   // Honest replacement for the old smooth deterministic line — the band shows the
@@ -188,8 +202,8 @@ export function Step5_Summary({ onEditPlan }: Step5Props) {
         retirement: retSpending.transport,
       },
       {
-        category: 'Food',
-        current: i.groceries,
+        category: 'Food & Household',
+        current: i.groceries + i.household,
         retirement: retSpending.groceries,
       },
       {
@@ -238,12 +252,10 @@ export function Step5_Summary({ onEditPlan }: Step5Props) {
               progress all appear here.
             </p>
             {onEditPlan && (
-              <button
-                onClick={onEditPlan}
-                className="inline-flex items-center gap-2 rounded-lg bg-accent-primary px-5 py-2.5 font-medium text-white shadow-card transition-opacity hover:opacity-90"
-              >
-                Start with Step 1 →
-              </button>
+              <Button onClick={onEditPlan} className="group">
+                Start with Step 1
+                <span aria-hidden="true" className="transition-transform duration-200 group-hover:translate-x-0.5">→</span>
+              </Button>
             )}
           </div>
         </FintechCard>
@@ -256,15 +268,12 @@ export function Step5_Summary({ onEditPlan }: Step5Props) {
 
       {/* ── Print Button ── */}
       <div className="print:hidden flex justify-end">
-        <button
-          onClick={handlePrint}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-accent-primary text-white rounded-lg hover:opacity-90 transition-opacity font-medium shadow-card"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <Button variant="ghost" onClick={handlePrint} className="print:hidden">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
           </svg>
           Print Report
-        </button>
+        </Button>
       </div>
 
       {/* ── Header ── */}
@@ -339,14 +348,14 @@ export function Step5_Summary({ onEditPlan }: Step5Props) {
       </div>
 
       {/* ── Monte Carlo success probability (canonical §10) ── */}
-      <MetricCard variant={res.successProbability >= 0.8 ? 'success' : res.successProbability >= 0.6 ? 'warning' : 'info'}>
+      <MetricCard variant={res.successProbability >= 0.75 ? 'success' : res.successProbability >= 0.6 ? 'warning' : 'info'}>
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4" role="status">
           <div>
             <div className="uppercase text-xs tracking-widest text-text-secondary mb-2">Plan Success Probability</div>
             <div className="flex items-baseline gap-3">
               <span
                 className="text-4xl font-light tracking-tighter leading-none"
-                style={{ fontFamily: 'monospace', color: res.successProbability >= 0.8 ? '#10b981' : res.successProbability >= 0.6 ? '#f59e0b' : '#ef4444' }}
+                style={{ fontFamily: 'monospace', color: res.successProbability >= 0.75 ? '#10b981' : res.successProbability >= 0.6 ? '#f59e0b' : '#ef4444' }}
               >
                 <CountUp value={res.successProbability * 100} format={(n) => `${Math.round(n)}%`} />
               </span>
@@ -354,9 +363,9 @@ export function Step5_Summary({ onEditPlan }: Step5Props) {
             </div>
           </div>
           <div className="text-xs text-text-secondary max-w-md md:text-right">
-            A Monte Carlo estimate with sequence-of-returns risk (§10). Returns are sampled, not
-            guaranteed — a probability, not a promise. Social Security grows with inflation; pensions
-            and other income are held flat (conservative). All figures pre-tax.
+            {zoneVerdict}. A Monte Carlo estimate with sequence-of-returns risk; returns are sampled,
+            so treat this as a probability estimate rather than a promise. Social Security grows with
+            inflation; pensions and other income are held flat (conservative). All figures pre-tax.
           </div>
         </div>
       </MetricCard>
@@ -463,11 +472,26 @@ export function Step5_Summary({ onEditPlan }: Step5Props) {
         </h3>
         <p className="text-xs text-text-secondary mb-6">
           1,000 Monte Carlo simulations. The solid filled line is the median (typical) path; the
-          dashed line is the 10th-percentile <strong>downside</strong> — where it dips toward zero, the weakest
-          scenarios have run out. The luckiest outcomes run far higher and are left off the chart
-          (see the success rate above) so the typical path and downside stay readable. Amber marks
-          retirement; red is your target. <strong>Shown in future dollars</strong> — the cards above
-          are in today's dollars (≈half the spending power at retirement).
+          dashed line is a <strong>1-in-10 rough market</strong> (the 10th percentile).{' '}
+          {res.p10DepletionYear === null ? (
+            <>Even that rough market stays funded through all {i.retDuration} retirement years.</>
+          ) : (
+            <>
+              Where it touches zero, the weakest scenarios have run out — 9 in 10 outcomes stay
+              funded through {res.p10DepletionYear - 1}.
+            </>
+          )}{' '}
+          The luckiest outcomes run far higher and are left off the chart so the typical path stays
+          readable
+          {p75Today > 0 && (
+            <>
+              {' '}— 1 in 4 outcomes reach retirement above{' '}
+              <span className="font-mono">{formatLarge(p75Today)}</span> in today&apos;s dollars
+              (≈{formatLarge(res.p75AtRetirement)} in {retirementYear})
+            </>
+          )}
+          . Amber marks retirement; red is your target. <strong>Shown in future dollars</strong> —
+          the cards above are in today&apos;s dollars.
         </p>
 
         <div style={{ height: '420px' }}>
@@ -573,7 +597,7 @@ export function Step5_Summary({ onEditPlan }: Step5Props) {
                 stroke="#cbd5e1"
                 strokeWidth={2}
                 strokeDasharray="5 4"
-                name="10th percentile (downside)"
+                name="1-in-10 rough market"
                 dot={false}
                 isAnimationActive={false}
               />
@@ -589,7 +613,7 @@ export function Step5_Summary({ onEditPlan }: Step5Props) {
           </div>
           <div className="flex items-center gap-2">
             <div style={{ width: 20, height: 0, borderTop: '2px dashed #cbd5e1' }} />
-            <span>10th percentile (downside)</span>
+            <span>1-in-10 rough market (10th pct)</span>
           </div>
           <div className="flex items-center gap-2">
             <div style={{ width: 20, height: 2, background: '#f59e0b' }} />

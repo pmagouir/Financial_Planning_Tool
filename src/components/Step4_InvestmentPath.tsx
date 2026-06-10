@@ -2,6 +2,7 @@ import { useStore } from '@nanostores/react';
 import { inputs, results } from '../stores/financialPlan';
 import { FintechCard } from './ui/FintechCard';
 import { MoneyInput } from './ui/MoneyInput';
+import { Button } from './ui/Button';
 import { RangeSlider } from './ui/RangeSlider';
 import { CountUp } from './ui/CountUp';
 import {
@@ -84,7 +85,7 @@ function ConeTooltip({ active, label, payload }: ConeTooltipProps) {
 
       {optimistic !== undefined && (
         <div style={{ display: 'flex', justifyContent: 'space-between', gap: '16px', marginBottom: '3px' }}>
-          <span style={{ color: '#10b981' }}>90th percentile</span>
+          <span style={{ color: '#10b981' }}>Strong market (90th pct)</span>
           <span style={{ fontWeight: 700, fontFamily: 'monospace', color: '#f8fafc' }}>{formatCurrency(optimistic)}</span>
         </div>
       )}
@@ -96,7 +97,7 @@ function ConeTooltip({ active, label, payload }: ConeTooltipProps) {
       )}
       {pessimistic !== undefined && (
         <div style={{ display: 'flex', justifyContent: 'space-between', gap: '16px', marginBottom: '3px' }}>
-          <span style={{ color: '#f59e0b' }}>10th percentile</span>
+          <span style={{ color: '#f59e0b' }}>Rough market (10th pct)</span>
           <span style={{ fontWeight: 700, fontFamily: 'monospace', color: '#f8fafc' }}>{formatCurrency(pessimistic)}</span>
         </div>
       )}
@@ -141,6 +142,16 @@ export function Step4_InvestmentPath({ onNext }: Step4Props) {
   const p10Final = coneData[coneData.length - 1]?.P10 ?? 0;
   const onTrackP10 = p10Final >= res.requiredPortfolio;
   const successPct = Math.round(res.successProbability * 100);
+  // Confidence-zone verdict (canonical §10.7): 75–90% is the healthy zone professional planning
+  // practice targets (MoneyGuidePro Confidence Zone; see the Methodology page for sources).
+  const zoneMsg =
+    successPct >= 90
+      ? 'Above the 75–90% zone professional planners target — if staying here takes real sacrifice, that margin could fund more living today.'
+      : successPct >= 75
+        ? 'Inside the 75–90% healthy zone professional planners target.'
+        : successPct >= 60
+          ? 'Slightly below the 75–90% healthy zone — more contributions or a later retirement would lift it.'
+          : 'Fragile — more contributions or a later retirement would help.';
   // Today's-dollars gap (errors.md row 15) — shown so the figure doesn't move with the calendar.
   const medianGapToday = res.medianGap / (res.inflationMult || 1);
 
@@ -259,7 +270,7 @@ export function Step4_InvestmentPath({ onNext }: Step4Props) {
             borderRadius: '16px',
             border: '1px solid rgba(245,158,11,0.3)',
             background: 'rgba(245,158,11,0.08)',
-            padding: '28px 32px',
+            padding: 'clamp(20px, 5vw, 28px) clamp(18px, 5vw, 32px)',
           }}
         >
           <h2 className="text-2xl font-bold text-white mb-3">Action Required</h2>
@@ -288,7 +299,7 @@ export function Step4_InvestmentPath({ onNext }: Step4Props) {
             borderRadius: '16px',
             border: '1px solid rgba(16,185,129,0.3)',
             background: 'rgba(16,185,129,0.07)',
-            padding: '28px 32px',
+            padding: 'clamp(20px, 5vw, 28px) clamp(18px, 5vw, 32px)',
           }}
         >
           <h2 className="text-2xl font-bold text-white mb-2">On Track</h2>
@@ -299,9 +310,9 @@ export function Step4_InvestmentPath({ onNext }: Step4Props) {
               <span className="text-slate-400 text-base ml-2">Even the 10th-percentile outcome clears the target.</span>
             )}
           </p>
-          {successPct < 80 && (
+          {successPct < 75 && (
             <p className="text-sm text-slate-400 mt-3">
-              Your balance clears the target at retirement, yet only {successPct}% of simulations fund all {i.retDuration} years. The order of returns in early retirement is why a clearing balance can still fall short. A later retirement or a larger buffer would raise it.
+              Your balance clears the target at retirement, yet only {successPct}% of simulations fund all {i.retDuration} years — below the 75–90% healthy zone. The order of returns in early retirement is why a clearing balance can still fall short. A later retirement or a larger buffer would raise it.
             </p>
           )}
         </div>
@@ -314,7 +325,7 @@ export function Step4_InvestmentPath({ onNext }: Step4Props) {
             borderRadius: '16px',
             border: '1px solid rgba(59,130,246,0.3)',
             background: 'rgba(59,130,246,0.07)',
-            padding: '28px 32px',
+            padding: 'clamp(20px, 5vw, 28px) clamp(18px, 5vw, 32px)',
           }}
         >
           <h2 className="text-2xl font-bold text-white mb-2">No target set yet</h2>
@@ -341,12 +352,18 @@ export function Step4_InvestmentPath({ onNext }: Step4Props) {
               background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.2)',
             }}
           >
-            <span style={{ fontSize: '2.25rem', fontWeight: 700, fontFamily: 'monospace', lineHeight: 1, color: successPct >= 80 ? '#10b981' : successPct >= 60 ? '#f59e0b' : '#ef4444' }}>
+            <span style={{ fontSize: '2.25rem', fontWeight: 700, fontFamily: 'monospace', lineHeight: 1, color: successPct >= 75 ? '#10b981' : successPct >= 60 ? '#f59e0b' : '#ef4444' }}>
               <CountUp value={successPct} format={(n) => `${Math.round(n)}%`} />
             </span>
             <span className="text-sm text-text-secondary">
-              of simulations fund your full {i.retDuration}-year retirement.{' '}
-              {successPct >= 80 ? 'Strong footing.' : successPct >= 60 ? 'Workable — more contributions or a later retirement would strengthen it.' : 'Fragile — more contributions or a later retirement would help.'}
+              of simulations fund your full {i.retDuration}-year retirement. {zoneMsg}
+              {planReady && (
+                <span style={{ display: 'block', marginTop: '6px' }}>
+                  {res.p10DepletionYear === null
+                    ? `Even a 1-in-10 rough market keeps it funded through all ${i.retDuration} years.`
+                    : `A 1-in-10 rough market runs short around ${res.p10DepletionYear} — 9 in 10 outcomes stay funded through ${res.p10DepletionYear - 1}.`}
+                </span>
+              )}
             </span>
           </div>
         )}
@@ -365,9 +382,9 @@ export function Step4_InvestmentPath({ onNext }: Step4Props) {
           }}
         >
           {[
-            { label: '90th percentile', color: '#10b981' },
+            { label: '1-in-10 strong market (90th pct)', color: '#10b981' },
             { label: 'Median (typical)', color: '#3b82f6' },
-            { label: '10th percentile', color: '#f59e0b' },
+            { label: '1-in-10 rough market (10th pct)', color: '#f59e0b' },
             { label: 'Target', color: '#ef4444', dashed: true },
           ].map((item) => (
             <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -518,19 +535,19 @@ export function Step4_InvestmentPath({ onNext }: Step4Props) {
               {
                 label: '10th percentile',
                 value: coneData[coneData.length - 1]?.P10 ?? 0,
-                rate: 'pessimistic',
+                rate: 'a 1-in-10 rough market',
                 onTrack: (coneData[coneData.length - 1]?.P10 ?? 0) >= res.requiredPortfolio,
               },
               {
                 label: 'Median (typical)',
                 value: coneData[coneData.length - 1]?.Median ?? 0,
-                rate: 'most likely',
+                rate: 'the typical outcome',
                 onTrack: (coneData[coneData.length - 1]?.Median ?? 0) >= res.requiredPortfolio,
               },
               {
                 label: '90th percentile',
                 value: coneData[coneData.length - 1]?.P90 ?? 0,
-                rate: 'optimistic',
+                rate: 'a 1-in-10 strong market',
                 onTrack: (coneData[coneData.length - 1]?.P90 ?? 0) >= res.requiredPortfolio,
               },
             ].map((item, idx) => (
@@ -570,7 +587,7 @@ export function Step4_InvestmentPath({ onNext }: Step4Props) {
                       color: item.onTrack ? '#10b981' : '#f59e0b',
                     }}
                   >
-                    {item.onTrack ? '✓ on track' : '✗ shortfall'}
+                    {item.onTrack ? '✓ clears your number' : 'short of target'}
                   </div>
                 )}
               </div>
@@ -582,12 +599,10 @@ export function Step4_InvestmentPath({ onNext }: Step4Props) {
       {/* Next Step */}
       {onNext && (
         <div className="flex justify-end">
-          <button
-            onClick={onNext}
-            className="mt-2 flex items-center gap-2 px-6 py-3 bg-accent-primary text-white rounded-lg font-medium hover:bg-accent-primary/90 transition-colors"
-          >
-            Next Step <span>→</span>
-          </button>
+          <Button onClick={onNext} className="group mt-2">
+            Next Step
+            <span aria-hidden="true" className="transition-transform duration-200 group-hover:translate-x-0.5">→</span>
+          </Button>
         </div>
       )}
     </div>

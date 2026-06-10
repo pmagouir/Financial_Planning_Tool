@@ -413,3 +413,103 @@ describe('smart defaults (canonical §2 seeding) edge cases', () => {
     expect(inputs.get().retHousing).toBe(9999); // user's value preserved
   });
 });
+
+// ── Feedback round 1 (errors.md row 32): new fixed-cost categories + starter-habit FV ──
+describe('feedback round 1 — phone / metro / household + starter100FV', () => {
+  it('phone, metro, and household flow into currentFixed and totalAllocated', () => {
+    inputs.setKey('phone', 80);
+    inputs.setKey('metro', 120);
+    inputs.setKey('household', 150);
+    const r = results.get();
+    expect(r.currentFixed).toBe(80 + 120 + 150);
+    expect(r.totalAllocated).toBe(80 + 120 + 150);
+  });
+
+  it('the new keys join their category seeds (phone→housing, metro→transport ×0.5, household→groceries)', () => {
+    inputs.setKey('rent', 2000);
+    inputs.setKey('phone', 80);
+    inputs.setKey('carPayment', 400);
+    inputs.setKey('metro', 120);
+    inputs.setKey('groceries', 500);
+    inputs.setKey('household', 150);
+    const v = inputs.get();
+    expect(v.retHousing).toBe(2080);                       // rent + phone, full ratio
+    expect(v.retTransport).toBe(Math.round(520 * 0.5));    // (carPayment + metro) × 0.5
+    expect(v.retGroceries).toBe(650);                      // groceries + household, full ratio
+  });
+
+  it('starter100FV equals the closed-form end-of-month annuity at the effective monthly rate', () => {
+    // Same convention as canonical §3: m = (1+r)^(1/12) − 1; FV = C × ((1+m)^n − 1) / m.
+    // The engine value must match the independent closed form — a real cross-check, not an echo.
+    inputs.setKey('annualReturn', 7);
+    inputs.setKey('retYear', CURRENT_YEAR + 25);
+    const m = Math.pow(1.07, 1 / 12) - 1;
+    const closedForm = 100 * ((Math.pow(1 + m, 300) - 1) / m);
+    expect(results.get().starter100FV).toBeCloseTo(closedForm, 4);
+  });
+
+  it('starter100FV is unaffected by the plan inputs it should ignore (principal, step-up, stop year)', () => {
+    inputs.setKey('annualReturn', 7);
+    inputs.setKey('retYear', CURRENT_YEAR + 25);
+    const baseline = results.get().starter100FV;
+    inputs.setKey('currentPortfolio', 500000);
+    inputs.setKey('monthlyContrib', 2500);
+    inputs.setKey('contribIncrease', 5);
+    inputs.setKey('contribStopYear', CURRENT_YEAR + 10);
+    expect(results.get().starter100FV).toBe(baseline);
+  });
+});
+
+// ── §10.7 confidence-zone display quantities (errors.md row 33) ──
+// Same math, new framing: the upside cue (p75) and the capability statement (p10 depletion year)
+// must be exact derivations of the existing seeded Monte Carlo, never softer than it.
+describe('§10.7 — p75AtRetirement + p10DepletionYear', () => {
+  it('p75 at retirement sits between the median and the 90th percentile', () => {
+    inputs.setKey('currentPortfolio', 100000);
+    inputs.setKey('monthlyContrib', 1000);
+    inputs.setKey('annualReturn', 7);
+    inputs.setKey('retYear', CURRENT_YEAR + 25);
+    const r = results.get();
+    const atRet = r.mcCone[r.mcCone.length - 1];
+    expect(r.p75AtRetirement).toBeGreaterThanOrEqual(atRet.p50);
+    expect(r.p75AtRetirement).toBeLessThanOrEqual(atRet.p90);
+  });
+
+  it('textbook $1M / 4% / 30-yr: the p10 path depletes mid-retirement, exactly where the cone says', () => {
+    // Mirrors the §10.4 reference setup (≈73% success → >10% of trials fail → p10 must hit $0).
+    inputs.setKey('hasModifiedRetirement', true);
+    inputs.setKey('currentPortfolio', 1_000_000);
+    inputs.setKey('monthlyContrib', 0);
+    inputs.setKey('retYear', CURRENT_YEAR);
+    inputs.setKey('retDuration', 30);
+    inputs.setKey('annualReturn', 7);
+    inputs.setKey('inflation', 3);
+    inputs.setKey('socialSecurity', 0);
+    inputs.setKey('retHousing', 40000 / 12);
+    const r = results.get();
+    const y = r.p10DepletionYear;
+    expect(y).not.toBeNull();
+    expect(y!).toBeGreaterThan(CURRENT_YEAR);
+    expect(y!).toBeLessThanOrEqual(CURRENT_YEAR + 30);
+    // Boundary exactness: p10 ≤ 0 at the depletion year, > 0 the year before — that is precisely
+    // what licenses "9 in 10 outcomes stay funded through {y−1}" in the UI.
+    const idx = r.mcNetWorthCone.findIndex((p) => p.year === y);
+    expect(r.mcNetWorthCone[idx].p10).toBeLessThanOrEqual(0);
+    expect(r.mcNetWorthCone[idx - 1].p10).toBeGreaterThan(0);
+  });
+
+  it('an over-funded plan never depletes the p10 path (capability statement reads "all years funded")', () => {
+    inputs.setKey('hasModifiedRetirement', true);
+    inputs.setKey('currentPortfolio', 1_000_000);
+    inputs.setKey('monthlyContrib', 0);
+    inputs.setKey('retYear', CURRENT_YEAR);
+    inputs.setKey('retDuration', 30);
+    inputs.setKey('annualReturn', 7);
+    inputs.setKey('inflation', 3);
+    inputs.setKey('socialSecurity', 0);
+    inputs.setKey('retHousing', 500); // $6k/yr on $1M — a 0.6% draw
+    const r = results.get();
+    expect(r.successProbability).toBeGreaterThanOrEqual(0.99);
+    expect(r.p10DepletionYear).toBeNull();
+  });
+});

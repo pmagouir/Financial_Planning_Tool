@@ -115,7 +115,7 @@ export function Welcome({ onStart }: WelcomeProps) {
             position: 'relative',
           }}
         >
-          Ramit Sethi · JL Collins · Morgan Housel
+          Spending · Investing · Behavior
         </div>
         </Reveal>
 
@@ -194,11 +194,11 @@ export function Welcome({ onStart }: WelcomeProps) {
               }}
             >
               <span style={{ fontSize: '1rem' }}>↓</span>
-              Select Step 1 in the sidebar to begin
+              Select Step 1 to begin
             </div>
           )}
           <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
-            or select a step in the sidebar
+            or jump straight to any step
           </div>
         </div>
         </Reveal>
@@ -211,27 +211,35 @@ export function Welcome({ onStart }: WelcomeProps) {
 
       {/* ── Stats Strip ──────────────────────────────────────────────────────── */}
       <Reveal>
+      {/* 2×2 on phones (4-up crushes the labels under ~640px), 4-up on desktop. Dividers via nth-child. */}
+      <style>{`
+        .welcome-stats { display: grid; grid-template-columns: repeat(2, 1fr); }
+        .welcome-stats > div { border-right: 1px solid rgba(255,255,255,0.06); border-bottom: 1px solid rgba(255,255,255,0.06); }
+        .welcome-stats > div:nth-child(2n) { border-right: none; }
+        .welcome-stats > div:nth-child(n + 3) { border-bottom: none; }
+        @media (min-width: 640px) {
+          .welcome-stats { grid-template-columns: repeat(4, 1fr); }
+          .welcome-stats > div,
+          .welcome-stats > div:nth-child(2n),
+          .welcome-stats > div:nth-child(n + 3) { border-right: 1px solid rgba(255,255,255,0.06); border-bottom: none; }
+          .welcome-stats > div:last-child { border-right: none; }
+        }
+      `}</style>
       <div
+        className="welcome-stats"
         style={{
-          display: 'flex',
-          alignItems: 'stretch',
           borderRadius: '12px',
           border: '1px solid rgba(255,255,255,0.07)',
           background: 'rgba(255,255,255,0.02)',
           overflow: 'hidden',
         }}
       >
-        {stats.map((stat, idx) => (
+        {stats.map((stat) => (
           <div
             key={stat.label}
             style={{
-              flex: 1,
-              padding: '20px 24px',
+              padding: '18px 12px',
               textAlign: 'center',
-              borderRight:
-                idx < stats.length - 1
-                  ? '1px solid rgba(255,255,255,0.06)'
-                  : 'none',
             }}
           >
             <div
@@ -391,6 +399,10 @@ export function Welcome({ onStart }: WelcomeProps) {
           <h2 className="text-xl font-semibold text-white">The philosophy behind this tool</h2>
           <p style={{ fontSize: '0.875rem', color: '#94a3b8' }}>
             Three frameworks. One coherent system.
+          </p>
+          <p style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
+            An independent tool that draws on these authors&apos; published work — it has no
+            affiliation with, or endorsement from, any of them.
           </p>
         </div>
 

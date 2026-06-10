@@ -154,6 +154,7 @@ Rules: body text uses `#94a3b8` or lighter. `#64748b` is permitted only for larg
 - W3C WCAG 2.2 — contrast (1.4.3, 1.4.6).
 - The seven-book library in `src/components/bonus/Resources.tsx` is the curated starting bibliography.
 - Volatility / capital-market assumptions (Monte Carlo, §10): macrotrends S&P 500 annual returns 1927–2026; NYU Stern V-Lab SPX GARCH volatility; CFA Institute, *The Performance of the 60/40 Portfolio* (2025).
+- Display conventions (§10.7, verified 2026-06-09): MoneyGuidePro Confidence Zone (75–90% success target); Fidelity Retirement Score methodology ("significantly below average market" = 90% confidence, the score's headline scenario; fidelity.com/planning/retirement/pdf/rqc_methodology.pdf); Kitces, "Reframing Retirement Risk As Over- And Under-Spending" (kitces.com); Empower Retirement Planner (median + 10th-percentile display precedent).
 
 ---
 
@@ -201,6 +202,24 @@ Allowed: "probability," "X% of simulations succeed," "10th–90th percentile ran
 
 ### 10.6 Headline projection = the median (not the mean) — ratified 2026-06-07
 The user-facing **"Projected Portfolio," surplus/shortfall, progress-to-target, and additional-needed** all read the Monte Carlo **median** (`medianPortfolio`, `medianGap = medianPortfolio − requiredPortfolio`), matching the net-worth chart's median line and the success probability — one number, one story (Pattern 1). The deterministic `projectedPortfolio` (§3/§5) is the engine's mean compounding result and is **retained** (single-engine guard + LOCKED reference) but **not headlined**: returns are right-skewed, so the mean exceeds the median and headlining the mean overstates the typical outcome (`.learn/errors.md` row 13). The net-worth chart shows the median path + the 10th-percentile downside line; the explosive upper tail is reported via the success rate, not drawn.
+
+### 10.7 Confidence-zone display convention — RATIFIED 2026-06-09 (resolves "too-drab downside" review)
+
+The MATH is unchanged (same sampler, same percentiles — moving the band to look nicer would be Pattern 2 in reverse). What changed is how the existing numbers are FRAMED, adopting verified industry planning practice:
+
+- **Healthy zone: 75–90% success.** Thresholds move 80→75 (green floor) and add a ≥90 "above the zone" message. Basis: MoneyGuidePro's Confidence Zone (75–90% is the professional planning target; >90% flags possible over-saving — Kitces' over/under-spending framing). Bands: ≥90 green "above the zone — can mean over-saving"; 75–89 green "in the healthy zone"; 60–74 amber "slightly below the zone"; <60 red "fragile". Status always paired with text (never color alone, §7).
+- **Plain odds, not bare percentiles.** User-facing labels say "a 1-in-10 rough market" / "a 1-in-10 strong market", keeping the percentile in a parenthetical. Bare "10th percentile" reads clinical-doom to a first-timer.
+- **Capability statement (Fidelity-style).** The downside is framed by what it FUNDS, the way Fidelity's Retirement Score judges plans in a "significantly below average market" (their headline IS the ~10th-percentile world, shown as a green score):
+  - `p10DepletionYear` = the first retirement year where the p10 net-worth path ≤ $0, else null.
+  - Because a depleted path stays at $0, `p10(year) > 0 ⟺ fewer than 10% of trials have run out by that year`. So: depletion at year Y ⇒ "9 in 10 outcomes stay funded through {Y−1}"; null ⇒ "even a 1-in-10 rough market funds all {retDuration} years". These statements are exact, not approximations.
+- **Upside cue.** `p75AtRetirement` = 75th percentile of the final accumulation year. One stat — "1 in 4 outcomes reach retirement above $X" — restores symmetry without drawing the scale-breaking p90 area (row 12 stands). Shown in today's $ with nominal beside (§2 convention).
+- **Verdict softening.** Step 4's outcome strip drops the "✗" glyph: below-target columns read "short of target" (amber, text-carried). The binary stamp overstated a percentile snapshot (row 23's cousin).
+
+**Confidence: high** for the framing sources (verified 2026-06-09); the underlying percentiles unchanged. Exposed results: `p75AtRetirement`, `p10DepletionYear`.
+
+### 10.8 PLANNED — block-bootstrap sampler (Option B, next quant loop — NOT YET SHIPPED)
+
+The i.i.d. lognormal draw has no memory, so it misses mean reversion and overstates long-horizon dispersion: at defaults (μ 7%, σ 16%) the 25-yr p10 annualizes to ≈1.9% nominal — below the worst realized 25-yr US stretch (≈5–6%; survivorship caveat: Japan post-1989 was worse). Upgrade: sample multi-year BLOCKS (5–10 yr) of actual return history (S&P 1927–2026 / 60-40 series already in §9) with wraparound, preserving serial correlation and mean reversion; long-horizon p10 lifts for honest statistical reasons. Acceptance: (1) canonical §10.1–10.4 amended with the block design + sources; (2) moment sanity vs the lognormal model documented; (3) WolframAlpha (or equivalent independent) revalidation of the textbook $1M/4%/30-yr success rate; (4) all §10.4 reference values re-locked with dates; (5) seeded + reproducible as today. Until shipped, nothing in the app may claim mean reversion is modeled.
 
 ---
 

@@ -25,7 +25,7 @@ export function FintechCard({ children, variant, className }: FintechCardProps) 
         className
       )}
     >
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
         {children}
       </div>
     </div>

@@ -2,6 +2,7 @@ import { useStore } from '@nanostores/react';
 import { inputs, results } from '../stores/financialPlan';
 import { FintechCard } from './ui/FintechCard';
 import { MoneyInput } from './ui/MoneyInput';
+import { Button } from './ui/Button';
 
 // Budget Ribbon Component - HUD Style Trading Ticker
 function BudgetRibbon() {
@@ -36,7 +37,7 @@ function BudgetRibbon() {
   };
 
   return (
-    <div className="fixed bottom-8 left-8 z-50 print:hidden">
+    <div className="hidden sm:block fixed bottom-8 left-8 z-50 print:hidden">
       <div className="fintech-card min-w-[320px]">
         <div className="p-4">
           {/* Header */}
@@ -121,9 +122,9 @@ export function Step1_CurrentReality({ onNext }: Step1Props) {
   };
 
   // Calculate category totals
-  const housingTotal = i.rent + i.propTax + i.utilities + i.internet;
-  const transportTotal = i.carPayment + i.carIns + i.gas + i.carMaint;
-  const otherFixedTotal = i.groceries + i.healthIns + i.otherIns + i.debtMin + i.childcare + i.banking;
+  const housingTotal = i.rent + i.propTax + i.utilities + i.internet + i.phone;
+  const transportTotal = i.carPayment + i.carIns + i.gas + i.carMaint + i.metro;
+  const otherFixedTotal = i.groceries + i.household + i.healthIns + i.otherIns + i.debtMin + i.childcare + i.banking;
 
   // Calculate percentages
   const takeHome = i.takeHomePay;
@@ -206,8 +207,8 @@ export function Step1_CurrentReality({ onNext }: Step1Props) {
           />
         </div>
 
-        {/* Three stat columns */}
-        <div className="grid grid-cols-3 gap-4 mt-5">
+        {/* Three stat columns — stack on phones (3-up overlaps the numbers under ~768px) */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-5">
           {/* Fixed Costs */}
           <div>
             <div className="flex items-center gap-1.5 mb-1">
@@ -229,7 +230,7 @@ export function Step1_CurrentReality({ onNext }: Step1Props) {
               </span>
             </div>
             <div className="font-mono text-2xl font-semibold text-white">
-              {formatCurrency(res.currentFixed)}
+              {formatCurrency(res.currentFixed)}<span className="text-sm font-normal text-text-secondary ml-1">/mo</span>
             </div>
             <div className="text-sm mt-0.5" style={{ color: '#94a3b8' }}>
               {fixedPercent.toFixed(1)}% of income
@@ -263,7 +264,7 @@ export function Step1_CurrentReality({ onNext }: Step1Props) {
               </span>
             </div>
             <div className="font-mono text-2xl font-semibold text-white">
-              {formatCurrency(res.currentInvest)}
+              {formatCurrency(res.currentInvest)}<span className="text-sm font-normal text-text-secondary ml-1">/mo</span>
             </div>
             <div className="text-sm mt-0.5" style={{ color: '#94a3b8' }}>
               {investPercent.toFixed(1)}% of income
@@ -297,7 +298,7 @@ export function Step1_CurrentReality({ onNext }: Step1Props) {
               </span>
             </div>
             <div className="font-mono text-2xl font-semibold text-white">
-              {formatCurrency(res.currentGuiltFree)}
+              {formatCurrency(res.currentGuiltFree)}<span className="text-sm font-normal text-text-secondary ml-1">/mo</span>
             </div>
             <div className="text-sm mt-0.5" style={{ color: '#94a3b8' }}>
               {guiltFreePercent.toFixed(1)}% of income
@@ -352,7 +353,7 @@ export function Step1_CurrentReality({ onNext }: Step1Props) {
         <h3 className="text-lg font-semibold text-text-primary mb-4">Monthly Take-Home Pay</h3>
         <MoneyInput
           label="Monthly Take-Home Income"
-          helperText="Your after-tax monthly income"
+          helperText="Your after-tax monthly income. Planning as a couple? Enter your combined take-home here and combine both partners' numbers throughout."
           value={i.takeHomePay}
           onChange={(value) => inputs.setKey('takeHomePay', value)}
         />
@@ -375,7 +376,7 @@ export function Step1_CurrentReality({ onNext }: Step1Props) {
                   <div className="text-2xl font-bold text-text-primary">
                     {formatCurrency(res.currentFixed)}
                   </div>
-                  <div className="text-xs text-text-secondary">Total</div>
+                  <div className="text-xs text-text-secondary">Total / mo</div>
                 </div>
               </div>
             </summary>
@@ -410,6 +411,12 @@ export function Step1_CurrentReality({ onNext }: Step1Props) {
                     value={i.internet}
                     onChange={(value) => inputs.setKey('internet', value)}
                   />
+                  <MoneyInput
+                    label="Phone"
+                    helperText="Cell plan plus any device payment, monthly"
+                    value={i.phone}
+                    onChange={(value) => inputs.setKey('phone', value)}
+                  />
                 </div>
               </details>
 
@@ -442,6 +449,12 @@ export function Step1_CurrentReality({ onNext }: Step1Props) {
                     value={i.carMaint}
                     onChange={(value) => inputs.setKey('carMaint', value)}
                   />
+                  <MoneyInput
+                    label="Public Transit"
+                    helperText="Metro, bus, or commuter rail — passes and fares"
+                    value={i.metro}
+                    onChange={(value) => inputs.setKey('metro', value)}
+                  />
                 </div>
               </details>
 
@@ -458,6 +471,12 @@ export function Step1_CurrentReality({ onNext }: Step1Props) {
                     label="Groceries"
                     value={i.groceries}
                     onChange={(value) => inputs.setKey('groceries', value)}
+                  />
+                  <MoneyInput
+                    label="Household Essentials"
+                    helperText="The TP fund: toilet paper, paper towels, cleaning supplies — the rest of the supermarket cart"
+                    value={i.household}
+                    onChange={(value) => inputs.setKey('household', value)}
                   />
                   <MoneyInput
                     label="Health Insurance"
@@ -502,14 +521,16 @@ export function Step1_CurrentReality({ onNext }: Step1Props) {
                 <div>
                   <h3 className="text-lg font-semibold text-text-primary">Investments</h3>
                   <p className="text-sm text-text-secondary">
-                    Money you're setting aside for the future (including employer match - not part of take-home pay)
+                    Money you're setting aside each month for the future (including employer match — not part
+                    of take-home pay). Planning as a couple? Add both partners' accounts together: both 401(k)s,
+                    both matches, both IRAs.
                   </p>
                 </div>
                 <div className="text-right">
                   <div className="text-2xl font-bold text-text-primary">
                     {formatCurrency(res.currentInvest)}
                   </div>
-                  <div className="text-xs text-text-secondary">Total</div>
+                  <div className="text-xs text-text-secondary">Total / mo</div>
                 </div>
               </div>
             </summary>
@@ -584,7 +605,7 @@ export function Step1_CurrentReality({ onNext }: Step1Props) {
                   <div className="text-2xl font-bold text-text-primary">
                     {formatCurrency(res.currentGuiltFree)}
                   </div>
-                  <div className="text-xs text-text-secondary">Total</div>
+                  <div className="text-xs text-text-secondary">Total / mo</div>
                 </div>
               </div>
             </summary>
@@ -611,6 +632,7 @@ export function Step1_CurrentReality({ onNext }: Step1Props) {
               />
               <MoneyInput
                 label="Personal Care"
+                helperText="Gym, haircuts, skincare — whatever keeps you feeling good"
                 value={i.personal}
                 onChange={(value) => inputs.setKey('personal', value)}
               />
@@ -660,12 +682,10 @@ export function Step1_CurrentReality({ onNext }: Step1Props) {
       {/* Next Step Navigation */}
       {onNext && (
         <div className="flex justify-end">
-          <button
-            onClick={onNext}
-            className="mt-2 flex items-center gap-2 px-6 py-3 bg-accent-primary text-white rounded-lg font-medium hover:bg-accent-primary/90 transition-colors"
-          >
-            Next Step <span>→</span>
-          </button>
+          <Button onClick={onNext} className="group mt-2">
+            Next Step
+            <span aria-hidden="true" className="transition-transform duration-200 group-hover:translate-x-0.5">→</span>
+          </Button>
         </div>
       )}
     </div>

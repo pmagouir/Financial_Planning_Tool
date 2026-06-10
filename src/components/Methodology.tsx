@@ -195,7 +195,26 @@ Success = the share of the 1,000 paths whose balance lasts the full retirement`}
           90th percentiles; the headline "projected" figure is the median (typical) path, not the
           mean — returns are right-skewed, so the mean overstates the typical outcome.
         </p>
-        <Source>Volatility: macrotrends S&amp;P 500 annual returns 1927–2026; NYU Stern V-Lab GARCH volatility; CFA Institute, <em>The Performance of the 60/40 Portfolio</em> (2025).</Source>
+        <p>
+          <span className="text-text-primary font-medium">How we display it.</span> The success rate
+          is judged against the <span className="text-text-primary font-medium">75–90% "healthy
+          zone"</span> used by professional planning software: below it the plan leans on luck, and
+          research on retirement income treats results above ~90% as possible <em>over</em>-saving —
+          security bought with living you could be doing now. The downside line is framed by what it
+          funds ("9 in 10 outcomes stay funded through {'{year}'}"), the way Fidelity's retirement
+          score judges plans in a significantly-below-average market rather than presenting a doom
+          date. Percentiles are labeled in plain odds ("a 1-in-10 rough market") with the statistic
+          kept in parentheses. None of this changes the math — only how the same numbers are said.
+        </p>
+        <p>
+          <span className="text-text-primary font-medium">A known conservatism.</span> Each year's
+          return is drawn independently, with no memory — so the model ignores the mild long-horizon
+          mean reversion real markets have shown, and its deep downside paths run bleaker than
+          anything in the post-1927 US record (though markets abroad have done worse). Treat the
+          rough-market line as a stress case, and expect a future version using historical
+          block-sampling to tighten it honestly.
+        </p>
+        <Source>Volatility: macrotrends S&amp;P 500 annual returns 1927–2026; NYU Stern V-Lab GARCH volatility; CFA Institute, <em>The Performance of the 60/40 Portfolio</em> (2025). Display conventions: MoneyGuidePro's Confidence Zone (75–90% success target); Fidelity Retirement Score methodology ("significantly below average market" = the 10% of scenarios that perform worst); Kitces, <em>Reframing Retirement Risk As Over- And Under-Spending</em>.</Source>
       </Section>
 
       {/* What we don't model */}
@@ -239,6 +258,7 @@ Success = the share of the 1,000 paths whose balance lasts the full retirement`}
           <li>Ramit Sethi — <em>I Will Teach You To Be Rich</em> (the Fixed / Investments / Guilt-Free structure).</li>
           <li>Morgan Housel — <em>The Psychology of Money</em> (behavior over math, anti-abandonment).</li>
           <li>Bogleheads wiki — safe withdrawal rate and variable withdrawal.</li>
+          <li>MoneyGuidePro Confidence Zone &amp; Fidelity Retirement Score methodology — the 75–90% healthy-zone and funded-through display conventions; Kitces.com on over- vs under-spending risk.</li>
           <li>IRS Pub 590-B (account taxation, RMDs), Pub 915 (Social Security taxation); SSA COLA history.</li>
           <li>W3C WCAG 2.2 — the contrast and accessibility standard this tool is built to.</li>
         </ul>

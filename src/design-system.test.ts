@@ -52,12 +52,17 @@ describe('row 4 — dead-token layer', () => {
     expect(existsSync(join(process.cwd(), 'tailwind.config.mjs'))).toBe(false);
   });
 
-  it('FintechCard and MetricCard actually read their variant prop', () => {
-    for (const comp of ['components/ui/FintechCard.tsx', 'components/ui/MetricCard.tsx']) {
-      const src = readFileSync(join(SRC, comp), 'utf8');
-      expect(src).toMatch(/variant\s*&&\s*variantBorder\[variant\]/);
-      expect(src).toContain('border-t-accent-');
-    }
+  it('FintechCard reads its variant prop (the single card implementation)', () => {
+    const src = readFileSync(join(SRC, 'components/ui/FintechCard.tsx'), 'utf8');
+    expect(src).toMatch(/variant\s*&&\s*variantBorder\[variant\]/);
+    expect(src).toContain('border-t-accent-');
+  });
+
+  it('one card, not three: MetricCard aliases FintechCard, and the white Card is gone', () => {
+    // Consolidated to a single implementation so the variant treatment can never drift.
+    const metric = readFileSync(join(SRC, 'components/ui/MetricCard.tsx'), 'utf8');
+    expect(metric).toMatch(/export\s*\{\s*FintechCard as MetricCard\s*\}/);
+    expect(existsSync(join(SRC, 'components/ui/Card.tsx'))).toBe(false);
   });
 });
 

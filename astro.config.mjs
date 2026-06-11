@@ -10,7 +10,7 @@ import tailwindcss from '@tailwindcss/vite';
 // local builds and previews.
 const site = process.env.VERCEL_PROJECT_PRODUCTION_URL
   ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-  : 'https://financial-planning-tool.vercel.app';
+  : 'https://financial-planning-tool-theta.vercel.app';
 
 // https://astro.build/config
 export default defineConfig({

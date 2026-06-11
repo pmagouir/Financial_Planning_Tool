@@ -85,7 +85,7 @@ const svg = `<svg width="2400" height="1260" viewBox="0 0 1200 630" xmlns="http:
   <text x="80" y="392" font-family="${SANS}" font-size="30" font-weight="500" fill="${C.slate400}">Five steps. No accounts. No data leaving your browser.</text>
 
   <!-- footer -->
-  <text x="80" y="588" font-family="${MONO}" font-size="23" fill="${C.slate500}">financial-planning-tool.vercel.app</text>
+  <text x="80" y="588" font-family="${SANS}" font-size="22" font-weight="500" fill="${C.slate500}">Built on Sethi · Collins · Housel</text>
   <text x="1120" y="588" text-anchor="end" font-family="${SANS}" font-size="20" font-weight="500" fill="${C.slate}">Educational tool · not financial advice</text>
 </svg>`;
 

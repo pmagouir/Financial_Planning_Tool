@@ -6,6 +6,7 @@ import { MetricCard } from './ui/MetricCard';
 import { Button } from './ui/Button';
 import { CountUp } from './ui/CountUp';
 import { Reveal } from './ui/Reveal';
+import { ResultMoment } from './results/ResultMoment';
 import { motion, useReducedMotion } from 'framer-motion';
 import {
   ComposedChart,
@@ -157,18 +158,6 @@ export function Step5_Summary({ onEditPlan }: Step5Props) {
   const medianGapToday = res.medianGap / inflMult;
   const p75Today = res.p75AtRetirement / inflMult;
 
-  // Confidence-zone verdict (canonical §10.7): 75–90% is the healthy zone professional planning
-  // practice targets. Full teaching lives on Step 4 and the Methodology page; this is the verdict.
-  const successPct = Math.round(res.successProbability * 100);
-  const zoneVerdict =
-    successPct >= 90
-      ? 'Above the 75–90% healthy zone planners target — sturdy, and possibly room to enjoy more today'
-      : successPct >= 75
-        ? 'Inside the 75–90% healthy zone planners target'
-        : successPct >= 60
-          ? 'Below the 75–90% healthy zone planners target'
-          : 'Well below the 75–90% healthy zone planners target';
-
   // ── Chart data: Monte Carlo net-worth band across the full lifecycle (canonical §10) ──
   // Honest replacement for the old smooth deterministic line — the band shows the
   // 10th–90th percentile, so depleting (sequence-of-returns) scenarios are visible.
@@ -284,6 +273,12 @@ export function Step5_Summary({ onEditPlan }: Step5Props) {
         </p>
       </div>
 
+      {/* ── Flagship result moment — the headline number, your odds, the lifetime timeline ── */}
+      <ResultMoment />
+
+      {/* ── The details ── */}
+      <h2 className="text-sm font-semibold text-text-secondary uppercase tracking-widest pt-2">The details</h2>
+
       {/* ── 4 Key Metric Cards ── */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
 
@@ -346,29 +341,6 @@ export function Step5_Summary({ onEditPlan }: Step5Props) {
         </MetricCard>
 
       </div>
-
-      {/* ── Monte Carlo success probability (canonical §10) ── */}
-      <MetricCard variant={res.successProbability >= 0.75 ? 'success' : res.successProbability >= 0.6 ? 'warning' : 'info'}>
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4" role="status">
-          <div>
-            <div className="uppercase text-xs tracking-widest text-text-secondary mb-2">Plan Success Probability</div>
-            <div className="flex items-baseline gap-3">
-              <span
-                className="text-4xl font-light tracking-tighter leading-none"
-                style={{ fontFamily: 'monospace', color: res.successProbability >= 0.75 ? '#10b981' : res.successProbability >= 0.6 ? '#f59e0b' : '#ef4444' }}
-              >
-                <CountUp value={res.successProbability * 100} format={(n) => `${Math.round(n)}%`} />
-              </span>
-              <span className="text-sm text-text-secondary">of 1,000 simulations fund all {i.retDuration} years</span>
-            </div>
-          </div>
-          <div className="text-xs text-text-secondary max-w-md md:text-right">
-            {zoneVerdict}. A Monte Carlo estimate with sequence-of-returns risk; returns are sampled,
-            so treat this as a probability estimate rather than a promise. Social Security grows with
-            inflation; pensions and other income are held flat (conservative). All figures pre-tax.
-          </div>
-        </div>
-      </MetricCard>
 
       {/* ── Inflation Impact ── */}
       <MetricCard variant="primary">
@@ -822,9 +794,10 @@ export function Step5_Summary({ onEditPlan }: Step5Props) {
           lineHeight: '1.6',
         }}
       >
-        These projections are estimates based on constant return assumptions. Actual results will vary based on
-        market conditions, tax implications, sequence-of-returns risk, and personal circumstances. This is not
-        financial advice — consider reviewing your plan annually with a Certified Financial Planner (CFP).
+        These projections are estimates. The success probability and ranges come from 1,000 Monte Carlo simulations
+        that vary market returns each year and account for sequence-of-returns risk, so they are probabilities rather
+        than promises. All figures are pre-tax and do not model taxes or fees. This tool is educational and not
+        personalized financial advice; consider reviewing your plan annually with a Certified Financial Planner (CFP).
       </div>
 
     </div>

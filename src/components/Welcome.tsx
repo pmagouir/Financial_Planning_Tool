@@ -490,9 +490,10 @@ export function Welcome({ onStart }: WelcomeProps) {
       >
         <span style={{ color: '#94a3b8', fontWeight: 600 }}>Educational use only.</span>{' '}
         This tool provides estimates to help you think about retirement planning — it is not
-        personalized financial advice. Results assume constant investment returns and do not account
-        for taxes, fees, or market volatility. Consider consulting a Certified Financial Planner
-        (CFP) before making major financial decisions.{' '}
+        personalized financial advice. Projections run a 1,000-trial Monte Carlo simulation that
+        varies market returns each year, so volatility and sequence-of-returns risk are modeled;
+        figures are pre-tax and do not model taxes or fees. Consider consulting a Certified Financial
+        Planner (CFP) before making major financial decisions.{' '}
         <span style={{ color: '#94a3b8' }}>
           Your data stays private. Everything is calculated locally in your browser.
         </span>

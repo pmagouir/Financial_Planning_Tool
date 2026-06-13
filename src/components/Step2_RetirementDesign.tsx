@@ -61,27 +61,72 @@ export function Step2_RetirementDesign({ onNext }: Step2Props) {
 
   // Handle slider change
   const handleSliderChange = (category: string, value: number) => {
-    const keyMap: Record<string, 'retHousing' | 'retTransport' | 'retGroceries' | 'retHealth' | 'retChild' | 'retIns' | 'retDebt' | 'retEnt' | 'retDining' | 'retPersonal' | 'retMisc'> = {
-      housing: 'retHousing', transport: 'retTransport', groceries: 'retGroceries',
-      health: 'retHealth', child: 'retChild', ins: 'retIns', debt: 'retDebt',
-      ent: 'retEnt', dining: 'retDining', personal: 'retPersonal', misc: 'retMisc',
+    const keyMap: Record<
+      string,
+      | 'retHousing'
+      | 'retTransport'
+      | 'retGroceries'
+      | 'retHealth'
+      | 'retChild'
+      | 'retIns'
+      | 'retDebt'
+      | 'retEnt'
+      | 'retDining'
+      | 'retPersonal'
+      | 'retMisc'
+    > = {
+      housing: 'retHousing',
+      transport: 'retTransport',
+      groceries: 'retGroceries',
+      health: 'retHealth',
+      child: 'retChild',
+      ins: 'retIns',
+      debt: 'retDebt',
+      ent: 'retEnt',
+      dining: 'retDining',
+      personal: 'retPersonal',
+      misc: 'retMisc',
     };
     inputs.setKey(keyMap[category], value);
     inputs.setKey('hasModifiedRetirement', true);
   };
 
-  const getMaxValue = (currentValue: number): number =>
-    Math.max(currentValue * 2, 10000);
+  const getMaxValue = (currentValue: number): number => Math.max(currentValue * 2, 10000);
 
   const categories = [
-    { key: 'housing', label: 'Housing', isFixed: true, why: 'Often steady; drops if you retire mortgage-free' },
-    { key: 'transport', label: 'Transport', isFixed: true, why: 'Usually lower without a daily commute' },
+    {
+      key: 'housing',
+      label: 'Housing',
+      isFixed: true,
+      why: 'Often steady; drops if you retire mortgage-free',
+    },
+    {
+      key: 'transport',
+      label: 'Transport',
+      isFixed: true,
+      why: 'Usually lower without a daily commute',
+    },
     { key: 'groceries', label: 'Groceries', isFixed: true, why: 'Roughly the same as today' },
     { key: 'health', label: 'Healthcare', isFixed: true, why: 'Tends to rise with age' },
-    { key: 'child', label: 'Childcare', isFixed: true, why: 'Usually near zero once kids are grown' },
+    {
+      key: 'child',
+      label: 'Childcare',
+      isFixed: true,
+      why: 'Usually near zero once kids are grown',
+    },
     { key: 'ins', label: 'Insurance', isFixed: true, why: 'Often slightly higher in retirement' },
-    { key: 'debt', label: 'Debt Payments', isFixed: true, why: 'Most debt is paid off by retirement' },
-    { key: 'ent', label: 'Entertainment', isFixed: false, why: 'More free time often means a bit more' },
+    {
+      key: 'debt',
+      label: 'Debt Payments',
+      isFixed: true,
+      why: 'Most debt is paid off by retirement',
+    },
+    {
+      key: 'ent',
+      label: 'Entertainment',
+      isFixed: false,
+      why: 'More free time often means a bit more',
+    },
     { key: 'dining', label: 'Dining Out', isFixed: false, why: 'Often a little lower than today' },
     { key: 'personal', label: 'Personal', isFixed: false, why: 'Roughly the same as today' },
     { key: 'misc', label: 'Misc', isFixed: false, why: 'Usually trends down a little' },
@@ -97,9 +142,17 @@ export function Step2_RetirementDesign({ onNext }: Step2Props) {
     .filter((d) => d.Today > 0 || d.Retirement > 0);
 
   const retMonthlySpend =
-    i.retHousing + i.retTransport + i.retGroceries + i.retHealth +
-    i.retChild + i.retIns + i.retDebt + i.retEnt + i.retDining +
-    i.retPersonal + i.retMisc;
+    i.retHousing +
+    i.retTransport +
+    i.retGroceries +
+    i.retHealth +
+    i.retChild +
+    i.retIns +
+    i.retDebt +
+    i.retEnt +
+    i.retDining +
+    i.retPersonal +
+    i.retMisc;
 
   const delta = retMonthlySpend - res.totalAllocated;
   const deltaPositive = delta >= 0;
@@ -108,11 +161,12 @@ export function Step2_RetirementDesign({ onNext }: Step2Props) {
 
   return (
     <div className="space-y-8">
-
       {/* ── Intro ──────────────────────────────────────────────────────────── */}
       <FintechCard variant="info">
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-text-primary">Design Your Retirement Lifestyle</h3>
+          <h3 className="text-lg font-semibold text-text-primary">
+            Design Your Retirement Lifestyle
+          </h3>
           <p className="text-sm text-text-secondary leading-relaxed">
             Spending shifts in retirement. Some costs drop (no commute, no childcare). Others rise
             (healthcare, travel, hobbies you finally have time for). Sliders start from your current
@@ -130,7 +184,9 @@ export function Step2_RetirementDesign({ onNext }: Step2Props) {
 
       {/* ── Live Category Comparison Chart ─────────────────────────────────── */}
       <FintechCard variant="primary">
-        <h3 className="text-lg font-semibold text-text-primary mb-1">Now vs. Retirement — by Category</h3>
+        <h3 className="text-lg font-semibold text-text-primary mb-1">
+          Now vs. Retirement — by Category
+        </h3>
         <p className="text-sm text-text-secondary mb-5">
           Updates live as you adjust sliders below. Blue = today, violet = retirement.
         </p>
@@ -147,13 +203,13 @@ export function Step2_RetirementDesign({ onNext }: Step2Props) {
                   barCategoryGap="28%"
                   barGap={3}
                 >
-                  <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" horizontal={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#101828" horizontal={false} />
                   <XAxis
                     type="number"
                     tickFormatter={(v: number) => `$${(v / 1000).toFixed(0)}k`}
                     tick={{ fill: '#94a3b8', fontSize: 10 }}
                     tickLine={false}
-                    axisLine={{ stroke: '#334155' }}
+                    axisLine={{ stroke: '#1d2a44' }}
                   />
                   <YAxis
                     type="category"
@@ -166,8 +222,8 @@ export function Step2_RetirementDesign({ onNext }: Step2Props) {
                   <Tooltip
                     formatter={(value, name) => [formatCurrency(Number(value)), name]}
                     contentStyle={{
-                      backgroundColor: '#0f172a',
-                      border: '1px solid #334155',
+                      backgroundColor: '#0a0f1e',
+                      border: '1px solid #1d2a44',
                       borderRadius: '8px',
                       color: '#f8fafc',
                       fontSize: '12px',
@@ -196,8 +252,16 @@ export function Step2_RetirementDesign({ onNext }: Step2Props) {
               }}
             >
               {[
-                { label: 'Current Monthly', value: formatCurrency(res.totalAllocated), color: '#3b82f6' },
-                { label: 'Retirement Monthly', value: formatCurrency(retMonthlySpend), color: '#a78bfa' },
+                {
+                  label: 'Current Monthly',
+                  value: formatCurrency(res.totalAllocated),
+                  color: '#3b82f6',
+                },
+                {
+                  label: 'Retirement Monthly',
+                  value: formatCurrency(retMonthlySpend),
+                  color: '#a78bfa',
+                },
                 {
                   label: deltaPositive ? 'Increase' : 'Decrease',
                   value: `${deltaPositive ? '+' : ''}${formatCurrency(delta)}`,
@@ -214,10 +278,25 @@ export function Step2_RetirementDesign({ onNext }: Step2Props) {
                     background: 'rgba(255,255,255,0.02)',
                   }}
                 >
-                  <div style={{ fontSize: '0.65rem', color: '#94a3b8', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '5px' }}>
+                  <div
+                    style={{
+                      fontSize: '0.65rem',
+                      color: '#94a3b8',
+                      letterSpacing: '0.06em',
+                      textTransform: 'uppercase',
+                      marginBottom: '5px',
+                    }}
+                  >
                     {stat.label}
                   </div>
-                  <div style={{ fontSize: '1.05rem', fontWeight: 700, color: stat.color, fontVariantNumeric: 'tabular-nums' }}>
+                  <div
+                    style={{
+                      fontSize: '1.05rem',
+                      fontWeight: 700,
+                      color: stat.color,
+                      fontVariantNumeric: 'tabular-nums',
+                    }}
+                  >
                     {stat.value}
                   </div>
                 </div>
@@ -256,23 +335,33 @@ export function Step2_RetirementDesign({ onNext }: Step2Props) {
               const retirement = retirementValues[category.key];
               const pct = current > 0 ? Math.round((retirement / current) * 100) : null;
               const pctLabel =
-                pct === null ? null
-                : pct > 100 ? `+${pct - 100}% vs today`
-                : pct < 100 ? `−${100 - pct}% vs today`
-                : 'same as today';
+                pct === null
+                  ? null
+                  : pct > 100
+                    ? `+${pct - 100}% vs today`
+                    : pct < 100
+                      ? `−${100 - pct}% vs today`
+                      : 'same as today';
               const pctColor =
-                pct === null ? '#94a3b8'
-                : pct > 100 ? '#f59e0b'
-                : pct < 100 ? '#10b981'
-                : '#94a3b8';
+                pct === null
+                  ? '#94a3b8'
+                  : pct > 100
+                    ? '#f59e0b'
+                    : pct < 100
+                      ? '#10b981'
+                      : '#94a3b8';
 
               return (
                 <div key={category.key}>
                   <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 text-sm mb-2">
                     <span className="font-medium text-text-primary">{category.label}</span>
                     <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5">
-                      <span className="text-text-secondary text-xs">Today: {formatCurrency(current)}</span>
-                      <span className="font-bold text-text-primary">{formatCurrency(retirement)}</span>
+                      <span className="text-text-secondary text-xs">
+                        Today: {formatCurrency(current)}
+                      </span>
+                      <span className="font-bold text-text-primary">
+                        {formatCurrency(retirement)}
+                      </span>
                       {pctLabel && (
                         <span style={{ fontSize: '0.7rem', color: pctColor, fontWeight: 600 }}>
                           {pctLabel}
@@ -298,9 +387,12 @@ export function Step2_RetirementDesign({ onNext }: Step2Props) {
 
       {/* ── Guilt-Free Sliders ──────────────────────────────────────────────── */}
       <FintechCard variant="primary">
-        <h3 className="text-lg font-semibold text-text-primary mb-2">Guilt-Free Spending in Retirement</h3>
+        <h3 className="text-lg font-semibold text-text-primary mb-2">
+          Guilt-Free Spending in Retirement
+        </h3>
         <p className="text-sm text-text-secondary mb-6">
-          The fun part — entertainment, dining, personal care, and the rest. Spend here on what you love.
+          The fun part — entertainment, dining, personal care, and the rest. Spend here on what you
+          love.
         </p>
         <div className="space-y-6">
           {categories
@@ -310,23 +402,33 @@ export function Step2_RetirementDesign({ onNext }: Step2Props) {
               const retirement = retirementValues[category.key];
               const pct = current > 0 ? Math.round((retirement / current) * 100) : null;
               const pctLabel =
-                pct === null ? null
-                : pct > 100 ? `+${pct - 100}% vs today`
-                : pct < 100 ? `−${100 - pct}% vs today`
-                : 'same as today';
+                pct === null
+                  ? null
+                  : pct > 100
+                    ? `+${pct - 100}% vs today`
+                    : pct < 100
+                      ? `−${100 - pct}% vs today`
+                      : 'same as today';
               const pctColor =
-                pct === null ? '#94a3b8'
-                : pct > 100 ? '#f59e0b'
-                : pct < 100 ? '#10b981'
-                : '#94a3b8';
+                pct === null
+                  ? '#94a3b8'
+                  : pct > 100
+                    ? '#f59e0b'
+                    : pct < 100
+                      ? '#10b981'
+                      : '#94a3b8';
 
               return (
                 <div key={category.key}>
                   <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 text-sm mb-2">
                     <span className="font-medium text-text-primary">{category.label}</span>
                     <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5">
-                      <span className="text-text-secondary text-xs">Today: {formatCurrency(current)}</span>
-                      <span className="font-bold text-text-primary">{formatCurrency(retirement)}</span>
+                      <span className="text-text-secondary text-xs">
+                        Today: {formatCurrency(current)}
+                      </span>
+                      <span className="font-bold text-text-primary">
+                        {formatCurrency(retirement)}
+                      </span>
                       {pctLabel && (
                         <span style={{ fontSize: '0.7rem', color: pctColor, fontWeight: 600 }}>
                           {pctLabel}
@@ -355,7 +457,12 @@ export function Step2_RetirementDesign({ onNext }: Step2Props) {
         <div className="flex justify-end">
           <Button onClick={onNext} className="group mt-2">
             Next Step
-            <span aria-hidden="true" className="transition-transform duration-200 group-hover:translate-x-0.5">→</span>
+            <span
+              aria-hidden="true"
+              className="transition-transform duration-200 group-hover:translate-x-0.5"
+            >
+              →
+            </span>
           </Button>
         </div>
       )}

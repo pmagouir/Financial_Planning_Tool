@@ -70,8 +70,8 @@ function ConeTooltip({ active, label, payload }: ConeTooltipProps) {
   return (
     <div
       style={{
-        backgroundColor: '#0f172a',
-        border: '1px solid #334155',
+        backgroundColor: '#0a0f1e',
+        border: '1px solid #1d2a44',
         borderRadius: '10px',
         padding: '12px 16px',
         minWidth: '220px',
@@ -79,36 +79,82 @@ function ConeTooltip({ active, label, payload }: ConeTooltipProps) {
         boxShadow: '0 4px 24px rgba(0,0,0,0.5)',
       }}
     >
-      <div style={{ color: '#94a3b8', fontSize: '11px', marginBottom: '8px', letterSpacing: '0.07em', textTransform: 'uppercase' }}>
+      <div
+        style={{
+          color: '#94a3b8',
+          fontSize: '11px',
+          marginBottom: '8px',
+          letterSpacing: '0.07em',
+          textTransform: 'uppercase',
+        }}
+      >
         Year {label}
       </div>
 
       {optimistic !== undefined && (
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '16px', marginBottom: '3px' }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            gap: '16px',
+            marginBottom: '3px',
+          }}
+        >
           <span style={{ color: '#10b981' }}>Strong market (90th pct)</span>
-          <span style={{ fontWeight: 700, fontFamily: 'monospace', color: '#f8fafc' }}>{formatCurrency(optimistic)}</span>
+          <span style={{ fontWeight: 700, fontFamily: 'var(--font-mono)', color: '#f8fafc' }}>
+            {formatCurrency(optimistic)}
+          </span>
         </div>
       )}
       {median !== undefined && (
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '16px', marginBottom: '3px' }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            gap: '16px',
+            marginBottom: '3px',
+          }}
+        >
           <span style={{ color: '#3b82f6' }}>Median (typical)</span>
-          <span style={{ fontWeight: 700, fontFamily: 'monospace', color: '#f8fafc' }}>{formatCurrency(median)}</span>
+          <span style={{ fontWeight: 700, fontFamily: 'var(--font-mono)', color: '#f8fafc' }}>
+            {formatCurrency(median)}
+          </span>
         </div>
       )}
       {pessimistic !== undefined && (
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '16px', marginBottom: '3px' }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            gap: '16px',
+            marginBottom: '3px',
+          }}
+        >
           <span style={{ color: '#f59e0b' }}>Rough market (10th pct)</span>
-          <span style={{ fontWeight: 700, fontFamily: 'monospace', color: '#f8fafc' }}>{formatCurrency(pessimistic)}</span>
+          <span style={{ fontWeight: 700, fontFamily: 'var(--font-mono)', color: '#f8fafc' }}>
+            {formatCurrency(pessimistic)}
+          </span>
         </div>
       )}
       {target !== undefined && (
-        <div style={{ borderTop: '1px solid #334155', marginTop: '8px', paddingTop: '8px', display: 'flex', justifyContent: 'space-between', gap: '16px' }}>
+        <div
+          style={{
+            borderTop: '1px solid #1d2a44',
+            marginTop: '8px',
+            paddingTop: '8px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            gap: '16px',
+          }}
+        >
           <span style={{ color: '#ef4444' }}>Target</span>
-          <span style={{ fontWeight: 700, fontFamily: 'monospace', color: '#ef4444' }}>{formatCurrency(target)}</span>
+          <span style={{ fontWeight: 700, fontFamily: 'var(--font-mono)', color: '#ef4444' }}>
+            {formatCurrency(target)}
+          </span>
         </div>
       )}
       {median !== undefined && (
-        <div style={{ marginTop: '8px', borderTop: '1px solid #334155', paddingTop: '6px' }}>
+        <div style={{ marginTop: '8px', borderTop: '1px solid #1d2a44', paddingTop: '6px' }}>
           <span style={{ fontSize: '11px', color: '#94a3b8' }}>
             10th–90th pct range: {formatCurrency(Math.abs((optimistic ?? 0) - (pessimistic ?? 0)))}
           </span>
@@ -163,7 +209,6 @@ export function Step4_InvestmentPath({ onNext }: Step4Props) {
 
   return (
     <div className="space-y-8">
-
       {/* ── Inputs ──────────────────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <FintechCard variant="info">
@@ -220,9 +265,21 @@ export function Step4_InvestmentPath({ onNext }: Step4Props) {
         />
         <div className="mt-4 flex gap-4 flex-wrap">
           {[
-            { label: 'Conservative (5%)', value: 5, activeClass: 'bg-accent-primary text-white shadow-card' },
-            { label: 'Moderate (7%)', value: 7, activeClass: 'bg-accent-primary text-white shadow-card' },
-            { label: 'Aggressive (9%)', value: 9, activeClass: 'bg-accent-success text-white shadow-card' },
+            {
+              label: 'Conservative (5%)',
+              value: 5,
+              activeClass: 'bg-accent-primary text-white shadow-card',
+            },
+            {
+              label: 'Moderate (7%)',
+              value: 7,
+              activeClass: 'bg-accent-primary text-white shadow-card',
+            },
+            {
+              label: 'Aggressive (9%)',
+              value: 9,
+              activeClass: 'bg-accent-success text-white shadow-card',
+            },
           ].map((btn) => (
             <button
               key={btn.value}
@@ -275,8 +332,12 @@ export function Step4_InvestmentPath({ onNext }: Step4Props) {
         >
           <h2 className="text-2xl font-bold text-white mb-3">Action Required</h2>
           <p className="text-lg text-slate-300 mb-4">
-            Even in the <span style={{ color: '#f59e0b', fontWeight: 700 }}>median scenario</span>, you're projected to fall short by{' '}
-            <span className="font-bold" style={{ color: '#fbbf24' }}>{formatCurrency(Math.abs(medianGapToday))}</span> (today's $).
+            Even in the <span style={{ color: '#f59e0b', fontWeight: 700 }}>median scenario</span>,
+            you're projected to fall short by{' '}
+            <span className="font-bold" style={{ color: '#fbbf24' }}>
+              {formatCurrency(Math.abs(medianGapToday))}
+            </span>{' '}
+            (today's $).
           </p>
           <div
             style={{
@@ -287,8 +348,14 @@ export function Step4_InvestmentPath({ onNext }: Step4Props) {
             }}
           >
             <div className="text-sm text-slate-400 mb-1">Additional monthly investment needed:</div>
-            <div className="text-3xl font-bold text-white">{formatCurrency(res.monthlyShortfall)}<span className="text-lg font-normal text-slate-400">/mo</span></div>
-            <div className="text-xs text-slate-400 mt-2">Approximate — a starting point. Because real returns vary, the typical (median) outcome may need a bit more.</div>
+            <div className="text-3xl font-bold text-white">
+              {formatCurrency(res.monthlyShortfall)}
+              <span className="text-lg font-normal text-slate-400">/mo</span>
+            </div>
+            <div className="text-xs text-slate-400 mt-2">
+              Approximate — a starting point. Because real returns vary, the typical (median)
+              outcome may need a bit more.
+            </div>
           </div>
         </div>
       )}
@@ -304,15 +371,24 @@ export function Step4_InvestmentPath({ onNext }: Step4Props) {
         >
           <h2 className="text-2xl font-bold text-white mb-2">On Track</h2>
           <p className="text-lg text-slate-300">
-            Your <span style={{ color: '#10b981', fontWeight: 700 }}>median projection</span> exceeds your target by{' '}
-            <span className="font-bold" style={{ color: '#34d399' }}>{formatCurrency(medianGapToday)}</span> (today's $).
+            Your <span style={{ color: '#10b981', fontWeight: 700 }}>median projection</span>{' '}
+            exceeds your target by{' '}
+            <span className="font-bold" style={{ color: '#34d399' }}>
+              {formatCurrency(medianGapToday)}
+            </span>{' '}
+            (today's $).
             {onTrackP10 && (
-              <span className="text-slate-400 text-base ml-2">Even the 10th-percentile outcome clears the target.</span>
+              <span className="text-slate-400 text-base ml-2">
+                Even the 10th-percentile outcome clears the target.
+              </span>
             )}
           </p>
           {successPct < 75 && (
             <p className="text-sm text-slate-400 mt-3">
-              Your balance clears the target at retirement, yet only {successPct}% of simulations fund all {i.retDuration} years — below the 75–90% healthy zone. The order of returns in early retirement is why a clearing balance can still fall short. A later retirement or a larger buffer would raise it.
+              Your balance clears the target at retirement, yet only {successPct}% of simulations
+              fund all {i.retDuration} years — below the 75–90% healthy zone. The order of returns
+              in early retirement is why a clearing balance can still fall short. A later retirement
+              or a larger buffer would raise it.
             </p>
           )}
         </div>
@@ -330,9 +406,10 @@ export function Step4_InvestmentPath({ onNext }: Step4Props) {
         >
           <h2 className="text-2xl font-bold text-white mb-2">No target set yet</h2>
           <p className="text-lg text-slate-300">
-            You&apos;ve entered your savings, but you haven&apos;t set what you&apos;ll spend in retirement.
-            Design your retirement spending in{' '}
-            <span style={{ color: '#3b82f6', fontWeight: 700 }}>Step 2</span> to see whether you&apos;re on track.
+            You&apos;ve entered your savings, but you haven&apos;t set what you&apos;ll spend in
+            retirement. Design your retirement spending in{' '}
+            <span style={{ color: '#3b82f6', fontWeight: 700 }}>Step 2</span> to see whether
+            you&apos;re on track.
           </p>
         </div>
       )}
@@ -341,18 +418,33 @@ export function Step4_InvestmentPath({ onNext }: Step4Props) {
       <FintechCard variant="info">
         <h3 className="text-lg font-semibold text-text-primary mb-1">Projected Range</h3>
         <p className="text-sm text-text-secondary mb-4">
-          1,000 Monte Carlo simulations of your plan. The shaded band spans the 10th–90th percentile of outcomes; the line is the median (typical) path. An estimate under the stated return assumptions, not a guarantee.
+          1,000 Monte Carlo simulations of your plan. The shaded band spans the 10th–90th percentile
+          of outcomes; the line is the median (typical) path. An estimate under the stated return
+          assumptions, not a guarantee.
         </p>
         {hasData && (
           <div
             role="status"
             style={{
-              display: 'flex', alignItems: 'baseline', gap: '14px', marginBottom: '18px',
-              padding: '16px 20px', borderRadius: '10px',
-              background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.2)',
+              display: 'flex',
+              alignItems: 'baseline',
+              gap: '14px',
+              marginBottom: '18px',
+              padding: '16px 20px',
+              borderRadius: '10px',
+              background: 'rgba(59,130,246,0.08)',
+              border: '1px solid rgba(59,130,246,0.2)',
             }}
           >
-            <span style={{ fontSize: '2.25rem', fontWeight: 700, fontFamily: 'monospace', lineHeight: 1, color: successPct >= 75 ? '#10b981' : successPct >= 60 ? '#f59e0b' : '#ef4444' }}>
+            <span
+              style={{
+                fontSize: '2.25rem',
+                fontWeight: 700,
+                fontFamily: 'var(--font-mono)',
+                lineHeight: 1,
+                color: successPct >= 75 ? '#10b981' : successPct >= 60 ? '#f59e0b' : '#ef4444',
+              }}
+            >
               <CountUp value={successPct} format={(n) => `${Math.round(n)}%`} />
             </span>
             <span className="text-sm text-text-secondary">
@@ -390,17 +482,44 @@ export function Step4_InvestmentPath({ onNext }: Step4Props) {
             <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               {item.dashed ? (
                 <svg width="20" height="2" style={{ flexShrink: 0 }}>
-                  <line x1="0" y1="1" x2="20" y2="1" stroke={item.color} strokeWidth="2" strokeDasharray="4 3" />
+                  <line
+                    x1="0"
+                    y1="1"
+                    x2="20"
+                    y2="1"
+                    stroke={item.color}
+                    strokeWidth="2"
+                    strokeDasharray="4 3"
+                  />
                 </svg>
               ) : (
-                <div style={{ width: '20px', height: '3px', borderRadius: '2px', background: item.color, flexShrink: 0 }} />
+                <div
+                  style={{
+                    width: '20px',
+                    height: '3px',
+                    borderRadius: '2px',
+                    background: item.color,
+                    flexShrink: 0,
+                  }}
+                />
               )}
               <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>{item.label}</span>
             </div>
           ))}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div style={{ width: '20px', height: '12px', borderRadius: '3px', background: 'rgba(59,130,246,0.12)', border: '1px solid rgba(59,130,246,0.2)', flexShrink: 0 }} />
-            <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Probability band (10th–90th)</span>
+            <div
+              style={{
+                width: '20px',
+                height: '12px',
+                borderRadius: '3px',
+                background: 'rgba(59,130,246,0.12)',
+                border: '1px solid rgba(59,130,246,0.2)',
+                flexShrink: 0,
+              }}
+            />
+            <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
+              Probability band (10th–90th)
+            </span>
           </div>
         </div>
 
@@ -415,13 +534,13 @@ export function Step4_InvestmentPath({ onNext }: Step4Props) {
                 </linearGradient>
               </defs>
 
-              <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#101828" vertical={false} />
 
               <XAxis
                 dataKey="year"
                 tick={{ fill: '#94a3b8', fontSize: 11 }}
                 tickLine={false}
-                axisLine={{ stroke: '#334155' }}
+                axisLine={{ stroke: '#1d2a44' }}
               />
               <YAxis
                 tickFormatter={formatYAxis}
@@ -561,7 +680,15 @@ export function Step4_InvestmentPath({ onNext }: Step4Props) {
                   background: 'rgba(255,255,255,0.02)',
                 }}
               >
-                <div style={{ fontSize: '0.65rem', color: '#94a3b8', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '5px' }}>
+                <div
+                  style={{
+                    fontSize: '0.65rem',
+                    color: '#94a3b8',
+                    letterSpacing: '0.06em',
+                    textTransform: 'uppercase',
+                    marginBottom: '5px',
+                  }}
+                >
                   {item.label}
                 </div>
                 <div
@@ -601,7 +728,12 @@ export function Step4_InvestmentPath({ onNext }: Step4Props) {
         <div className="flex justify-end">
           <Button onClick={onNext} className="group mt-2">
             Next Step
-            <span aria-hidden="true" className="transition-transform duration-200 group-hover:translate-x-0.5">→</span>
+            <span
+              aria-hidden="true"
+              className="transition-transform duration-200 group-hover:translate-x-0.5"
+            >
+              →
+            </span>
           </Button>
         </div>
       )}

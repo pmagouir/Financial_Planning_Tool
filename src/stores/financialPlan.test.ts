@@ -38,7 +38,19 @@ describe('canonical reference values', () => {
   it('the Number: $60k/yr spend, $18k SS, 3% inflation, 25y, 4% WR = $2,198,466.83', () => {
     inputs.setKey('hasModifiedRetirement', true); // stop the smart-default subscriber
     (
-      ['retHousing', 'retTransport', 'retGroceries', 'retHealth', 'retChild', 'retIns', 'retDebt', 'retEnt', 'retDining', 'retPersonal', 'retMisc'] as const
+      [
+        'retHousing',
+        'retTransport',
+        'retGroceries',
+        'retHealth',
+        'retChild',
+        'retIns',
+        'retDebt',
+        'retEnt',
+        'retDining',
+        'retPersonal',
+        'retMisc',
+      ] as const
     ).forEach((k) => inputs.setKey(k, 0));
     inputs.setKey('retHousing', 5000); // $60k/yr
     inputs.setKey('socialSecurity', 18000);
@@ -232,7 +244,7 @@ describe('Monte Carlo (canonical §10)', () => {
     const r = results.get();
     expect(r.yearsToRet).toBe(0);
     expect(r.successProbability).toBeGreaterThan(0.66);
-    expect(r.successProbability).toBeLessThan(0.80);
+    expect(r.successProbability).toBeLessThan(0.8);
   });
 
   it('net-worth cone spans the full lifecycle and shows depletion in weak scenarios', () => {
@@ -433,9 +445,9 @@ describe('feedback round 1 — phone / metro / household + starter100FV', () => 
     inputs.setKey('groceries', 500);
     inputs.setKey('household', 150);
     const v = inputs.get();
-    expect(v.retHousing).toBe(2080);                       // rent + phone, full ratio
-    expect(v.retTransport).toBe(Math.round(520 * 0.5));    // (carPayment + metro) × 0.5
-    expect(v.retGroceries).toBe(650);                      // groceries + household, full ratio
+    expect(v.retHousing).toBe(2080); // rent + phone, full ratio
+    expect(v.retTransport).toBe(Math.round(520 * 0.5)); // (carPayment + metro) × 0.5
+    expect(v.retGroceries).toBe(650); // groceries + household, full ratio
   });
 
   it('starter100FV equals the closed-form end-of-month annuity at the effective monthly rate', () => {

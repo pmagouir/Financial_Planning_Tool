@@ -133,20 +133,23 @@ Claude automatically adopts the right expert perspective based on the task. Thes
 - Responsive design (375px mobile minimum, 1280px desktop)
 - All copy: labels, tooltips, helper text, microcopy, empty states
 
-**Design System:**
+**Design System (Aesthetic 2.0, ratified 2026-06-12):**
 ```
-Background default:  #0f172a  (Slate 900 — main bg)
-Background paper:    #1e293b  (Slate 800 — cards)
-Background subtle:   #334155  (Slate 700 — borders, inputs)
-Accent primary:      #3b82f6  (Electric blue — CTAs, highlights)
-Accent success:      #10b981  (Emerald — positive values, on track)
-Accent warning:      #f59e0b  (Amber — approaching limits)
-Accent danger:       #ef4444  (Red — over budget, shortfall)
+Background default:  #0a0f1e  (Ink — main bg, owned blue-black)
+Background paper:    #101828  (Paper — cards)
+Background subtle:   #1d2a44  (Subtle — borders, inputs)
+Accent primary:      #3b82f6  (Blue — INTERACTIVE only: CTAs, tabs, links)
+Accent success:      #10b981  (Emerald — SIGNATURE accent: money, positive, on track)
+Accent warning:      #f59e0b  (Amber — semantic only: approaching limits)
+Accent danger:       #ef4444  (Red — semantic only: over budget, shortfall)
+Chart retirement:    #8b5cf6  (Violet — chart-only retirement series, Wave 3)
+Numerals:            Geist Mono (tabular) — every financial figure; Inter for UI text
 ```
+Aesthetic register: flat solid surfaces, hairline borders, no glow/glass/orbs/text-shadow,
+color encodes meaning (never sequence), charts tween ~400ms ease-out on input change.
 
 **Card system:**
-- `FintechCard` — dark glass-morphism card, used for dark-theme sections (bonus/ folder, hero areas)
-- `Card` — lighter card with colored top border variants (primary/success/warning/info), used in the main calculator/ steps
+- `FintechCard` — the single card: flat paper surface, hairline border, colored top-border variants (primary/success/warning/info); `MetricCard` aliases it
 
 **My standards:**
 - Monospace font for all financial numbers

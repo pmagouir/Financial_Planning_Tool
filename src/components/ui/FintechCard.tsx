@@ -18,18 +18,8 @@ const variantBorder = {
 
 export function FintechCard({ children, variant, className }: FintechCardProps) {
   return (
-    <div
-      className={clsx(
-        'fintech-card',
-        variant && variantBorder[variant],
-        className
-      )}
-    >
-      <div className="p-4 sm:p-6">
-        {children}
-      </div>
+    <div className={clsx('fintech-card', variant && variantBorder[variant], className)}>
+      <div className="p-4 sm:p-6">{children}</div>
     </div>
   );
 }
-
-

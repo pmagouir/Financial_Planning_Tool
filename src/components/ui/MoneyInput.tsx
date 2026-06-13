@@ -2,7 +2,10 @@ import { useState, useCallback, useEffect, useId } from 'react';
 import type { InputHTMLAttributes } from 'react';
 import { clsx } from 'clsx';
 
-interface MoneyInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'value' | 'onChange' | 'type'> {
+interface MoneyInputProps extends Omit<
+  InputHTMLAttributes<HTMLInputElement>,
+  'value' | 'onChange' | 'type'
+> {
   label?: string;
   helperText?: string;
   value: number;
@@ -46,7 +49,8 @@ export function MoneyInput({
   ...props
 }: MoneyInputProps) {
   // Ensure value is always a number
-  const numericValue = typeof value === 'number' ? value : (typeof value === 'string' ? parseFloat(value) || 0 : 0);
+  const numericValue =
+    typeof value === 'number' ? value : typeof value === 'string' ? parseFloat(value) || 0 : 0;
 
   // Programmatic label + helper association (WCAG 1.3.1 / 3.3.2).
   const inputId = useId();
@@ -58,7 +62,8 @@ export function MoneyInput({
   // Sync display value when value prop changes externally (when not focused)
   useEffect(() => {
     if (!isFocused) {
-      const num = typeof value === 'number' ? value : (typeof value === 'string' ? parseFloat(value) || 0 : 0);
+      const num =
+        typeof value === 'number' ? value : typeof value === 'string' ? parseFloat(value) || 0 : 0;
       setDisplayValue(formatCurrency(num));
     }
   }, [value, isFocused]);
@@ -81,14 +86,16 @@ export function MoneyInput({
   const handleBlur = useCallback(() => {
     setIsFocused(false);
     // Format the value on blur
-    const num = typeof value === 'number' ? value : (typeof value === 'string' ? parseFloat(value) || 0 : 0);
+    const num =
+      typeof value === 'number' ? value : typeof value === 'string' ? parseFloat(value) || 0 : 0;
     setDisplayValue(formatCurrency(num));
   }, [value]);
 
   const handleFocus = useCallback(() => {
     setIsFocused(true);
     // Show raw number when focused for easier editing
-    const num = typeof value === 'number' ? value : (typeof value === 'string' ? parseFloat(value) || 0 : 0);
+    const num =
+      typeof value === 'number' ? value : typeof value === 'string' ? parseFloat(value) || 0 : 0;
     setDisplayValue(num === 0 ? '' : num.toString());
   }, [value]);
 
@@ -100,7 +107,10 @@ export function MoneyInput({
         </label>
       )}
       <div className="relative">
-        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none" aria-hidden="true">
+        <div
+          className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
+          aria-hidden="true"
+        >
           <span className="text-text-secondary text-sm">$</span>
         </div>
         <input
@@ -112,16 +122,15 @@ export function MoneyInput({
           onFocus={handleFocus}
           onBlur={handleBlur}
           aria-describedby={helperText ? helperId : undefined}
-          className={clsx(
-            'fintech-input pl-7 pr-3 font-mono',
-            className
-          )}
+          className={clsx('fintech-input pl-7 pr-3 font-mono', className)}
           placeholder="0"
           {...props}
         />
       </div>
       {helperText && (
-        <p id={helperId} className="mt-1.5 text-sm text-text-secondary">{helperText}</p>
+        <p id={helperId} className="mt-1.5 text-sm text-text-secondary">
+          {helperText}
+        </p>
       )}
     </div>
   );

@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 /* ── Design tokens (canonical §6) ──────────────────────────────────────────
    Tailwind v4 derives the theme from this @theme block, not tailwind.config.mjs
@@ -6,34 +6,42 @@
    not replace — the default palette, so slate-*, white, blue-* still resolve.
    Every value traces to studio/.learn/canonical.md §6. */
 @theme {
-  /* Backgrounds */
-  --color-background: #0f172a;          /* Slate 900 — main background */
-  --color-background-paper: #1e293b;    /* Slate 800 — cards */
-  --color-background-subtle: #334155;   /* Slate 700 — borders, input backgrounds */
+  /* Backgrounds — Aesthetic 2.0 (ratified 2026-06-12): owned blue-black ink, one step deeper
+     than the stock slate scale it replaces. Same hue family, so the AA-checked text colors
+     below only gain contrast. */
+  --color-background: #0a0f1e; /* Ink — main background */
+  --color-background-paper: #101828; /* Paper — cards */
+  --color-background-subtle: #1d2a44; /* Subtle — borders, input backgrounds */
   /* Text */
-  --color-text-primary: #f8fafc;        /* Slate 50 — body and headings */
-  --color-text-secondary: #94a3b8;      /* Slate 400 — secondary text (smallest AA-safe body) */
-  --color-text-muted: #64748b;          /* Slate 500 — large/decorative text ONLY (see §7) */
-  /* Accents */
-  --color-accent-primary: #3b82f6;      /* Electric blue — CTAs, highlights */
-  --color-accent-success: #10b981;      /* Emerald — positive, on track */
-  --color-accent-warning: #f59e0b;      /* Amber — approaching limits */
-  --color-accent-danger: #ef4444;       /* Red — over budget, shortfall */
+  --color-text-primary: #f8fafc; /* Slate 50 — body and headings */
+  --color-text-secondary: #94a3b8; /* Slate 400 — secondary text (smallest AA-safe body) */
+  --color-text-muted: #64748b; /* Slate 500 — large/decorative text ONLY (see §7) */
+  /* Accents — hierarchy (Aesthetic 2.0): emerald is the signature/brand accent (money, status),
+     blue is interactive chrome (tabs, buttons, links), amber/red are semantic-only. Violet
+     #8b5cf6 stays the chart-only retirement-series accent (§6, Wave 3). */
+  --color-accent-primary: #3b82f6; /* Electric blue — interactive: CTAs, tabs, links */
+  --color-accent-success: #10b981; /* Emerald — signature: money, positive, on track */
+  --color-accent-warning: #f59e0b; /* Amber — approaching limits */
+  --color-accent-danger: #ef4444; /* Red — over budget, shortfall */
   /* Type & elevation */
-  --font-sans: "Inter", system-ui, sans-serif;
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace; /* every financial figure */
   --shadow-card: 0 8px 32px 0 rgb(0 0 0 / 0.3);
 }
 
 @layer base {
   body {
-    background-color: #0f172a;
+    background-color: #0a0f1e;
     color: #f8fafc;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    /* Subtle mesh gradient background */
-    background-image:
-      radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.05) 0px, transparent 50%),
-      radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.05) 0px, transparent 50%);
+    /* One faint signature-accent wash at the top — flatter than the old two-corner mesh */
+    background-image: radial-gradient(at 50% 0%, rgba(16, 185, 129, 0.04) 0px, transparent 55%);
+  }
+
+  /* Financial figures are always tabular so columns and counters never shimmy. */
+  .font-mono {
+    font-variant-numeric: tabular-nums;
   }
 
   /* Unified keyboard focus ring (WCAG 2.4.11) — one accent indicator across every button, link,
@@ -52,19 +60,17 @@
 }
 
 @layer components {
-  /* The "Glass" Card Style */
+  /* Card — Aesthetic 2.0: flat solid paper with a hairline border. The 2021 glass-blur,
+     hover lift, and glow are retired; hover is a quiet border brighten only. */
   .fintech-card {
-    background-color: rgba(30, 41, 59, 0.5);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    background-color: #101828;
+    border: 1px solid rgba(255, 255, 255, 0.06);
     border-radius: 0.75rem;
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-    transition: all 0.3s;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+    transition: border-color 0.2s;
   }
   .fintech-card:hover {
-    border-color: rgba(59, 130, 246, 0.3);
-    box-shadow: 0 0 10px rgba(59, 130, 246, 0.1);
-    transform: translateY(-1px);
+    border-color: rgba(255, 255, 255, 0.12);
   }
 
   /* The "Terminal" Input Style */
@@ -85,35 +91,22 @@
     box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.5);
     background-color: rgba(51, 65, 85, 0.5);
   }
-  
-  /* The "Neon" Button */
+
+  /* Button — solid interactive blue, no halo (Aesthetic 2.0). */
   .fintech-btn {
     background-color: #3b82f6;
     color: white;
     font-weight: 600;
     border-radius: 0.5rem;
     padding: 0.75rem 1.5rem;
-    box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.2);
-    transition: all 0.2s;
+    transition: background-color 0.2s;
   }
   .fintech-btn:hover {
     background-color: #2563eb;
-    box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.4);
   }
   .fintech-btn:active {
-    transform: scale(0.95);
+    transform: scale(0.97);
   }
-}
-
-/* Ambient "breathe" — a slow opacity pulse for the hero glow orbs. Purely decorative;
-   the reduced-motion reset below neutralizes it to a static glow (canonical §6, subtle motion). */
-@keyframes breathe {
-  0%, 100% { opacity: 0.6; }
-  50%      { opacity: 1; }
-}
-.breathe {
-  animation: breathe 9s ease-in-out infinite;
-  will-change: opacity;
 }
 
 /* Respect reduced-motion (canonical §6; WCAG 2.3.3). Content and navigation must
@@ -167,8 +160,8 @@
   }
 
   /* Remove shadows and borders for cleaner print */
-  [class*="shadow"],
-  [class*="border"] {
+  [class*='shadow'],
+  [class*='border'] {
     box-shadow: none !important;
     border: 1px solid #e2e8f0 !important;
   }

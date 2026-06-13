@@ -71,16 +71,24 @@ export function Step3_YourNumber({ onNext, onEditPlan }: Step3Props) {
       {!hasRetirementData && (
         <FintechCard variant="info">
           <div className="mx-auto max-w-xl px-6 py-12 text-center space-y-4" role="status">
-            <h2 className="text-2xl font-semibold text-text-primary">Your number isn&apos;t ready yet</h2>
+            <h2 className="text-2xl font-semibold text-text-primary">
+              Your number isn&apos;t ready yet
+            </h2>
             <p className="text-base text-text-secondary">
-              Map your spending in <span className="font-semibold text-white">Step 1</span>, then design your
-              retirement lifestyle in <span className="font-semibold text-white">Step 2</span>. Your retirement
-              number — the portfolio you&apos;ll need — appears here automatically.
+              Map your spending in <span className="font-semibold text-white">Step 1</span>, then
+              design your retirement lifestyle in{' '}
+              <span className="font-semibold text-white">Step 2</span>. Your retirement number — the
+              portfolio you&apos;ll need — appears here automatically.
             </p>
             {onEditPlan && (
               <Button onClick={onEditPlan} className="group">
                 Start with Step 1
-                <span aria-hidden="true" className="transition-transform duration-200 group-hover:translate-x-0.5">→</span>
+                <span
+                  aria-hidden="true"
+                  className="transition-transform duration-200 group-hover:translate-x-0.5"
+                >
+                  →
+                </span>
               </Button>
             )}
           </div>
@@ -93,31 +101,14 @@ export function Step3_YourNumber({ onNext, onEditPlan }: Step3Props) {
           <div
             style={{
               position: 'relative',
-              borderRadius: '24px',
+              borderRadius: '20px',
               overflow: 'hidden',
               padding: 'clamp(40px, 8vw, 64px) clamp(20px, 5vw, 40px) clamp(36px, 7vw, 56px)',
               textAlign: 'center',
-              border: '1px solid rgba(16,185,129,0.25)',
-              background: 'radial-gradient(ellipse 90% 70% at 50% 0%, rgba(16,185,129,0.10) 0%, rgba(16,185,129,0.03) 50%, transparent 80%), rgba(255,255,255,0.02)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              background: 'rgba(255,255,255,0.02)',
             }}
           >
-            {/* Ambient glow orb behind the number */}
-            <div
-              className="breathe"
-              style={{
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                width: '420px',
-                height: '220px',
-                borderRadius: '50%',
-                background: 'radial-gradient(ellipse, rgba(16,185,129,0.12) 0%, transparent 70%)',
-                pointerEvents: 'none',
-                filter: 'blur(24px)',
-              }}
-            />
-
             {/* Label */}
             <div
               style={{
@@ -138,22 +129,21 @@ export function Step3_YourNumber({ onNext, onEditPlan }: Step3Props) {
               Your Retirement Number
             </div>
 
-            {/* The number itself */}
+            {/* The number itself — chosen numerals, no halo (Aesthetic 2.0) */}
             <div
               style={{
                 position: 'relative',
-                fontSize: 'clamp(3.5rem, 10vw, 6rem)',
-                fontWeight: 800,
-                letterSpacing: '-0.04em',
+                fontFamily: 'var(--font-mono)',
+                fontVariantNumeric: 'tabular-nums',
+                fontSize: 'clamp(3rem, 9vw, 5rem)',
+                fontWeight: 600,
+                letterSpacing: '-0.03em',
                 lineHeight: 1,
-                color: '#ffffff',
+                color: '#10b981',
                 marginBottom: '16px',
-                textShadow: '0 0 60px rgba(16,185,129,0.35), 0 0 120px rgba(16,185,129,0.15)',
               }}
             >
-              <span style={{ color: '#10b981' }}>
-                <CountUp value={requiredToday} format={formatLarge} />
-              </span>
+              <CountUp value={requiredToday} format={formatLarge} />
             </div>
 
             {/* Sub-line — today's buying power first; the nominal future figure beside it (§2) */}
@@ -176,8 +166,8 @@ export function Step3_YourNumber({ onNext, onEditPlan }: Step3Props) {
                 fontVariantNumeric: 'tabular-nums',
               }}
             >
-              ≈ <span className="font-mono">{formatLarge(res.requiredPortfolio)}</span> in {i.retYear} dollars — the
-              math below builds that future figure
+              ≈ <span className="font-mono">{formatLarge(res.requiredPortfolio)}</span> in{' '}
+              {i.retYear} dollars — the math below builds that future figure
             </div>
 
             {/* Trio of key stats — stacks on phones, inline strip ≥860px (where 3-up reliably
@@ -247,25 +237,34 @@ export function Step3_YourNumber({ onNext, onEditPlan }: Step3Props) {
 
           {/* ── How to read this number — anti-paralysis framing (feedback round 1) ── */}
           <FintechCard variant="success">
-            <h3 className="text-lg font-semibold text-text-primary mb-3">How to read this number</h3>
+            <h3 className="text-lg font-semibold text-text-primary mb-3">
+              How to read this number
+            </h3>
             <p className="text-sm text-text-secondary leading-relaxed">
-              A first look at your number is usually startling. It funds {i.retDuration} years of living,
-              so it will always dwarf a monthly budget — a big result here is normal, and it says nothing
-              about how you&apos;re doing today.
+              A first look at your number is usually startling. It funds {i.retDuration} years of
+              living, so it will always dwarf a monthly budget — a big result here is normal, and it
+              says nothing about how you&apos;re doing today.
             </p>
             <p className="text-sm text-text-secondary leading-relaxed mt-3">
-              Treat it as a planning estimate, in motion: built from your Step 2 lifestyle,
-              {' '}{i.inflation.toFixed(1)}% inflation, and the {formatPercent(res.withdrawalRate)} withdrawal
-              rate, it recalculates the instant you adjust anything on this page and will keep shifting as
-              your life changes. Revisit it once a year; the estimate sharpens as retirement gets closer.
+              Treat it as a planning estimate, in motion: built from your Step 2 lifestyle,{' '}
+              {i.inflation.toFixed(1)}% inflation, and the {formatPercent(res.withdrawalRate)}{' '}
+              withdrawal rate, it recalculates the instant you adjust anything on this page and will
+              keep shifting as your life changes. Revisit it once a year; the estimate sharpens as
+              retirement gets closer.
             </p>
 
             {res.yearsToRet >= 5 && (
               <div
                 className="mt-4 rounded-lg px-4 py-3"
-                style={{ background: 'rgba(16,185,129,0.07)', border: '1px solid rgba(16,185,129,0.2)' }}
+                style={{
+                  background: 'rgba(16,185,129,0.07)',
+                  border: '1px solid rgba(16,185,129,0.2)',
+                }}
               >
-                <div className="text-xs uppercase tracking-widest mb-1.5" style={{ color: '#6ee7b7' }}>
+                <div
+                  className="text-xs uppercase tracking-widest mb-1.5"
+                  style={{ color: '#6ee7b7' }}
+                >
                   Starting small still compounds
                 </div>
                 <p className="text-sm leading-relaxed" style={{ color: '#94a3b8' }}>
@@ -273,37 +272,40 @@ export function Step3_YourNumber({ onNext, onEditPlan }: Step3Props) {
                   <span className="font-mono font-bold" style={{ color: '#34d399' }}>
                     {formatLarge(res.starter100FV)}
                   </span>{' '}
-                  by {i.retYear} at your {i.annualReturn.toFixed(1)}% return assumption. You&apos;d put in{' '}
-                  <span className="font-mono">{formatCurrency(starterContrib)}</span>; growth supplies the
-                  rest. Early dollars get the most time to work, so the habit matters more than the amount —
-                  start the trickle now, scale it as income grows.
+                  by {i.retYear} at your {i.annualReturn.toFixed(1)}% return assumption. You&apos;d
+                  put in <span className="font-mono">{formatCurrency(starterContrib)}</span>; growth
+                  supplies the rest. Early dollars get the most time to work, so the habit matters
+                  more than the amount — start the trickle now, scale it as income grows.
                 </p>
               </div>
             )}
 
             <div className="mt-4">
-              <div className="text-sm font-medium text-text-primary mb-2">Three levers move it most</div>
+              <div className="text-sm font-medium text-text-primary mb-2">
+                Three levers move it most
+              </div>
               <ul className="space-y-1.5 text-sm text-text-secondary">
                 <li>
-                  • <span className="text-text-primary font-medium">Retire later.</span> Extra working years
-                  grow the portfolio and shorten the retirement it funds.
+                  • <span className="text-text-primary font-medium">Retire later.</span> Extra
+                  working years grow the portfolio and shorten the retirement it funds.
                 </li>
                 <li>
-                  • <span className="text-text-primary font-medium">Trim the design.</span> Every $100/month
-                  cut from Step 2 spending takes roughly{' '}
-                  <span className="font-mono">{formatCurrency(1200 / res.withdrawalRate)}</span> (today&apos;s $)
-                  off the target.
+                  • <span className="text-text-primary font-medium">Trim the design.</span> Every
+                  $100/month cut from Step 2 spending takes roughly{' '}
+                  <span className="font-mono">{formatCurrency(1200 / res.withdrawalRate)}</span>{' '}
+                  (today&apos;s $) off the target.
                 </li>
                 <li>
-                  • <span className="text-text-primary font-medium">Add guaranteed income.</span> Social
-                  Security or a pension entered below reduces the portfolio you need directly.
+                  • <span className="text-text-primary font-medium">Add guaranteed income.</span>{' '}
+                  Social Security or a pension entered below reduces the portfolio you need
+                  directly.
                 </li>
               </ul>
             </div>
 
             <p className="text-xs text-text-secondary italic mt-4">
-              Every figure here is an estimate built on the assumptions below — withdrawal rate per the
-              Trinity Study (Bengen 1994).
+              Every figure here is an estimate built on the assumptions below — withdrawal rate per
+              the Trinity Study (Bengen 1994).
             </p>
           </FintechCard>
 
@@ -327,28 +329,24 @@ export function Step3_YourNumber({ onNext, onEditPlan }: Step3Props) {
               {[
                 {
                   step: '01',
-                  color: '#3b82f6',
-                  label: 'Monthly spending in retirement (today\'s dollars)',
+                  label: "Monthly spending in retirement (today's dollars)",
                   value: formatCurrency(monthlyNeedToday),
                   note: 'From your retirement lifestyle design in Step 2',
                 },
                 {
                   step: '02',
-                  color: '#8b5cf6',
                   label: `× 12 months = annual retirement spending`,
                   value: formatCurrency(res.annualRetSpend),
                   note: null,
                 },
                 {
                   step: '03',
-                  color: '#f59e0b',
                   label: `× Inflation adjustment (${res.yearsToRet} yrs @ ${i.inflation.toFixed(1)}% = ${res.inflationMult.toFixed(2)}×)`,
                   value: formatCurrency(res.futureAnnualNeed),
                   note: `What $${(res.annualRetSpend / 1000).toFixed(0)}K today buys in ${i.retYear}`,
                 },
                 {
                   step: '04',
-                  color: '#10b981',
                   label: `÷ ${formatPercent(res.withdrawalRate)} withdrawal rate = ${multiplierLabel}× multiplier`,
                   value: formatLarge(res.requiredPortfolio),
                   note: withdrawalRateExplanation,
@@ -378,33 +376,39 @@ export function Step3_YourNumber({ onNext, onEditPlan }: Step3Props) {
                       alignItems: 'flex-start',
                       gap: '16px',
                       padding: '20px 24px',
-                      background: row.isResult
-                        ? 'rgba(16,185,129,0.06)'
-                        : 'rgba(255,255,255,0.02)',
+                      background: row.isResult ? 'rgba(16,185,129,0.06)' : 'rgba(255,255,255,0.02)',
                       border: '1px solid',
-                      borderColor: row.isResult
-                        ? 'rgba(16,185,129,0.2)'
-                        : 'rgba(255,255,255,0.06)',
-                      borderRadius: idx === 0 ? '12px 12px 0 0' : idx === arr.length - 1 ? '0 0 12px 12px' : '0',
+                      borderColor: row.isResult ? 'rgba(16,185,129,0.2)' : 'rgba(255,255,255,0.06)',
+                      borderRadius:
+                        idx === 0
+                          ? '12px 12px 0 0'
+                          : idx === arr.length - 1
+                            ? '0 0 12px 12px'
+                            : '0',
                       borderTop: idx > 0 ? '1px solid rgba(255,255,255,0.04)' : undefined,
                     }}
                   >
-                    {/* Step bubble */}
+                    {/* Step bubble — neutral; only the result row carries the accent (Aesthetic 2.0) */}
                     <div
                       style={{
                         flexShrink: 0,
                         width: '32px',
                         height: '32px',
                         borderRadius: '50%',
-                        background: `${row.color}18`,
-                        border: `1px solid ${row.color}40`,
+                        background: row.isResult
+                          ? 'rgba(16,185,129,0.1)'
+                          : 'rgba(255,255,255,0.04)',
+                        border: row.isResult
+                          ? '1px solid rgba(16,185,129,0.4)'
+                          : '1px solid rgba(255,255,255,0.12)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         fontSize: '0.6rem',
-                        fontWeight: 700,
-                        color: row.color,
+                        fontWeight: 600,
+                        color: row.isResult ? '#10b981' : '#94a3b8',
                         letterSpacing: '0.05em',
+                        fontFamily: 'var(--font-mono)',
                         marginTop: '1px',
                       }}
                     >
@@ -441,11 +445,11 @@ export function Step3_YourNumber({ onNext, onEditPlan }: Step3Props) {
                       style={{
                         flexShrink: 0,
                         fontSize: row.isResult ? '1.4rem' : '1rem',
-                        fontWeight: row.isResult ? 800 : 600,
+                        fontWeight: row.isResult ? 600 : 500,
                         color: row.isResult ? '#10b981' : '#f8fafc',
-                        fontFamily: 'monospace',
+                        fontFamily: 'var(--font-mono)',
+                        fontVariantNumeric: 'tabular-nums',
                         letterSpacing: row.isResult ? '-0.02em' : '0',
-                        textShadow: row.isResult ? '0 0 20px rgba(16,185,129,0.4)' : 'none',
                       }}
                     >
                       {row.value}
@@ -456,7 +460,10 @@ export function Step3_YourNumber({ onNext, onEditPlan }: Step3Props) {
             </div>
 
             {/* Bridge the denominations: the chain ends in {retYear} dollars; the headline is today's */}
-            <p className="mt-3 text-center text-xs text-text-secondary" style={{ fontVariantNumeric: 'tabular-nums' }}>
+            <p
+              className="mt-3 text-center text-xs text-text-secondary"
+              style={{ fontVariantNumeric: 'tabular-nums' }}
+            >
               In today&apos;s buying power, that {i.retYear} target equals{' '}
               <span className="font-mono font-semibold" style={{ color: '#10b981' }}>
                 {formatLarge(requiredToday)}
@@ -538,8 +545,8 @@ export function Step3_YourNumber({ onNext, onEditPlan }: Step3Props) {
               {i.withdrawalRate === 0 && (
                 <p className="mt-2 text-xs text-text-secondary italic">
                   Auto-set from your retirement duration: longer retirements use a lower, safer rate
-                  (3.5% at 35+ years, up to 5% under 15). Crossing a bracket, like 34 to 35 years, steps
-                  the rate and can move your number. Drag the slider to override.
+                  (3.5% at 35+ years, up to 5% under 15). Crossing a bracket, like 34 to 35 years,
+                  steps the rate and can move your number. Drag the slider to override.
                 </p>
               )}
             </div>
@@ -552,7 +559,12 @@ export function Step3_YourNumber({ onNext, onEditPlan }: Step3Props) {
         <div className="flex justify-end">
           <Button onClick={onNext} className="group mt-2">
             Next Step
-            <span aria-hidden="true" className="transition-transform duration-200 group-hover:translate-x-0.5">→</span>
+            <span
+              aria-hidden="true"
+              className="transition-transform duration-200 group-hover:translate-x-0.5"
+            >
+              →
+            </span>
           </Button>
         </div>
       )}

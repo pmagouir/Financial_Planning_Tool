@@ -1,7 +1,10 @@
 import { useState, useCallback, useEffect, useId } from 'react';
 import type { InputHTMLAttributes } from 'react';
 
-interface RangeSliderProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'value' | 'onChange' | 'type'> {
+interface RangeSliderProps extends Omit<
+  InputHTMLAttributes<HTMLInputElement>,
+  'value' | 'onChange' | 'type'
+> {
   label?: string;
   helperText?: string;
   value: number;
@@ -96,15 +99,16 @@ export function RangeSlider({
             focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-offset-2 focus:ring-offset-background
           "
           style={{
-            background: `linear-gradient(to right, rgb(59, 130, 246) 0%, rgb(59, 130, 246) ${percentage}%, rgba(51, 65, 85, 0.3) ${percentage}%, rgba(51, 65, 85, 0.3) 100%)`,
+            background: `linear-gradient(to right, rgb(59, 130, 246) 0%, rgb(59, 130, 246) ${percentage}%, rgba(29, 42, 68, 0.3) ${percentage}%, rgba(29, 42, 68, 0.3) 100%)`,
           }}
           {...props}
         />
       </div>
       {helperText && (
-        <p id={helperId} className="mt-1.5 text-sm text-text-secondary">{helperText}</p>
+        <p id={helperId} className="mt-1.5 text-sm text-text-secondary">
+          {helperText}
+        </p>
       )}
     </div>
   );
 }
-

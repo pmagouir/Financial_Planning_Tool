@@ -17,7 +17,7 @@ function BudgetRibbon() {
   // Determine health indicator color
   let healthColor = '#10b981'; // Green (default: saving)
   let healthGlow = 'rgba(16, 185, 129, 0.5)';
-  
+
   if (totalAllocated > takeHome) {
     healthColor = '#ef4444'; // Red (overspending)
     healthGlow = 'rgba(239, 68, 68, 0.5)';
@@ -42,8 +42,10 @@ function BudgetRibbon() {
         <div className="p-4">
           {/* Header */}
           <div className="flex items-center justify-between mb-3 border-b border-white/10 pb-2">
-            <span className="text-xs uppercase tracking-widest text-text-secondary font-medium">Budget Status</span>
-            <div 
+            <span className="text-xs uppercase tracking-widest text-text-secondary font-medium">
+              Budget Status
+            </span>
+            <div
               className="w-2 h-2 rounded-full"
               style={{
                 backgroundColor: healthColor,
@@ -51,27 +53,33 @@ function BudgetRibbon() {
               }}
             />
           </div>
-          
+
           {/* Main Metrics */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs text-text-secondary uppercase tracking-wider">Take Home</span>
+              <span className="text-xs text-text-secondary uppercase tracking-wider">
+                Take Home
+              </span>
               <span className="font-mono text-sm font-semibold text-text-primary">
                 {formatCurrency(takeHome)}
               </span>
             </div>
-            
+
             <div className="flex items-center justify-between">
-              <span className="text-xs text-text-secondary uppercase tracking-wider">Allocated</span>
+              <span className="text-xs text-text-secondary uppercase tracking-wider">
+                Allocated
+              </span>
               <span className="font-mono text-sm font-semibold text-text-primary">
                 {formatCurrency(totalAllocated)}
               </span>
             </div>
-            
+
             <div className="flex items-center justify-between pt-2 border-t border-white/10">
               <div className="flex items-center gap-2">
-                <span className="text-xs text-text-secondary uppercase tracking-wider">Remaining</span>
-                <div 
+                <span className="text-xs text-text-secondary uppercase tracking-wider">
+                  Remaining
+                </span>
+                <div
                   className="w-1.5 h-1.5 rounded-full"
                   style={{
                     backgroundColor: healthColor,
@@ -79,14 +87,11 @@ function BudgetRibbon() {
                   }}
                 />
               </div>
-              <span 
-                className="font-mono text-base font-bold"
-                style={{ color: healthColor }}
-              >
+              <span className="font-mono text-base font-bold" style={{ color: healthColor }}>
                 {formatCurrency(remaining)}
               </span>
             </div>
-            
+
             {/* Percentage */}
             <div className="pt-1">
               <div className="flex items-center justify-between">
@@ -124,7 +129,8 @@ export function Step1_CurrentReality({ onNext }: Step1Props) {
   // Calculate category totals
   const housingTotal = i.rent + i.propTax + i.utilities + i.internet + i.phone;
   const transportTotal = i.carPayment + i.carIns + i.gas + i.carMaint + i.metro;
-  const otherFixedTotal = i.groceries + i.household + i.healthIns + i.otherIns + i.debtMin + i.childcare + i.banking;
+  const otherFixedTotal =
+    i.groceries + i.household + i.healthIns + i.otherIns + i.debtMin + i.childcare + i.banking;
 
   // Calculate percentages
   const takeHome = i.takeHomePay;
@@ -154,7 +160,7 @@ export function Step1_CurrentReality({ onNext }: Step1Props) {
               )}
             </div>
           </div>
-          {takeHome > 0 && res.totalAllocated <= takeHome && (takeHome - res.totalAllocated) > 0 && (
+          {takeHome > 0 && res.totalAllocated <= takeHome && takeHome - res.totalAllocated > 0 && (
             <div
               style={{
                 background: 'rgba(255,255,255,0.05)',
@@ -177,7 +183,7 @@ export function Step1_CurrentReality({ onNext }: Step1Props) {
             height: '20px',
             borderRadius: '9999px',
             overflow: 'hidden',
-            backgroundColor: '#0f172a',
+            backgroundColor: '#0a0f1e',
             border: '1px solid rgba(255,255,255,0.1)',
           }}
         >
@@ -222,23 +228,18 @@ export function Step1_CurrentReality({ onNext }: Step1Props) {
                   flexShrink: 0,
                 }}
               />
-              <span
-                className="text-xs uppercase tracking-widest"
-                style={{ color: '#94a3b8' }}
-              >
+              <span className="text-xs uppercase tracking-widest" style={{ color: '#94a3b8' }}>
                 Fixed Costs
               </span>
             </div>
             <div className="font-mono text-2xl font-semibold text-white">
-              {formatCurrency(res.currentFixed)}<span className="text-sm font-normal text-text-secondary ml-1">/mo</span>
+              {formatCurrency(res.currentFixed)}
+              <span className="text-sm font-normal text-text-secondary ml-1">/mo</span>
             </div>
             <div className="text-sm mt-0.5" style={{ color: '#94a3b8' }}>
               {fixedPercent.toFixed(1)}% of income
             </div>
-            <div
-              className="text-xs italic mt-1"
-              style={{ color: '#94a3b8' }}
-            >
+            <div className="text-xs italic mt-1" style={{ color: '#94a3b8' }}>
               Ramit's target: 50–60%
             </div>
           </div>
@@ -256,23 +257,18 @@ export function Step1_CurrentReality({ onNext }: Step1Props) {
                   flexShrink: 0,
                 }}
               />
-              <span
-                className="text-xs uppercase tracking-widest"
-                style={{ color: '#94a3b8' }}
-              >
+              <span className="text-xs uppercase tracking-widest" style={{ color: '#94a3b8' }}>
                 Investing
               </span>
             </div>
             <div className="font-mono text-2xl font-semibold text-white">
-              {formatCurrency(res.currentInvest)}<span className="text-sm font-normal text-text-secondary ml-1">/mo</span>
+              {formatCurrency(res.currentInvest)}
+              <span className="text-sm font-normal text-text-secondary ml-1">/mo</span>
             </div>
             <div className="text-sm mt-0.5" style={{ color: '#94a3b8' }}>
               {investPercent.toFixed(1)}% of income
             </div>
-            <div
-              className="text-xs italic mt-1"
-              style={{ color: '#94a3b8' }}
-            >
+            <div className="text-xs italic mt-1" style={{ color: '#94a3b8' }}>
               Ramit's target: ≥ 20%
             </div>
           </div>
@@ -290,23 +286,18 @@ export function Step1_CurrentReality({ onNext }: Step1Props) {
                   flexShrink: 0,
                 }}
               />
-              <span
-                className="text-xs uppercase tracking-widest"
-                style={{ color: '#94a3b8' }}
-              >
+              <span className="text-xs uppercase tracking-widest" style={{ color: '#94a3b8' }}>
                 Guilt-Free Spending
               </span>
             </div>
             <div className="font-mono text-2xl font-semibold text-white">
-              {formatCurrency(res.currentGuiltFree)}<span className="text-sm font-normal text-text-secondary ml-1">/mo</span>
+              {formatCurrency(res.currentGuiltFree)}
+              <span className="text-sm font-normal text-text-secondary ml-1">/mo</span>
             </div>
             <div className="text-sm mt-0.5" style={{ color: '#94a3b8' }}>
               {guiltFreePercent.toFixed(1)}% of income
             </div>
-            <div
-              className="text-xs italic mt-1"
-              style={{ color: '#94a3b8' }}
-            >
+            <div className="text-xs italic mt-1" style={{ color: '#94a3b8' }}>
               Your money, your choice
             </div>
           </div>
@@ -323,25 +314,24 @@ export function Step1_CurrentReality({ onNext }: Step1Props) {
           >
             <span style={{ color: '#ef4444', fontSize: '15px' }}>⚠</span>
             <span className="text-sm font-medium" style={{ color: '#ef4444' }}>
-              You've allocated {formatCurrency(res.totalAllocated - takeHome)} more than your take-home pay
+              You've allocated {formatCurrency(res.totalAllocated - takeHome)} more than your
+              take-home pay
             </span>
           </div>
         )}
 
         {/* Unallocated reminder */}
-        {takeHome > 0 && res.totalAllocated <= takeHome && (takeHome - res.totalAllocated) > 0 && (
+        {takeHome > 0 && res.totalAllocated <= takeHome && takeHome - res.totalAllocated > 0 && (
           <div className="mt-3">
             <span className="text-xs" style={{ color: '#94a3b8' }}>
-              {formatCurrency(takeHome - res.totalAllocated)} unallocated — consider increasing investments
+              {formatCurrency(takeHome - res.totalAllocated)} unallocated — consider increasing
+              investments
             </span>
           </div>
         )}
 
         {/* Attribution */}
-        <div
-          className="mt-4 pt-3"
-          style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
-        >
+        <div className="mt-4 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
           <span className="text-xs italic" style={{ color: '#94a3b8' }}>
             Based on Ramit Sethi's Conscious Spending Plan (I Will Teach You To Be Rich)
           </span>
@@ -521,9 +511,9 @@ export function Step1_CurrentReality({ onNext }: Step1Props) {
                 <div>
                   <h3 className="text-lg font-semibold text-text-primary">Investments</h3>
                   <p className="text-sm text-text-secondary">
-                    Money you're setting aside each month for the future (including employer match — not part
-                    of take-home pay). Planning as a couple? Add both partners' accounts together: both 401(k)s,
-                    both matches, both IRAs.
+                    Money you're setting aside each month for the future (including employer match —
+                    not part of take-home pay). Planning as a couple? Add both partners' accounts
+                    together: both 401(k)s, both matches, both IRAs.
                   </p>
                 </div>
                 <div className="text-right">
@@ -595,7 +585,8 @@ export function Step1_CurrentReality({ onNext }: Step1Props) {
                 <div>
                   <h3 className="text-lg font-semibold text-text-primary">Guilt-Free Spending</h3>
                   <p className="text-xs text-text-secondary italic mb-3">
-                    Inspired by Ramit Sethi's conscious spending framework — spend extravagantly on what you love, cut ruthlessly on what you don't.
+                    Inspired by Ramit Sethi's conscious spending framework — spend extravagantly on
+                    what you love, cut ruthlessly on what you don't.
                   </p>
                   <p className="text-sm text-text-secondary">
                     Money for fun, experiences, and things you love
@@ -684,7 +675,12 @@ export function Step1_CurrentReality({ onNext }: Step1Props) {
         <div className="flex justify-end">
           <Button onClick={onNext} className="group mt-2">
             Next Step
-            <span aria-hidden="true" className="transition-transform duration-200 group-hover:translate-x-0.5">→</span>
+            <span
+              aria-hidden="true"
+              className="transition-transform duration-200 group-hover:translate-x-0.5"
+            >
+              →
+            </span>
           </Button>
         </div>
       )}

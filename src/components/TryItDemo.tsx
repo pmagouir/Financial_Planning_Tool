@@ -23,7 +23,12 @@ export function TryItDemo() {
     const fv = monthly * ((Math.pow(1 + m, n) - 1) / m); // FV of end-of-month contributions
     const put = monthly * n;
     const grown = fv - put;
-    return { future: fv, contributed: put, growth: grown, growthPct: fv > 0 ? (grown / fv) * 100 : 0 };
+    return {
+      future: fv,
+      contributed: put,
+      growth: grown,
+      growthPct: fv > 0 ? (grown / fv) * 100 : 0,
+    };
   }, [monthly, years]);
 
   return (
@@ -95,7 +100,7 @@ export function TryItDemo() {
             fontWeight: 800,
             lineHeight: 1,
             color: '#10b981',
-            fontFamily: 'monospace',
+            fontFamily: 'var(--font-mono)',
             letterSpacing: '-0.03em',
             textShadow: '0 0 50px rgba(16,185,129,0.35)',
           }}
@@ -116,13 +121,21 @@ export function TryItDemo() {
             borderRadius: '9999px',
             overflow: 'hidden',
             border: '1px solid rgba(255,255,255,0.1)',
-            background: '#0f172a',
+            background: '#0a0f1e',
           }}
           role="img"
           aria-label={`Of ${full(future)}, you invest ${full(contributed)} and growth adds ${full(growth)}.`}
         >
-          <div style={{ width: `${100 - growthPct}%`, background: '#3b82f6', transition: 'width 0.3s ease' }} />
-          <div style={{ width: `${growthPct}%`, background: '#10b981', transition: 'width 0.3s ease' }} />
+          <div
+            style={{
+              width: `${100 - growthPct}%`,
+              background: '#3b82f6',
+              transition: 'width 0.3s ease',
+            }}
+          />
+          <div
+            style={{ width: `${growthPct}%`, background: '#10b981', transition: 'width 0.3s ease' }}
+          />
         </div>
         <div className="flex justify-between mt-2 text-xs">
           <span style={{ color: '#60a5fa' }}>

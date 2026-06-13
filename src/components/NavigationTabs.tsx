@@ -1,7 +1,20 @@
 import { useState, useRef, lazy, Suspense } from 'react';
 import { useStore } from '@nanostores/react';
 import { clsx } from 'clsx';
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
+import {
+  Home,
+  Wallet,
+  Compass,
+  Target,
+  TrendingUp,
+  ClipboardList,
+  Calculator,
+  BookOpen,
+  Ruler,
+  MoreHorizontal,
+  type LucideIcon,
+} from 'lucide-react';
 import { Step1_CurrentReality } from './Step1_CurrentReality';
 import { Step3_YourNumber } from './calculator/Step3_YourNumber';
 import { Resources } from './bonus/Resources';
@@ -12,33 +25,63 @@ import { inputs } from '../stores/financialPlan';
 // Recharts is the heaviest dependency (~370 kB). The four chart-bearing screens are
 // lazy-loaded so Recharts splits into on-demand chunks and the initial load
 // (Welcome / Step 1 / Step 3 / Methodology — none of which chart) stays light.
-const Step2_RetirementDesign = lazy(() => import('./Step2_RetirementDesign').then((m) => ({ default: m.Step2_RetirementDesign })));
-const Step4_InvestmentPath = lazy(() => import('./Step4_InvestmentPath').then((m) => ({ default: m.Step4_InvestmentPath })));
-const Step5_Summary = lazy(() => import('./Step5_Summary').then((m) => ({ default: m.Step5_Summary })));
-const CompoundCalculator = lazy(() => import('./bonus/CompoundCalculator').then((m) => ({ default: m.CompoundCalculator })));
+const Step2_RetirementDesign = lazy(() =>
+  import('./Step2_RetirementDesign').then((m) => ({ default: m.Step2_RetirementDesign }))
+);
+const Step4_InvestmentPath = lazy(() =>
+  import('./Step4_InvestmentPath').then((m) => ({ default: m.Step4_InvestmentPath }))
+);
+const Step5_Summary = lazy(() =>
+  import('./Step5_Summary').then((m) => ({ default: m.Step5_Summary }))
+);
+const CompoundCalculator = lazy(() =>
+  import('./bonus/CompoundCalculator').then((m) => ({ default: m.CompoundCalculator }))
+);
 
-type TabId = 'welcome' | 'step1' | 'step2' | 'step3' | 'step4' | 'summary' | 'compound' | 'resources' | 'methodology' | 'divider';
+type TabId =
+  | 'welcome'
+  | 'step1'
+  | 'step2'
+  | 'step3'
+  | 'step4'
+  | 'summary'
+  | 'compound'
+  | 'resources'
+  | 'methodology'
+  | 'divider';
 
 interface Tab {
   id: TabId;
   label: string;
   shortLabel: string; // for bottom nav
-  icon: string;
+  icon: LucideIcon | null; // stroke icons (Aesthetic 2.0) — emoji retired
   isDivider?: boolean;
   isBonus?: boolean;
 }
 
 const tabs: Tab[] = [
-  { id: 'welcome', label: 'Welcome', shortLabel: 'Home', icon: '🏠' },
-  { id: 'step1', label: 'Step 1: Current Reality', shortLabel: 'Reality', icon: '📊' },
-  { id: 'step2', label: 'Step 2: Retirement Design', shortLabel: 'Design', icon: '🎯' },
-  { id: 'step3', label: 'Step 3: Your Number', shortLabel: 'Number', icon: '💰' },
-  { id: 'step4', label: 'Step 4: Investment Path', shortLabel: 'Invest', icon: '📈' },
-  { id: 'summary', label: 'Summary', shortLabel: 'Summary', icon: '📋' },
-  { id: 'divider', label: '', shortLabel: '', icon: '', isDivider: true },
-  { id: 'compound', label: 'Bonus: Compound Calc', shortLabel: 'Compound', icon: '🧮', isBonus: true },
-  { id: 'resources', label: 'Bonus: Resources', shortLabel: 'Resources', icon: '📚', isBonus: true },
-  { id: 'methodology', label: 'Methodology', shortLabel: 'Method', icon: '📐', isBonus: true },
+  { id: 'welcome', label: 'Welcome', shortLabel: 'Home', icon: Home },
+  { id: 'step1', label: 'Step 1: Current Reality', shortLabel: 'Reality', icon: Wallet },
+  { id: 'step2', label: 'Step 2: Retirement Design', shortLabel: 'Design', icon: Compass },
+  { id: 'step3', label: 'Step 3: Your Number', shortLabel: 'Number', icon: Target },
+  { id: 'step4', label: 'Step 4: Investment Path', shortLabel: 'Invest', icon: TrendingUp },
+  { id: 'summary', label: 'Summary', shortLabel: 'Summary', icon: ClipboardList },
+  { id: 'divider', label: '', shortLabel: '', icon: null, isDivider: true },
+  {
+    id: 'compound',
+    label: 'Bonus: Compound Calc',
+    shortLabel: 'Compound',
+    icon: Calculator,
+    isBonus: true,
+  },
+  {
+    id: 'resources',
+    label: 'Bonus: Resources',
+    shortLabel: 'Resources',
+    icon: BookOpen,
+    isBonus: true,
+  },
+  { id: 'methodology', label: 'Methodology', shortLabel: 'Method', icon: Ruler, isBonus: true },
 ];
 
 // Core nav tabs shown in the bottom mobile nav (no divider/bonus)
@@ -84,7 +127,7 @@ export function NavigationTabs() {
     e: React.KeyboardEvent,
     order: TabId[],
     orientation: 'vertical' | 'horizontal',
-    refs: React.MutableRefObject<Record<string, HTMLButtonElement | null>>,
+    refs: React.MutableRefObject<Record<string, HTMLButtonElement | null>>
   ) => {
     const nextKey = orientation === 'vertical' ? 'ArrowDown' : 'ArrowRight';
     const prevKey = orientation === 'vertical' ? 'ArrowUp' : 'ArrowLeft';
@@ -108,26 +151,41 @@ export function NavigationTabs() {
 
   const getCompletionDot = (tabId: TabId): boolean => {
     switch (tabId) {
-      case 'step1': return step1Complete;
-      case 'step2': return step2Complete;
-      case 'step3': return step3Complete;
-      case 'step4': return step4Complete;
-      default: return false;
+      case 'step1':
+        return step1Complete;
+      case 'step2':
+        return step2Complete;
+      case 'step3':
+        return step3Complete;
+      case 'step4':
+        return step4Complete;
+      default:
+        return false;
     }
   };
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'welcome': return <Welcome onStart={handleNext} />;
-      case 'step1': return <Step1_CurrentReality onNext={handleNext} />;
-      case 'step2': return <Step2_RetirementDesign onNext={handleNext} />;
-      case 'step3': return <Step3_YourNumber onNext={handleNext} onEditPlan={() => setActiveTab('step1')} />;
-      case 'step4': return <Step4_InvestmentPath onNext={handleNext} />;
-      case 'summary': return <Step5_Summary onEditPlan={() => setActiveTab('step1')} />;
-      case 'compound': return <CompoundCalculator />;
-      case 'resources': return <Resources />;
-      case 'methodology': return <Methodology />;
-      default: return <Welcome />;
+      case 'welcome':
+        return <Welcome onStart={handleNext} />;
+      case 'step1':
+        return <Step1_CurrentReality onNext={handleNext} />;
+      case 'step2':
+        return <Step2_RetirementDesign onNext={handleNext} />;
+      case 'step3':
+        return <Step3_YourNumber onNext={handleNext} onEditPlan={() => setActiveTab('step1')} />;
+      case 'step4':
+        return <Step4_InvestmentPath onNext={handleNext} />;
+      case 'summary':
+        return <Step5_Summary onEditPlan={() => setActiveTab('step1')} />;
+      case 'compound':
+        return <CompoundCalculator />;
+      case 'resources':
+        return <Resources />;
+      case 'methodology':
+        return <Methodology />;
+      default:
+        return <Welcome />;
     }
   };
 
@@ -152,7 +210,6 @@ export function NavigationTabs() {
       `}</style>
 
       <div className="flex min-h-screen">
-
         {/* ── Left Sidebar (desktop) ────────────────────────────────────────── */}
         <aside className="nav-sidebar w-64 flex-shrink-0 border-r border-white/5 bg-background-paper/30 backdrop-blur-md print:hidden">
           <nav aria-label="Primary" className="sticky top-0 h-screen overflow-y-auto p-6">
@@ -170,7 +227,13 @@ export function NavigationTabs() {
             >
               {tabs.map((tab) => {
                 if (tab.isDivider) {
-                  return <div key="divider" role="presentation" className="my-4 border-t border-white/5" />;
+                  return (
+                    <div
+                      key="divider"
+                      role="presentation"
+                      className="my-4 border-t border-white/5"
+                    />
+                  );
                 }
 
                 const isActive = activeTab === tab.id;
@@ -184,9 +247,13 @@ export function NavigationTabs() {
                     aria-selected={isActive}
                     aria-controls="tabpanel-main"
                     tabIndex={isActive ? 0 : -1}
-                    ref={(el) => { desktopTabRefs.current[tab.id] = el; }}
+                    ref={(el) => {
+                      desktopTabRefs.current[tab.id] = el;
+                    }}
                     onClick={() => setActiveTab(tab.id as TabId)}
-                    onKeyDown={(e) => handleTablistKeyDown(e, desktopTabOrder, 'vertical', desktopTabRefs)}
+                    onKeyDown={(e) =>
+                      handleTablistKeyDown(e, desktopTabOrder, 'vertical', desktopTabRefs)
+                    }
                     className={clsx(
                       'w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 relative group',
                       isActive
@@ -194,21 +261,34 @@ export function NavigationTabs() {
                         : 'text-text-secondary hover:text-accent-primary'
                     )}
                   >
-                    <span className="text-lg flex-shrink-0" aria-hidden="true">{tab.icon}</span>
+                    {tab.icon && (
+                      <tab.icon
+                        size={17}
+                        strokeWidth={1.75}
+                        className="flex-shrink-0"
+                        aria-hidden="true"
+                      />
+                    )}
                     <span className="text-left flex-1">{tab.label}</span>
                     {isComplete && (
                       <span
                         role="img"
                         aria-label="Complete"
                         className="w-2 h-2 rounded-full flex-shrink-0"
-                        style={{ backgroundColor: '#10b981', boxShadow: '0 0 6px rgba(16,185,129,0.6)' }}
+                        style={{ backgroundColor: '#10b981' }}
                       />
                     )}
                     {!isActive && (
-                      <span aria-hidden="true" className="absolute inset-0 rounded-lg bg-accent-primary/0 group-hover:bg-accent-primary/5 transition-all duration-200" />
+                      <span
+                        aria-hidden="true"
+                        className="absolute inset-0 rounded-lg bg-accent-primary/0 group-hover:bg-accent-primary/5 transition-all duration-200"
+                      />
                     )}
                     {isActive && (
-                      <span aria-hidden="true" className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-accent-primary rounded-r-full" />
+                      <span
+                        aria-hidden="true"
+                        className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-accent-primary rounded-r-full"
+                      />
                     )}
                   </button>
                 );
@@ -233,10 +313,12 @@ export function NavigationTabs() {
                   aria-expanded={menuOpen}
                   aria-label="More pages"
                   onClick={() => setMenuOpen((o) => !o)}
-                  onKeyDown={(e) => { if (e.key === 'Escape') setMenuOpen(false); }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Escape') setMenuOpen(false);
+                  }}
                   className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm font-medium text-text-secondary active:bg-white/10"
                 >
-                  <span aria-hidden="true" className="text-base leading-none">⋯</span>
+                  <MoreHorizontal size={16} strokeWidth={1.75} aria-hidden="true" />
                   More
                 </button>
 
@@ -258,15 +340,18 @@ export function NavigationTabs() {
                           key={tab.id}
                           type="button"
                           role="menuitem"
-                          onClick={() => { setActiveTab(tab.id as TabId); setMenuOpen(false); }}
+                          onClick={() => {
+                            setActiveTab(tab.id as TabId);
+                            setMenuOpen(false);
+                          }}
                           className={clsx(
                             'w-full flex items-center gap-3 px-4 py-3 text-sm text-left transition-colors',
                             activeTab === tab.id
                               ? 'bg-accent-primary/15 text-accent-primary'
-                              : 'text-text-secondary hover:bg-white/5 hover:text-accent-primary',
+                              : 'text-text-secondary hover:bg-white/5 hover:text-accent-primary'
                           )}
                         >
-                          <span aria-hidden="true" className="text-lg">{tab.icon}</span>
+                          {tab.icon && <tab.icon size={17} strokeWidth={1.75} aria-hidden="true" />}
                           <span>{tab.label.replace('Bonus: ', '')}</span>
                         </button>
                       ))}
@@ -285,25 +370,25 @@ export function NavigationTabs() {
               tabIndex={0}
               className="max-w-6xl mx-auto focus:outline-none"
             >
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={activeTab}
-                  initial={reduceMotion ? false : { opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={reduceMotion ? { opacity: 1 } : { opacity: 0, x: -20 }}
-                  transition={reduceMotion ? { duration: 0 } : { duration: 0.3, ease: 'easeInOut' }}
+              {/* Transform-only, no exit-wait (errors.md row 10): the new tab mounts immediately at
+                  full opacity and slides 16px into place. Content is never invisible and never blocked
+                  on an animation frame (throttled rAF in background tabs) — same rule as Reveal. */}
+              <motion.div
+                key={activeTab}
+                initial={reduceMotion ? false : { x: 16 }}
+                animate={{ x: 0 }}
+                transition={reduceMotion ? { duration: 0 } : { duration: 0.25, ease: 'easeOut' }}
+              >
+                <Suspense
+                  fallback={
+                    <div className="py-20 text-center text-sm text-text-secondary" role="status">
+                      Loading…
+                    </div>
+                  }
                 >
-                  <Suspense
-                    fallback={
-                      <div className="py-20 text-center text-sm text-text-secondary" role="status">
-                        Loading…
-                      </div>
-                    }
-                  >
-                    {renderContent()}
-                  </Suspense>
-                </motion.div>
-              </AnimatePresence>
+                  {renderContent()}
+                </Suspense>
+              </motion.div>
             </div>
           </div>
         </main>
@@ -323,7 +408,7 @@ export function NavigationTabs() {
           zIndex: 50,
           height: '64px',
           borderTop: '1px solid rgba(255,255,255,0.07)',
-          background: 'rgba(15,23,42,0.95)',
+          background: 'rgba(10,15,30,0.95)',
           backdropFilter: 'blur(16px)',
           WebkitBackdropFilter: 'blur(16px)',
           display: 'flex',
@@ -343,9 +428,13 @@ export function NavigationTabs() {
               aria-controls="tabpanel-main"
               aria-label={tab.label}
               tabIndex={isActive ? 0 : -1}
-              ref={(el) => { mobileTabRefs.current[tab.id] = el; }}
+              ref={(el) => {
+                mobileTabRefs.current[tab.id] = el;
+              }}
               onClick={() => setActiveTab(tab.id as TabId)}
-              onKeyDown={(e) => handleTablistKeyDown(e, mobileTabOrder, 'horizontal', mobileTabRefs)}
+              onKeyDown={(e) =>
+                handleTablistKeyDown(e, mobileTabOrder, 'horizontal', mobileTabRefs)
+              }
               style={{
                 flex: 1,
                 display: 'flex',
@@ -373,7 +462,6 @@ export function NavigationTabs() {
                     height: '2px',
                     borderRadius: '0 0 2px 2px',
                     background: '#3b82f6',
-                    boxShadow: '0 0 8px rgba(59,130,246,0.6)',
                   }}
                 />
               )}
@@ -390,11 +478,17 @@ export function NavigationTabs() {
                     height: '5px',
                     borderRadius: '50%',
                     background: '#10b981',
-                    boxShadow: '0 0 4px rgba(16,185,129,0.7)',
                   }}
                 />
               )}
-              <span aria-hidden="true" style={{ fontSize: '1.1rem', lineHeight: 1 }}>{tab.icon}</span>
+              {tab.icon && (
+                <tab.icon
+                  size={18}
+                  strokeWidth={1.75}
+                  aria-hidden="true"
+                  style={{ color: isActive ? '#60a5fa' : '#94a3b8' }}
+                />
+              )}
               <span
                 aria-hidden="true"
                 style={{

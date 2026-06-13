@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react';
+import { useReducedMotion } from 'framer-motion';
 import {
   ComposedChart,
   Area,
@@ -60,8 +62,8 @@ function TimelineTooltip({ active, label, payload, retYear }: TimelineTooltipPro
   return (
     <div
       style={{
-        backgroundColor: '#0f172a',
-        border: '1px solid #334155',
+        backgroundColor: '#0a0f1e',
+        border: '1px solid #1d2a44',
         borderRadius: '10px',
         padding: '12px 14px',
         minWidth: '210px',
@@ -79,13 +81,24 @@ function TimelineTooltip({ active, label, payload, retYear }: TimelineTooltipPro
       >
         {year} · {phase}
       </div>
-      <div style={{ color: '#f8fafc', fontSize: '17px', fontWeight: 600, fontFamily: 'monospace' }}>
+      <div
+        style={{
+          color: '#f8fafc',
+          fontSize: '17px',
+          fontWeight: 600,
+          fontFamily: 'var(--font-mono)',
+        }}
+      >
         {formatCurrency(d.p50)}
       </div>
-      <div style={{ fontSize: '11px', color: '#94a3b8', marginBottom: '8px' }}>median · today&apos;s dollars</div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '16px', fontSize: '12px' }}>
+      <div style={{ fontSize: '11px', color: '#94a3b8', marginBottom: '8px' }}>
+        median · today&apos;s dollars
+      </div>
+      <div
+        style={{ display: 'flex', justifyContent: 'space-between', gap: '16px', fontSize: '12px' }}
+      >
         <span style={{ color: '#94a3b8' }}>likely range</span>
-        <span style={{ fontFamily: 'monospace', color: '#cbd5e1' }}>
+        <span style={{ fontFamily: 'var(--font-mono)', color: '#cbd5e1' }}>
           {formatCurrency(d.p10)} – {formatCurrency(d.p90)}
         </span>
       </div>
@@ -103,6 +116,15 @@ export function LifetimeTimeline({
   retYear,
   currentYear,
 }: LifetimeTimelineProps) {
+  // Charter: every animation is gated on prefers-reduced-motion; the data itself never depends on it.
+  // First paint is INSTANT (full curves, no draw-in — content never waits on a frame, errors.md
+  // row 10); only subsequent input changes tween, which is the premium what-if glide.
+  const reduceMotion = useReducedMotion();
+  const [tween, setTween] = useState(false);
+  useEffect(() => {
+    const id = setTimeout(() => setTween(true), 80);
+    return () => clearTimeout(id);
+  }, []);
   const infl = inflation / 100;
   const deflate = (val: number, year: number): number =>
     val / Math.pow(1 + infl, Math.max(0, year - currentYear));
@@ -111,7 +133,15 @@ export function LifetimeTimeline({
     const p10 = deflate(p.p10, p.year);
     const p50 = deflate(p.p50, p.year);
     const p90 = deflate(p.p90, p.year);
-    return { year: p.year, p10, p50, p90, base: p10, span: Math.max(0, p90 - p10), p50Nominal: p.p50 };
+    return {
+      year: p.year,
+      p10,
+      p50,
+      p90,
+      base: p10,
+      span: Math.max(0, p90 - p10),
+      p50Nominal: p.p50,
+    };
   });
 
   const targetToday = deflate(requiredPortfolio, retYear);
@@ -136,7 +166,7 @@ export function LifetimeTimeline({
             </linearGradient>
           </defs>
 
-          <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
+          <CartesianGrid strokeDasharray="3 3" stroke="#101828" vertical={false} />
 
           <XAxis
             dataKey="year"
@@ -145,7 +175,7 @@ export function LifetimeTimeline({
             allowDuplicatedCategory={false}
             tick={{ fill: '#94a3b8', fontSize: 11 }}
             tickLine={false}
-            axisLine={{ stroke: '#334155' }}
+            axisLine={{ stroke: '#1d2a44' }}
           />
           <YAxis
             domain={[0, yMax]}
@@ -160,8 +190,28 @@ export function LifetimeTimeline({
           <Tooltip content={<TimelineTooltip retYear={retYear} />} />
 
           {/* 10th–90th percentile band (stacked-area technique: transparent floor + filled span) */}
-          <Area type="monotone" dataKey="base" stackId="band" stroke="none" fill="transparent" dot={false} isAnimationActive={false} />
-          <Area type="monotone" dataKey="span" stackId="band" stroke="none" fill="url(#ltBand)" dot={false} isAnimationActive={false} />
+          <Area
+            type="monotone"
+            dataKey="base"
+            stackId="band"
+            stroke="none"
+            fill="transparent"
+            dot={false}
+            isAnimationActive={tween && !reduceMotion}
+            animationDuration={400}
+            animationEasing="ease-out"
+          />
+          <Area
+            type="monotone"
+            dataKey="span"
+            stackId="band"
+            stroke="none"
+            fill="url(#ltBand)"
+            dot={false}
+            isAnimationActive={tween && !reduceMotion}
+            animationDuration={400}
+            animationEasing="ease-out"
+          />
 
           {retYear > currentYear && (
             <ReferenceLine
@@ -169,7 +219,12 @@ export function LifetimeTimeline({
               stroke="#94a3b8"
               strokeDasharray="4 4"
               strokeWidth={1.5}
-              label={{ value: `retire ${retYear}`, position: 'insideTopRight', fill: '#94a3b8', fontSize: 11 }}
+              label={{
+                value: `retire ${retYear}`,
+                position: 'insideTopRight',
+                fill: '#94a3b8',
+                fontSize: 11,
+              }}
             />
           )}
           {targetToday > 0 && (
@@ -183,9 +238,28 @@ export function LifetimeTimeline({
           )}
 
           {/* Downside floor (10th percentile) — dashed slate so the rough-market path is legible */}
-          <Line type="monotone" dataKey="p10" stroke="#94a3b8" strokeWidth={1.5} strokeDasharray="5 4" dot={false} isAnimationActive={false} />
+          <Line
+            type="monotone"
+            dataKey="p10"
+            stroke="#94a3b8"
+            strokeWidth={1.5}
+            strokeDasharray="5 4"
+            dot={false}
+            isAnimationActive={tween && !reduceMotion}
+            animationDuration={400}
+            animationEasing="ease-out"
+          />
           {/* Median (typical) path — the hero line */}
-          <Line type="monotone" dataKey="p50" stroke="#10b981" strokeWidth={2.5} dot={false} isAnimationActive={false} />
+          <Line
+            type="monotone"
+            dataKey="p50"
+            stroke="#10b981"
+            strokeWidth={2.5}
+            dot={false}
+            isAnimationActive={tween && !reduceMotion}
+            animationDuration={400}
+            animationEasing="ease-out"
+          />
         </ComposedChart>
       </ResponsiveContainer>
     </div>

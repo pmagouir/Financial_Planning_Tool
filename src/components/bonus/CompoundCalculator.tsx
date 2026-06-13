@@ -2,7 +2,16 @@ import { useState, useMemo } from 'react';
 import { FintechCard } from '../ui/FintechCard';
 import { MoneyInput } from '../ui/MoneyInput';
 import { RangeSlider } from '../ui/RangeSlider';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from 'recharts';
 
 export function CompoundCalculator() {
   // Inputs from line 1756: Initial, Monthly, Rate, Years
@@ -27,7 +36,7 @@ export function CompoundCalculator() {
     let currentBalance = initial;
     let totalPrincipal = initial;
     let totalInterest = 0;
-    
+
     // Add starting point
     data.push({
       year: 0,
@@ -43,13 +52,13 @@ export function CompoundCalculator() {
         // Add monthly contribution to principal
         totalPrincipal += monthly;
         currentBalance += monthly;
-        
+
         // Compound the entire balance
         const interestEarned = currentBalance * monthlyRate;
         totalInterest += interestEarned;
         currentBalance += interestEarned;
       }
-      
+
       data.push({
         year,
         principal: totalPrincipal,
@@ -57,7 +66,7 @@ export function CompoundCalculator() {
         total: currentBalance,
       });
     }
-    
+
     return data;
   }, [initial, monthly, rate, years]);
 
@@ -209,24 +218,26 @@ export function CompoundCalculator() {
                   <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+              <CartesianGrid strokeDasharray="3 3" stroke="#1d2a44" />
               <XAxis
                 dataKey="year"
                 tick={{ fill: '#94a3b8' }}
-                tickLine={{ stroke: '#334155' }}
+                tickLine={{ stroke: '#1d2a44' }}
                 label={{ value: 'Years', position: 'insideBottom', offset: -5, fill: '#94a3b8' }}
               />
               <YAxis
                 tick={{ fill: '#94a3b8' }}
-                tickLine={{ stroke: '#334155' }}
+                tickLine={{ stroke: '#1d2a44' }}
                 tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
                 label={{ value: 'Value ($)', angle: -90, position: 'insideLeft', fill: '#94a3b8' }}
               />
               <Tooltip
-                formatter={(value: number | undefined) => value !== undefined ? formatCurrency(value) : ''}
+                formatter={(value: number | undefined) =>
+                  value !== undefined ? formatCurrency(value) : ''
+                }
                 contentStyle={{
-                  backgroundColor: '#1e293b',
-                  border: '1px solid #334155',
+                  backgroundColor: '#101828',
+                  border: '1px solid #1d2a44',
                   borderRadius: '8px',
                   color: '#f8fafc',
                 }}
@@ -286,4 +297,3 @@ export function CompoundCalculator() {
     </div>
   );
 }
-

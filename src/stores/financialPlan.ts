@@ -5,48 +5,136 @@ import { persistentMap } from '@nanostores/persistent';
 export interface FinancialInputs {
   takeHomePay: number;
   // Fixed
-  rent: number; propTax: number; utilities: number; internet: number; phone: number;
-  carPayment: number; carIns: number; gas: number; carMaint: number; metro: number;
-  groceries: number; household: number; healthIns: number; otherIns: number; debtMin: number; childcare: number; banking: number;
+  rent: number;
+  propTax: number;
+  utilities: number;
+  internet: number;
+  phone: number;
+  carPayment: number;
+  carIns: number;
+  gas: number;
+  carMaint: number;
+  metro: number;
+  groceries: number;
+  household: number;
+  healthIns: number;
+  otherIns: number;
+  debtMin: number;
+  childcare: number;
+  banking: number;
   // Investments
-  k401: number; employerMatch: number; ira: number; hsa: number; taxable: number; emergency: number; edu529: number; lifeIns: number;
+  k401: number;
+  employerMatch: number;
+  ira: number;
+  hsa: number;
+  taxable: number;
+  emergency: number;
+  edu529: number;
+  lifeIns: number;
   // Guilt-Free
-  dining: number; ent: number; travel: number; hobbies: number;
-  personal: number; clothes: number; gifts: number; dev: number;
-  tech: number; homeImp: number; subscriptions: number; misc: number;
+  dining: number;
+  ent: number;
+  travel: number;
+  hobbies: number;
+  personal: number;
+  clothes: number;
+  gifts: number;
+  dev: number;
+  tech: number;
+  homeImp: number;
+  subscriptions: number;
+  misc: number;
   // Retirement Design (sliders)
-  retHousing: number; retTransport: number; retGroceries: number; retHealth: number;
-  retChild: number; retIns: number; retDebt: number;
-  retEnt: number; retDining: number; retPersonal: number; retMisc: number;
+  retHousing: number;
+  retTransport: number;
+  retGroceries: number;
+  retHealth: number;
+  retChild: number;
+  retIns: number;
+  retDebt: number;
+  retEnt: number;
+  retDining: number;
+  retPersonal: number;
+  retMisc: number;
   hasModifiedRetirement: boolean; // user customized retirement-spend sliders → stop seeding them
-  hasModifiedContrib: boolean;    // user hand-entered monthlyContrib → stop syncing it to Step 1 (row 7)
+  hasModifiedContrib: boolean; // user hand-entered monthlyContrib → stop syncing it to Step 1 (row 7)
   // Assumptions
-  retYear: number; retDuration: number; inflation: number;
-  socialSecurity: number; pension: number; otherIncome: number;
-  currentPortfolio: number; monthlyContrib: number;
-  contribIncrease: number; annualReturn: number;
-  contribStopYear: number;   // 0 = never stop (defaults to retirement year)
-  withdrawalRate: number;    // 0 = auto-calculate from duration
+  retYear: number;
+  retDuration: number;
+  inflation: number;
+  socialSecurity: number;
+  pension: number;
+  otherIncome: number;
+  currentPortfolio: number;
+  monthlyContrib: number;
+  contribIncrease: number;
+  annualReturn: number;
+  contribStopYear: number; // 0 = never stop (defaults to retirement year)
+  withdrawalRate: number; // 0 = auto-calculate from duration
 }
 
 const DEFAULTS: FinancialInputs = {
   takeHomePay: 5000,
-  rent: 0, propTax: 0, utilities: 0, internet: 0, phone: 0,
-  carPayment: 0, carIns: 0, gas: 0, carMaint: 0, metro: 0,
-  groceries: 0, household: 0, healthIns: 0, otherIns: 0, debtMin: 0, childcare: 0, banking: 0,
-  k401: 0, employerMatch: 0, ira: 0, hsa: 0, taxable: 0, emergency: 0, edu529: 0, lifeIns: 0,
-  dining: 0, ent: 0, travel: 0, hobbies: 0,
-  personal: 0, clothes: 0, gifts: 0, dev: 0,
-  tech: 0, homeImp: 0, subscriptions: 0, misc: 0,
-  retHousing: 0, retTransport: 0, retGroceries: 0, retHealth: 0,
-  retChild: 0, retIns: 0, retDebt: 0,
-  retEnt: 0, retDining: 0, retPersonal: 0, retMisc: 0,
+  rent: 0,
+  propTax: 0,
+  utilities: 0,
+  internet: 0,
+  phone: 0,
+  carPayment: 0,
+  carIns: 0,
+  gas: 0,
+  carMaint: 0,
+  metro: 0,
+  groceries: 0,
+  household: 0,
+  healthIns: 0,
+  otherIns: 0,
+  debtMin: 0,
+  childcare: 0,
+  banking: 0,
+  k401: 0,
+  employerMatch: 0,
+  ira: 0,
+  hsa: 0,
+  taxable: 0,
+  emergency: 0,
+  edu529: 0,
+  lifeIns: 0,
+  dining: 0,
+  ent: 0,
+  travel: 0,
+  hobbies: 0,
+  personal: 0,
+  clothes: 0,
+  gifts: 0,
+  dev: 0,
+  tech: 0,
+  homeImp: 0,
+  subscriptions: 0,
+  misc: 0,
+  retHousing: 0,
+  retTransport: 0,
+  retGroceries: 0,
+  retHealth: 0,
+  retChild: 0,
+  retIns: 0,
+  retDebt: 0,
+  retEnt: 0,
+  retDining: 0,
+  retPersonal: 0,
+  retMisc: 0,
   hasModifiedRetirement: false,
   hasModifiedContrib: false,
-  retYear: 2049, retDuration: 25, inflation: 3.0,
-  socialSecurity: 18000, pension: 0, otherIncome: 0,
-  currentPortfolio: 0, monthlyContrib: 0,
-  contribIncrease: 3.0, annualReturn: 7.0,
+  retYear: 2049,
+  retDuration: 25,
+  inflation: 3.0,
+  socialSecurity: 18000,
+  pension: 0,
+  otherIncome: 0,
+  currentPortfolio: 0,
+  monthlyContrib: 0,
+  contribIncrease: 3.0,
+  annualReturn: 7.0,
   contribStopYear: 0,
   withdrawalRate: 0,
 };
@@ -90,7 +178,15 @@ inputs.subscribe((val) => {
   // Seed monthly contribution from total investments (incl. employer match) — but ONLY until
   // the user takes manual control. errors.md row 7: a value hand-entered in Step 4 sets
   // hasModifiedContrib, after which this sync never clobbers it again. Defaults seed; intent wins.
-  const totalInvest = val.k401 + val.employerMatch + val.ira + val.hsa + val.taxable + val.emergency + val.edu529 + val.lifeIns;
+  const totalInvest =
+    val.k401 +
+    val.employerMatch +
+    val.ira +
+    val.hsa +
+    val.taxable +
+    val.emergency +
+    val.edu529 +
+    val.lifeIns;
   if (totalInvest > 0 && !val.hasModifiedContrib) {
     inputs.setKey('monthlyContrib', totalInvest);
   }
@@ -109,12 +205,12 @@ inputs.subscribe((val) => {
 // Validated in WolframAlpha 2026-06-06: PV $100k, $1,000/mo, g 3%, r 7%, 25 yr →
 // lump $542,743.26, contributions $1,031,790.90, total $1,574,534.16 (canonical §5).
 function projectAccumulation(
-  annualRate: number,        // decimal, e.g. 0.07
+  annualRate: number, // decimal, e.g. 0.07
   currentPortfolio: number,
   monthlyContrib: number,
-  contribGrowth: number,     // decimal, e.g. 0.03
+  contribGrowth: number, // decimal, e.g. 0.03
   yearsToRet: number,
-  yearsContributing: number,
+  yearsContributing: number
 ): number[] {
   const m = Math.pow(1 + annualRate, 1 / 12) - 1;
   const contributingMonths = yearsContributing * 12;
@@ -125,8 +221,9 @@ function projectAccumulation(
   for (let year = 1; year <= yearsToRet; year++) {
     for (let monthInYear = 0; monthInYear < 12; monthInYear++) {
       globalMonth += 1;
-      balance *= 1 + m;                                   // grow one month
-      if (globalMonth <= contributingMonths) {            // end-of-month contribution
+      balance *= 1 + m; // grow one month
+      if (globalMonth <= contributingMonths) {
+        // end-of-month contribution
         const stepUps = Math.floor((globalMonth - 1) / 12);
         balance += monthlyContrib * Math.pow(1 + contribGrowth, stepUps);
       }
@@ -142,7 +239,7 @@ function projectAccumulation(
 const MC_TRIALS = 1000;
 const MC_SEED = 0x9e3779b9;
 const SIGMA_ACCUM = 0.16; // canonical §10.2 (S&P long-run σ, trimmed)
-const SIGMA_RET = 0.10;   // canonical §10.2 (60/40 σ)
+const SIGMA_RET = 0.1; // canonical §10.2 (60/40 σ)
 
 // mulberry32 — small deterministic PRNG, uniform [0,1).
 function mulberry32(seed: number): () => number {
@@ -173,24 +270,37 @@ function lognormalParams(mu: number, sigma: number): { nu: number; s: number } {
   return { nu: Math.log(M) - s2 / 2, s: Math.sqrt(s2) };
 }
 
-interface PercentilePoint { year: number; p10: number; p50: number; p90: number; }
+interface PercentilePoint {
+  year: number;
+  p10: number;
+  p50: number;
+  p90: number;
+}
 interface MonteCarloResult {
-  successProbability: number;          // fraction of trials surviving the full retirement
-  cone: PercentilePoint[];             // accumulation percentile bands (Step 4)
-  medianPortfolio: number;             // p50 balance at retirement
-  netWorthCone: PercentilePoint[];     // FULL lifecycle bands incl. drawdown (Step 5 — shows depletion)
-  p75AtRetirement: number;             // upside cue: "1 in 4 outcomes reach retirement above this" (§10.7)
-  p10DepletionYear: number | null;     // first retirement year the p10 path hits $0; null = downside funds the whole plan (§10.7)
+  successProbability: number; // fraction of trials surviving the full retirement
+  cone: PercentilePoint[]; // accumulation percentile bands (Step 4)
+  medianPortfolio: number; // p50 balance at retirement
+  netWorthCone: PercentilePoint[]; // FULL lifecycle bands incl. drawdown (Step 5 — shows depletion)
+  p75AtRetirement: number; // upside cue: "1 in 4 outcomes reach retirement above this" (§10.7)
+  p10DepletionYear: number | null; // first retirement year the p10 path hits $0; null = downside funds the whole plan (§10.7)
 }
 
 // One seeded Monte Carlo over the full lifecycle: stochastic accumulation, then
 // stochastic drawdown with sequence-of-returns risk (return applied BEFORE the
 // withdrawal each year, so a bad early sequence can permanently impair the plan).
 function runMonteCarlo(
-  annualReturn: number, currentPortfolio: number, monthlyContrib: number, contribGrowth: number,
-  yearsToRet: number, yearsContributing: number,
-  retReturn: number, retDuration: number, inflatingNet: number, flatIncome: number, inflation: number,
-  currentYear: number,
+  annualReturn: number,
+  currentPortfolio: number,
+  monthlyContrib: number,
+  contribGrowth: number,
+  yearsToRet: number,
+  yearsContributing: number,
+  retReturn: number,
+  retDuration: number,
+  inflatingNet: number,
+  flatIncome: number,
+  inflation: number,
+  currentYear: number
 ): MonteCarloResult {
   const rand = mulberry32(MC_SEED);
   const normal = makeNormal(rand);
@@ -206,7 +316,7 @@ function runMonteCarlo(
     let bal = currentPortfolio;
     accumByYear[0].push(bal);
     for (let y = 1; y <= yearsToRet; y++) {
-      bal *= Math.exp(accumP.nu + accumP.s * normal());          // sampled annual growth
+      bal *= Math.exp(accumP.nu + accumP.s * normal()); // sampled annual growth
       if (y <= yearsContributing) bal += annualContrib * Math.pow(1 + contribGrowth, y - 1);
       accumByYear[y].push(bal);
     }
@@ -220,13 +330,17 @@ function runMonteCarlo(
       // SS-adjusted spending grows with CPI; the flat (non-COLA) pension/other is then netted off.
       const withdrawal = Math.max(0, inflatingNet * Math.pow(1 + inflation, y - 1) - flatIncome);
       rbal = rbal * Math.exp(retP.nu + retP.s * normal()) - withdrawal;
-      if (rbal <= 0) { rbal = 0; survived = false; }
+      if (rbal <= 0) {
+        rbal = 0;
+        survived = false;
+      }
       retByYear[y].push(rbal);
     }
     if (survived) successes++;
   }
 
-  const pct = (sorted: number[], p: number) => sorted[Math.min(sorted.length - 1, Math.floor(p * sorted.length))];
+  const pct = (sorted: number[], p: number) =>
+    sorted[Math.min(sorted.length - 1, Math.floor(p * sorted.length))];
   const band = (arr: number[], year: number): PercentilePoint => {
     const s = arr.slice().sort((a, b) => a - b);
     return { year, p10: pct(s, 0.1), p50: pct(s, 0.5), p90: pct(s, 0.9) };
@@ -268,17 +382,27 @@ export const results = computed(inputs, (i) => {
   } else if (i.retDuration >= 35) {
     withdrawalRate = 0.035;
   } else if (i.retDuration >= 25) {
-    withdrawalRate = 0.040;
+    withdrawalRate = 0.04;
   } else if (i.retDuration >= 15) {
     withdrawalRate = 0.045;
   } else {
-    withdrawalRate = 0.050;
+    withdrawalRate = 0.05;
   }
 
   // B. The Number (canonical §2)
-  const annualRetSpend = (i.retHousing + i.retTransport + i.retGroceries + i.retHealth +
-    i.retChild + i.retIns + i.retDebt + i.retEnt + i.retDining +
-    i.retPersonal + i.retMisc) * 12;
+  const annualRetSpend =
+    (i.retHousing +
+      i.retTransport +
+      i.retGroceries +
+      i.retHealth +
+      i.retChild +
+      i.retIns +
+      i.retDebt +
+      i.retEnt +
+      i.retDining +
+      i.retPersonal +
+      i.retMisc) *
+    12;
   const futureAnnualNeed = annualRetSpend * inflationMult;
   const futureIncome = (i.socialSecurity + i.pension + i.otherIncome) * inflationMult;
   const netNeed = Math.max(0, futureAnnualNeed - futureIncome);
@@ -288,7 +412,7 @@ export const results = computed(inputs, (i) => {
   // (no COLA — a deliberately conservative default). So during retirement the portfolio's draw
   // grows faster than CPI as the pension's real value erodes. `inflatingNet` (spending − SS)
   // grows with CPI; `flatIncome` (pension + other) is held flat. At t=1 the draw equals netNeed.
-  const ssRet = i.socialSecurity * inflationMult;                 // COLA'd
+  const ssRet = i.socialSecurity * inflationMult; // COLA'd
   const flatIncome = (i.pension + i.otherIncome) * inflationMult; // fixed nominal in retirement
   const inflatingNet = Math.max(0, futureAnnualNeed - ssRet);
 
@@ -298,7 +422,14 @@ export const results = computed(inputs, (i) => {
   const contribStopYear = i.contribStopYear > 0 ? i.contribStopYear : i.retYear;
   const yearsContributing = Math.max(0, Math.min(yearsToRet, contribStopYear - currentYear));
 
-  const expectedSeries = projectAccumulation(r, i.currentPortfolio, i.monthlyContrib, g, yearsToRet, yearsContributing);
+  const expectedSeries = projectAccumulation(
+    r,
+    i.currentPortfolio,
+    i.monthlyContrib,
+    g,
+    yearsToRet,
+    yearsContributing
+  );
   // Deterministic MEAN path — the engine's compounding result. Retained (canonical §5 LOCKED,
   // single-engine guard), but NOT the headline: the user-facing "projected" number is the MC
   // median below (mean > median for right-skewed returns — errors.md row 13).
@@ -308,19 +439,23 @@ export const results = computed(inputs, (i) => {
 
   // E. Net worth series — accumulation reuses the canonical engine (so it ends exactly
   // at projectedPortfolio), then the post-retirement drawdown (canonical §4).
-  const netWorthData: { year: number; netWorth: number; phase: string }[] =
-    expectedSeries.map((netWorth, idx) => ({
+  const netWorthData: { year: number; netWorth: number; phase: string }[] = expectedSeries.map(
+    (netWorth, idx) => ({
       year: currentYear + idx,
       netWorth,
       phase: 'Pre-Retirement',
-    }));
+    })
+  );
 
   const retirementReturnRate = Math.max(0.04, r * 0.85); // realistic ~60/40 retirement return (canonical §4, ratified 2026-06-07)
   let portfolioAtRetirement = projectedPortfolio;
   for (let yearOffset = 1; yearOffset <= i.retDuration; yearOffset++) {
     let netWorth = portfolioAtRetirement * (1 + retirementReturnRate);
     // Per-year net draw: SS-adjusted spending grows with CPI, flat (non-COLA) income netted off (§2, row 9).
-    const annualWithdrawalInflated = Math.max(0, inflatingNet * Math.pow(1 + i.inflation / 100, yearOffset - 1) - flatIncome);
+    const annualWithdrawalInflated = Math.max(
+      0,
+      inflatingNet * Math.pow(1 + i.inflation / 100, yearOffset - 1) - flatIncome
+    );
     netWorth = Math.max(0, netWorth - annualWithdrawalInflated);
     netWorthData.push({ year: i.retYear + yearOffset, netWorth, phase: 'Retirement' });
     portfolioAtRetirement = netWorth;
@@ -328,10 +463,41 @@ export const results = computed(inputs, (i) => {
 
   // F. Spending breakdown for the budget ribbon.
   // employerMatch is shown in the investments total but excluded from budget allocation (not take-home pay).
-  const currentFixed = i.rent + i.propTax + i.utilities + i.internet + i.phone + i.carPayment + i.carIns + i.gas + i.carMaint + i.metro + i.groceries + i.household + i.healthIns + i.otherIns + i.debtMin + i.childcare + i.banking;
-  const currentInvest = i.k401 + i.employerMatch + i.ira + i.hsa + i.taxable + i.emergency + i.edu529 + i.lifeIns;
-  const currentInvestForBudget = i.k401 + i.ira + i.hsa + i.taxable + i.emergency + i.edu529 + i.lifeIns;
-  const currentGuiltFree = i.dining + i.ent + i.travel + i.hobbies + i.personal + i.clothes + i.gifts + i.dev + i.tech + i.homeImp + i.subscriptions + i.misc;
+  const currentFixed =
+    i.rent +
+    i.propTax +
+    i.utilities +
+    i.internet +
+    i.phone +
+    i.carPayment +
+    i.carIns +
+    i.gas +
+    i.carMaint +
+    i.metro +
+    i.groceries +
+    i.household +
+    i.healthIns +
+    i.otherIns +
+    i.debtMin +
+    i.childcare +
+    i.banking;
+  const currentInvest =
+    i.k401 + i.employerMatch + i.ira + i.hsa + i.taxable + i.emergency + i.edu529 + i.lifeIns;
+  const currentInvestForBudget =
+    i.k401 + i.ira + i.hsa + i.taxable + i.emergency + i.edu529 + i.lifeIns;
+  const currentGuiltFree =
+    i.dining +
+    i.ent +
+    i.travel +
+    i.hobbies +
+    i.personal +
+    i.clothes +
+    i.gifts +
+    i.dev +
+    i.tech +
+    i.homeImp +
+    i.subscriptions +
+    i.misc;
   const totalAllocated = currentFixed + currentInvestForBudget + currentGuiltFree;
 
   // G. Monte Carlo (canonical §10) — the real probability layer. Seeded, so the same
@@ -339,8 +505,18 @@ export const results = computed(inputs, (i) => {
   // projectedPortfolio above remains the mean/expected path (canonical §5, LOCKED);
   // the MC adds the distribution around it and the retirement-survival probability.
   const mc = runMonteCarlo(
-    r, i.currentPortfolio, i.monthlyContrib, g, yearsToRet, yearsContributing,
-    retirementReturnRate, i.retDuration, inflatingNet, flatIncome, i.inflation / 100, currentYear,
+    r,
+    i.currentPortfolio,
+    i.monthlyContrib,
+    g,
+    yearsToRet,
+    yearsContributing,
+    retirementReturnRate,
+    i.retDuration,
+    inflatingNet,
+    flatIncome,
+    i.inflation / 100,
+    currentYear
   );
 
   // H. Starter-habit illustration (Step 3 education): what a $100/month automatic investment,
@@ -369,15 +545,24 @@ export const results = computed(inputs, (i) => {
   }
 
   return {
-    inflationMult, withdrawalRate, yearsToRet,
-    annualRetSpend, futureAnnualNeed,
+    inflationMult,
+    withdrawalRate,
+    yearsToRet,
+    annualRetSpend,
+    futureAnnualNeed,
     // Has the user entered a retirement-spend target yet? The single source of the "is the plan
     // ready to summarize?" predicate, so Step 4 and Step 5 don't each recompute it (Pattern 1).
     planReady: annualRetSpend > 0,
-    requiredPortfolio, projectedPortfolio, gap,
+    requiredPortfolio,
+    projectedPortfolio,
+    gap,
     monthlyShortfall,
-    currentFixed, currentInvest, currentGuiltFree, totalAllocated,
-    netWorthData, yearsContributing,
+    currentFixed,
+    currentInvest,
+    currentGuiltFree,
+    totalAllocated,
+    netWorthData,
+    yearsContributing,
     starter100FV,
     // Monte Carlo (canonical §10) — the median is the headline projection
     successProbability: mc.successProbability,

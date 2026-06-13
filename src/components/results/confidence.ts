@@ -57,7 +57,7 @@ export function oddsOutOfTen(successPct: number): number {
 export function downsideStatement(
   p10DepletionYear: number | null,
   retDuration: number,
-  lastYear: number,
+  lastYear: number
 ): string {
   return p10DepletionYear === null
     ? `Even in a 1-in-10 rough market, your money lasts all ${retDuration} years — through ${lastYear}.`

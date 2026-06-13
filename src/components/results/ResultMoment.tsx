@@ -54,7 +54,15 @@ export function ResultMoment() {
           flexWrap: 'wrap',
         }}
       >
-        <span style={{ fontSize: '0.7rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: '#94a3b8', fontWeight: 600 }}>
+        <span
+          style={{
+            fontSize: '0.7rem',
+            letterSpacing: '0.12em',
+            textTransform: 'uppercase',
+            color: '#94a3b8',
+            fontWeight: 600,
+          }}
+        >
           Your plan
         </span>
         <span
@@ -79,7 +87,7 @@ export function ResultMoment() {
       </div>
       <div
         style={{
-          fontFamily: 'monospace',
+          fontFamily: 'var(--font-mono)',
           fontVariantNumeric: 'tabular-nums',
           fontSize: 'clamp(2.75rem, 8vw, 4.25rem)',
           fontWeight: 600,
@@ -90,8 +98,17 @@ export function ResultMoment() {
       >
         <CountUp value={requiredToday} format={formatLarge} />
       </div>
-      <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginTop: '6px', fontVariantNumeric: 'tabular-nums' }}>
-        in today&apos;s dollars · ≈ <span style={{ fontFamily: 'monospace' }}>{formatLarge(res.requiredPortfolio)}</span> in {i.retYear} dollars
+      <div
+        style={{
+          fontSize: '0.8rem',
+          color: '#94a3b8',
+          marginTop: '6px',
+          fontVariantNumeric: 'tabular-nums',
+        }}
+      >
+        in today&apos;s dollars · ≈{' '}
+        <span style={{ fontFamily: 'var(--font-mono)' }}>{formatLarge(res.requiredPortfolio)}</span>{' '}
+        in {i.retYear} dollars
       </div>
 
       {/* Confidence */}
@@ -112,7 +129,8 @@ export function ResultMoment() {
               {zone.label}
             </span>
             <span style={{ fontSize: 'clamp(1.05rem, 2.4vw, 1.35rem)', color: '#f8fafc' }}>
-              You&apos;re on track in <span style={{ fontWeight: 700, color: zone.color }}>{odds} of 10</span> futures.
+              You&apos;re on track in{' '}
+              <span style={{ fontWeight: 700, color: zone.color }}>{odds} of 10</span> futures.
             </span>
           </div>
           <div style={{ fontSize: '0.78rem', color: '#94a3b8', marginTop: '6px' }}>
@@ -120,19 +138,49 @@ export function ResultMoment() {
           </div>
 
           <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', fontSize: '0.9rem', color: '#cbd5e1', lineHeight: 1.5 }}>
+            <div
+              style={{
+                display: 'flex',
+                gap: '10px',
+                alignItems: 'flex-start',
+                fontSize: '0.9rem',
+                color: '#cbd5e1',
+                lineHeight: 1.5,
+              }}
+            >
               <ShieldCheck
                 size={18}
                 aria-hidden="true"
-                style={{ color: res.p10DepletionYear === null ? '#10b981' : '#f59e0b', flexShrink: 0, marginTop: '1px' }}
+                style={{
+                  color: res.p10DepletionYear === null ? '#10b981' : '#f59e0b',
+                  flexShrink: 0,
+                  marginTop: '1px',
+                }}
               />
               <span>{downside}</span>
             </div>
             {p75Today > 0 && (
-              <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', fontSize: '0.9rem', color: '#cbd5e1', lineHeight: 1.5 }}>
-                <TrendingUp size={18} aria-hidden="true" style={{ color: '#3b82f6', flexShrink: 0, marginTop: '1px' }} />
+              <div
+                style={{
+                  display: 'flex',
+                  gap: '10px',
+                  alignItems: 'flex-start',
+                  fontSize: '0.9rem',
+                  color: '#cbd5e1',
+                  lineHeight: 1.5,
+                }}
+              >
+                <TrendingUp
+                  size={18}
+                  aria-hidden="true"
+                  style={{ color: '#3b82f6', flexShrink: 0, marginTop: '1px' }}
+                />
                 <span>
-                  1 in 4 futures clear <span style={{ fontFamily: 'monospace', color: '#f8fafc' }}>{formatLarge(p75Today)}</span> — room to spend a little more, or retire a little sooner.
+                  1 in 4 futures clear{' '}
+                  <span style={{ fontFamily: 'var(--font-mono)', color: '#f8fafc' }}>
+                    {formatLarge(p75Today)}
+                  </span>{' '}
+                  — room to spend a little more, or retire a little sooner.
                 </span>
               </div>
             )}
@@ -150,15 +198,33 @@ export function ResultMoment() {
             color: '#cbd5e1',
           }}
         >
-          Add your current portfolio and monthly investing below to see your odds and your lifetime timeline.
+          Add your current portfolio and monthly investing below to see your odds and your lifetime
+          timeline.
         </div>
       )}
 
       {/* Signature timeline */}
-      <div style={{ marginTop: '28px', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '20px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '8px', gap: '12px', flexWrap: 'wrap' }}>
+      <div
+        style={{
+          marginTop: '28px',
+          borderTop: '1px solid rgba(255,255,255,0.08)',
+          paddingTop: '20px',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'baseline',
+            marginBottom: '8px',
+            gap: '12px',
+            flexWrap: 'wrap',
+          }}
+        >
           <span style={{ fontSize: '0.82rem', color: '#94a3b8' }}>Your money over a lifetime</span>
-          <span style={{ fontSize: '0.72rem', color: '#94a3b8' }}>today&apos;s dollars · shaded band = likely range</span>
+          <span style={{ fontSize: '0.72rem', color: '#94a3b8' }}>
+            today&apos;s dollars · shaded band = likely range
+          </span>
         </div>
         <LifetimeTimeline
           cone={res.mcNetWorthCone}
@@ -170,11 +236,24 @@ export function ResultMoment() {
       </div>
 
       {/* Live what-if */}
-      <div style={{ marginTop: '24px', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '20px' }}>
+      <div
+        style={{
+          marginTop: '24px',
+          borderTop: '1px solid rgba(255,255,255,0.08)',
+          paddingTop: '20px',
+        }}
+      >
         <div style={{ fontSize: '0.78rem', color: '#94a3b8', marginBottom: '16px' }}>
-          <span style={{ fontWeight: 600, color: '#cbd5e1' }}>Try it</span> — drag a lever and watch your number and timeline move.
+          <span style={{ fontWeight: 600, color: '#cbd5e1' }}>Try it</span> — drag a lever and watch
+          your number and timeline move.
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+            gap: '20px',
+          }}
+        >
           <RangeSlider
             label="Retirement year"
             value={i.retYear}
@@ -212,12 +291,15 @@ export function ResultMoment() {
 
       {/* How we calculate this — transparency disclosure */}
       <details style={{ marginTop: '22px' }}>
-        <summary style={{ cursor: 'pointer', fontSize: '0.82rem', color: '#3b82f6' }}>How we calculate this</summary>
+        <summary style={{ cursor: 'pointer', fontSize: '0.82rem', color: '#3b82f6' }}>
+          How we calculate this
+        </summary>
         <p style={{ marginTop: '10px', fontSize: '0.8rem', color: '#94a3b8', lineHeight: 1.65 }}>
-          Your number is your Step 2 retirement spending, grown for {i.inflation.toFixed(1)}% inflation, divided by a{' '}
-          {(res.withdrawalRate * 100).toFixed(1)}% safe withdrawal rate — the Trinity Study (Bengen, 1994). The odds and
-          the band come from 1,000 Monte Carlo simulations that vary market returns year by year, including the order they
-          arrive in (sequence-of-returns risk). These are estimates, not guarantees — revisit yearly.
+          Your number is your Step 2 retirement spending, grown for {i.inflation.toFixed(1)}%
+          inflation, divided by a {(res.withdrawalRate * 100).toFixed(1)}% safe withdrawal rate —
+          the Trinity Study (Bengen, 1994). The odds and the band come from 1,000 Monte Carlo
+          simulations that vary market returns year by year, including the order they arrive in
+          (sequence-of-returns risk). These are estimates, not guarantees — revisit yearly.
         </p>
       </details>
     </section>

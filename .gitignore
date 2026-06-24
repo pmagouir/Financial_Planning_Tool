@@ -25,3 +25,4 @@ pnpm-debug.log*
 
 # scheduled-tasks local lock (transient, machine-local)
 .claude/scheduled_tasks.lock
+.vercel
